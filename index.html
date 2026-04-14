@@ -19,7 +19,8 @@
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
 
-  <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE ACTIVE</div>
+  <!-- DEV MODE INDICATOR -->
+  <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE</div>
 
   <header class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center z-10">
     <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">TripApp 2025</div>
@@ -182,7 +183,7 @@
     </div>
   </main>
 
-  <!-- JAVASCRIPT LOGIC -->
+<!-- JAVASCRIPT LOGIC -->
   <script>
     const DEV_MODE = true; 
     const URLS = {
@@ -240,12 +241,22 @@
       setTimeout(() => t.classList.add('opacity-0'), 4000);
     }
 
-    function togglePassword(id) { const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; }
-    function handleEnter(e, func) { if(e.key === 'Enter') func(); }
+    function togglePassword(id) { 
+      const el = document.getElementById(id); 
+      el.type = el.type === 'password' ? 'text' : 'password'; 
+    }
+    
+    function handleEnter(e, func) { 
+      if(e.key === 'Enter') func(); 
+    }
 
     async function callBackend(action, payload = {}) {
       try {
-        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+        const res = await fetch(API_URL, { 
+          method: 'POST', 
+          body: JSON.stringify({ action, ...payload }), 
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
         if(!res.ok) throw new Error("Network response was not OK");
         const data = await res.json();
         if(data.status === 'error') throw new Error(data.message);
@@ -403,7 +414,10 @@
         appSettings.registrationOpen = newState;
         applyRegVisual();
         showToast(newState ? "Registration Opened" : "Registration Closed");
-      } catch(e) { showToast("Failed to update status.", true); applyRegVisual(); }
+      } catch(e) { 
+        showToast("Failed to update status.", true); 
+        applyRegVisual(); 
+      }
       finally { btn.disabled = false; }
     }
 
@@ -439,4 +453,20 @@
       list.forEach(nric => {
         ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-600">
           <span class="font-mono font-bold">${nric}</span>
-          <button onclick="removeCommittee('${nric}')" class="text-r
+          <button onclick="removeCommittee('${nric}')" class="text-red-500 text-sm font-bold px-2 py-1 hover:bg-red-50 dark:hover:bg-gray-700 rounded">Remove</button>
+        </li>`;
+      });
+    }
+
+    function updateApp() {
+      showToast("Updating app data and clearing caches...");
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) { registration.unregister(); }
+        });
+      }
+      setTimeout(() => location.reload(true), 1000);
+    }
+  </script>
+</body>
+</html>
