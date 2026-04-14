@@ -5,51 +5,111 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Overseas Trip Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { primary: '#2563eb' } } }
-    }
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#2563eb' } } } }
   </script>
   <style>
-    /* Minimalist overrides */
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.3s, color 0.3s; }
     .dark body { background-color: #1a202c; color: #e2e8f0; }
     .dark input, .dark select, .dark textarea { background-color: #2d3748; color: white; border-color: #4a5568; }
     .hidden-force { display: none !important; }
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
 
-  <!-- DEV MODE INDICATOR -->
-  <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">
-    DEV MODE ACTIVE
-  </div>
+  <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE ACTIVE</div>
 
-  <!-- TOP NAVBAR -->
   <header class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center z-10">
-    <div class="font-bold text-lg text-primary">TripApp 2025</div>
+    <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">TripApp 2025</div>
     <div class="flex items-center space-x-3">
-      <button onclick="updateApp()" class="text-xs bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-        Update App
-      </button>
+      <button onclick="updateApp()" class="text-xs bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Update App</button>
       <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
   <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
-    
-    <!-- ERROR / NOTIFICATION TOAST -->
     <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium"></div>
 
-    <!-- VIEW 1: LOGIN -->
-    <div id="viewLogin" class="max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold mb-6 text-center">Secure Login</h2>
+    <!-- VIEW 0: LOADING -->
+    <div id="viewLoading" class="flex justify-center items-center h-full">
+      <div class="loader w-10 h-10"></div>
+    </div>
+
+    <!-- VIEW 1: LANDING PAGE -->
+    <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold mb-2">Overseas Trip 2025</h1>
+        <p class="text-gray-500">Welcome! Please select an option below.</p>
+      </div>
+      
+      <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center border-t-4 border-green-500 hidden-force">
+        <h3 class="text-xl font-bold mb-2">Join the Trip</h3>
+        <p class="text-sm mb-4">Registration is currently open.</p>
+        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">Register Now</button>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center border-t-4 border-primary">
+        <h3 class="text-xl font-bold mb-2">Participant Portal</h3>
+        <p class="text-sm mb-4">Already registered? Log in to view details.</p>
+        <button onclick="navTo('login')" class="w-full bg-primary text-white py-2 rounded font-bold hover:bg-blue-700">Log In</button>
+      </div>
+    </div>
+
+    <!-- VIEW 2: PUBLIC REGISTRATION -->
+    <div id="viewRegister" class="hidden-force max-w-3xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow space-y-4">
+      <div class="flex justify-between items-center border-b pb-2 mb-4">
+        <h3 class="text-xl font-bold">New Registration</h3>
+        <button onclick="goHome()" class="text-sm text-gray-500 hover:text-primary">Cancel</button>
+      </div>
+      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label class="block text-sm mb-1">Full Name (As in Passport)</label><input id="regName" required type="text" class="w-full p-2 border rounded"></div>
+          <div><label class="block text-sm mb-1">Email Address</label><input id="regEmail" required type="email" class="w-full p-2 border rounded"></div>
+          <div>
+            <label class="block text-sm mb-1">Role</label>
+            <select id="regRole" class="w-full p-2 border rounded" onchange="toggleTraineeFields()">
+              <option value="TRAINEE">Trainee</option>
+              <option value="CAREGIVER">Caregiver</option>
+              <option value="VOLUNTEER">Volunteer</option>
+            </select>
+          </div>
+          <div><label class="block text-sm mb-1">Gender</label><select id="regGender" class="w-full p-2 border rounded"><option>Male</option><option>Female</option></select></div>
+          <div><label class="block text-sm mb-1">Contact Number (8-digit)</label><input id="regContact" required type="tel" pattern="[0-9]{8}" class="w-full p-2 border rounded"></div>
+          <div><label class="block text-sm mb-1">Date of Birth</label><input id="regDob" required type="date" class="w-full p-2 border rounded"></div>
+        </div>
+
+        <div id="traineeRelationDiv" class="hidden-force bg-blue-50 dark:bg-gray-700 p-4 rounded mt-4">
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div><label class="block text-sm mb-1">Related Trainee's Name</label><input id="regRelatedTrainee" type="text" class="w-full p-2 border rounded"></div>
+             <div><label class="block text-sm mb-1">Relationship to Trainee</label><input id="regRelationship" type="text" class="w-full p-2 border rounded"></div>
+           </div>
+        </div>
+
+        <h4 class="font-bold mt-6 mb-2 border-b pb-1">Identification & Passport</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label class="block text-sm mb-1">Full NRIC / FIN</label><input id="regNric" required type="text" class="w-full p-2 border rounded uppercase"></div>
+          <div><label class="block text-sm mb-1">Passport No.</label><input id="regPassport" required type="text" class="w-full p-2 border rounded uppercase"></div>
+          <div><label class="block text-sm mb-1">Passport Expiry (>6mths valid)</label><input id="regExpiry" required type="date" class="w-full p-2 border rounded"></div>
+          <div><label class="block text-sm mb-1">Nationality</label><input id="regNat" required type="text" class="w-full p-2 border rounded"></div>
+        </div>
+
+        <div class="pt-4 flex items-center space-x-2">
+          <button type="submit" class="flex-grow bg-green-600 text-white font-bold py-3 rounded hover:bg-green-700 flex justify-center items-center">
+            <span id="regSubmitText">Submit Registration</span>
+            <div id="regLoader" class="loader hidden-force ml-2 border-white"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- VIEW 3: LOGIN -->
+    <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold">Secure Login</h2>
+        <button onclick="goHome()" class="text-sm text-gray-500 hover:text-primary">Cancel</button>
+      </div>
       <div id="loginError" class="text-red-500 text-sm mb-2 font-medium hidden-force"></div>
       
       <div class="mb-4">
@@ -69,143 +129,102 @@
       </button>
     </div>
 
-    <!-- VIEW 2: DASHBOARD (Post Login) -->
+    <!-- VIEW 4: DASHBOARD (Post Login) -->
     <div id="viewDashboard" class="hidden-force max-w-4xl mx-auto space-y-6">
       
-      <!-- User Info Card -->
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex justify-between items-center">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex justify-between items-center border-l-4 border-primary">
         <div>
           <h3 class="text-lg font-bold">Welcome back!</h3>
           <p class="text-sm text-gray-500" id="userRoleBadge">Role: Participant</p>
         </div>
-        <button onclick="logout()" class="text-red-500 text-sm font-medium">Logout</button>
+        <button onclick="logout()" class="text-red-500 text-sm font-medium border border-red-500 px-3 py-1 rounded hover:bg-red-50 dark:hover:bg-gray-700">Logout</button>
       </div>
 
-      <!-- Navigation Tabs (Only visible items based on role) -->
-      <div class="flex space-x-2 overflow-x-auto pb-2 border-b dark:border-gray-700" id="navTabs">
-        <button onclick="switchTab('register')" class="tab-btn px-4 py-2 font-medium border-b-2 border-primary text-primary whitespace-nowrap">Registration</button>
+      <div class="flex space-x-2 overflow-x-auto pb-2 border-b dark:border-gray-700 scrollbar-hide" id="navTabs">
+        <button onclick="switchTab('profile')" class="tab-btn px-4 py-2 font-medium border-b-2 border-primary text-primary whitespace-nowrap">My Profile</button>
         <button onclick="switchTab('attendance')" class="tab-btn px-4 py-2 font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap hidden-force admin-only">Attendance</button>
         <button onclick="switchTab('finance')" class="tab-btn px-4 py-2 font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap hidden-force admin-only">Finance</button>
-        <button onclick="switchTab('minutes')" class="tab-btn px-4 py-2 font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap hidden-force admin-only">Minutes</button>
+        <button onclick="switchTab('settings')" class="tab-btn px-4 py-2 font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap hidden-force admin-only">Settings</button>
       </div>
 
-      <!-- TAB CONTENT: REGISTRATION -->
-      <div id="tab-register" class="tab-content">
-        <form id="regForm" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow space-y-4" onsubmit="event.preventDefault(); submitRegistration();">
-          <h3 class="text-xl font-bold mb-4 border-b pb-2">Participant Details</h3>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">Full Name (As in Passport)</label><input id="regName" required type="text" class="w-full p-2 border rounded"></div>
-            <div><label class="block text-sm mb-1">Email Address</label><input id="regEmail" required type="email" class="w-full p-2 border rounded"></div>
-            <div>
-              <label class="block text-sm mb-1">Role</label>
-              <select id="regRole" class="w-full p-2 border rounded" onchange="toggleTraineeFields()">
-                <option value="TRAINEE">Trainee</option>
-                <option value="CAREGIVER">Caregiver</option>
-                <option value="VOLUNTEER">Volunteer</option>
-              </select>
-            </div>
-            <div><label class="block text-sm mb-1">Gender</label><select id="regGender" class="w-full p-2 border rounded"><option>Male</option><option>Female</option></select></div>
-            <div><label class="block text-sm mb-1">Contact Number (8-digit)</label><input id="regContact" required type="tel" pattern="[0-9]{8}" class="w-full p-2 border rounded"></div>
-            <div><label class="block text-sm mb-1">Date of Birth</label><input id="regDob" required type="date" class="w-full p-2 border rounded"></div>
-          </div>
-
-          <div id="traineeRelationDiv" class="hidden-force bg-blue-50 dark:bg-gray-700 p-4 rounded mt-4">
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div><label class="block text-sm mb-1">Related Trainee's Name</label><input id="regRelatedTrainee" type="text" class="w-full p-2 border rounded"></div>
-               <div><label class="block text-sm mb-1">Relationship to Trainee</label><input id="regRelationship" type="text" placeholder="e.g. Mother, Uncle" class="w-full p-2 border rounded"></div>
-             </div>
-          </div>
-
-          <!-- Sensitive Data Protected via OTP (Mocked UI for brevity) -->
-          <div class="mt-6 border border-gray-200 dark:border-gray-600 rounded p-4 relative overflow-hidden">
-            <div id="sensitiveOverlay" class="absolute inset-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm flex flex-col justify-center items-center z-10">
-              <p class="text-sm font-medium mb-2">Passport & NRIC Data is locked.</p>
-              <button type="button" onclick="requestOTP()" class="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded shadow hover:bg-gray-300">Request Email OTP to Unlock</button>
-              
-              <div id="otpBox" class="mt-4 hidden-force text-center">
-                <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" class="text-center w-40 p-2 border rounded mb-2">
-                <br>
-                <button type="button" onclick="verifyOTP()" class="bg-primary text-white px-4 py-1 rounded text-sm">Verify</button>
-              </div>
-            </div>
-
-            <h4 class="font-bold mb-2">Sensitive Particulars</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><label class="block text-sm mb-1">Full NRIC / FIN</label><input id="regNric" type="text" class="w-full p-2 border rounded" readonly></div>
-              <div><label class="block text-sm mb-1">Passport No.</label><input id="regPassport" type="text" class="w-full p-2 border rounded"></div>
-              <div><label class="block text-sm mb-1">Passport Expiry (>6mths valid)</label><input id="regExpiry" type="date" class="w-full p-2 border rounded"></div>
-              <div><label class="block text-sm mb-1">Nationality</label><input id="regNat" type="text" class="w-full p-2 border rounded"></div>
-            </div>
-          </div>
-
-          <div class="pt-4"><button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded hover:bg-green-700">Submit Registration</button></div>
-        </form>
+      <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-bold mb-4">Registration Confirmed</h3>
+        <p>You have successfully registered for the trip. Once the committee finalises the finances, your payment details will appear here.</p>
       </div>
 
-      <!-- TAB CONTENT: ATTENDANCE (OFFLINE CAPABLE) -->
-      <div id="tab-attendance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <div class="flex justify-between items-center border-b pb-4 mb-4">
-          <h3 class="text-xl font-bold">Offline Attendance Scanner</h3>
-          <span id="networkStatus" class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-bold">Online</span>
-        </div>
-        <p class="text-sm text-gray-500 mb-4">Take attendance even when internet drops. It will auto-sync when connection is restored.</p>
+      <!-- Admin Tab Content Mocks -->
+      <div id="tab-attendance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-lg shadow"><p>Offline Attendance Module</p></div>
+      <div id="tab-finance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-lg shadow"><p>Finance Overview & CSV Upload</p></div>
+
+      <!-- SETTINGS TAB -->
+      <div id="tab-settings" class="tab-content hidden-force space-y-6">
         
-        <input type="text" id="searchAtt" placeholder="Search Participant (Fuzzy)..." class="w-full p-3 border rounded mb-4 shadow-sm" onkeyup="fuzzySearchAttendance()">
-        
-        <div id="attendanceList" class="space-y-2 max-h-96 overflow-y-auto">
-          <!-- Populated by JS -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 class="text-lg font-bold mb-2 border-b pb-2">Global Registration Status</h3>
+          <div class="flex items-center justify-between mt-4">
+            <p class="text-sm">Allow new users to sign up using the public form.</p>
+            <button id="toggleRegBtn" onclick="toggleRegistrationState()" class="px-4 py-2 bg-green-600 text-white font-bold rounded shadow">Loading...</button>
+          </div>
         </div>
-        <button onclick="forceSyncAttendance()" class="mt-4 w-full bg-primary text-white py-2 rounded">Force Sync to Server</button>
-      </div>
 
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 class="text-lg font-bold mb-2 border-b pb-2">Committee Members</h3>
+          <p class="text-sm text-gray-500 mb-4">Users must register first. Add their NRIC here to grant them admin access.</p>
+          <div class="flex space-x-2 mb-4">
+            <input type="text" id="newCommNric" placeholder="Enter Registered NRIC" class="flex-grow p-2 border rounded uppercase">
+            <button onclick="addCommittee()" class="bg-primary text-white px-4 py-2 rounded font-bold">Add</button>
+          </div>
+          <ul id="commList" class="space-y-2 border rounded p-4 bg-gray-50 dark:bg-gray-700">
+            <!-- Populated via JS -->
+          </ul>
+        </div>
+      </div>
     </div>
   </main>
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
-    // --- APP CONFIGURATION ---
-    const DEV_MODE = true; // MUST MATCH BACKEND!
+    const DEV_MODE = true; 
     const URLS = {
       DEV: "https://script.google.com/macros/s/AKfycby48gbzI_4V0TEJ0Gra4Qb_J3xywBA6A792d2reGx0QWUx-6QFEKRWBTmr8mGG86osg/exec",
       PROD: "https://script.google.com/macros/s/AKfycbz4OLZtR2lX97MrGZVaNg13Lrzvwgy7mBfQr7PgoQGK617sL8ZCkKvZD2hIZodus-O_/exec"
     };
     const API_URL = DEV_MODE ? URLS.DEV : URLS.PROD;
 
-    // --- STATE MANAGEMENT ---
     let currentUser = null;
-    let offlineQueue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+    let appSettings = { registrationOpen: false };
 
-    // --- INITIALIZATION ---
-    window.onload = () => {
+    window.onload = async () => {
       if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
       if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
       
       const savedSession = localStorage.getItem('userSession');
-      if(savedSession) {
-        currentUser = JSON.parse(savedSession);
-        showDashboard();
-      }
+      if(savedSession) currentUser = JSON.parse(savedSession);
       
-      // Monitor Network
-      window.addEventListener('online', () => {
-        updateNetworkStatus(true);
-        if(offlineQueue.length > 0) forceSyncAttendance();
-      });
-      window.addEventListener('offline', () => updateNetworkStatus(false));
-      updateNetworkStatus(navigator.onLine);
+      await fetchConfig();
 
-      registerInlineServiceWorker();
+      if(currentUser) renderDashboard();
+      else goHome();
     };
 
-    function updateApp() {
-      showToast("Updating app data and clearing caches...");
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) { registration.unregister(); }
-        });
+    function goHome() {
+      if(currentUser) return renderDashboard();
+      document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
+      document.getElementById('viewLanding').classList.remove('hidden-force');
+      document.getElementById('toast').classList.add('opacity-0');
+    }
+
+    function navTo(view) {
+      document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
+      if (view === 'register') {
+        document.getElementById('viewRegister').classList.remove('hidden-force');
+        document.getElementById('regForm').reset();
       }
-      setTimeout(() => location.reload(true), 1000);
+      if (view === 'login') {
+        document.getElementById('viewLogin').classList.remove('hidden-force');
+        document.getElementById('loginError').classList.add('hidden-force');
+        document.getElementById('loginPass').value = '';
+      }
     }
 
     function toggleTheme() {
@@ -221,93 +240,135 @@
       setTimeout(() => t.classList.add('opacity-0'), 4000);
     }
 
-    function togglePassword(id) {
-      const el = document.getElementById(id);
-      el.type = el.type === 'password' ? 'text' : 'password';
-    }
+    function togglePassword(id) { const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; }
+    function handleEnter(e, func) { if(e.key === 'Enter') func(); }
 
-    function handleEnter(e, func) {
-      if(e.key === 'Enter') func();
-    }
-
-    function showLoginError(msg) {
-      const err = document.getElementById('loginError');
-      err.textContent = msg;
-      err.classList.remove('hidden-force');
-    }
-
-    // --- API CALL ABSTRACTION ---
-    async function callBackend(action, payload) {
+    async function callBackend(action, payload = {}) {
       try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: action, ...payload }),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' } // text/plain to avoid CORS preflight issues with GAS
-        });
-        
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
         if(!res.ok) throw new Error("Network response was not OK");
         const data = await res.json();
         if(data.status === 'error') throw new Error(data.message);
         return data;
       } catch (err) {
-        console.error(err);
-        // Prompt with Google Permissions hint if fetching fails entirely (GAS specific)
         if(err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-           showToast("Network Error or Google Permissions needed. Attempting redirect...", true);
-           setTimeout(() => window.open(API_URL, '_blank'), 2000); // Opens GAS url to trigger Auth flow
-        } else {
-           throw err;
-        }
+           showToast("Network Error or Google Permissions needed. Authorize via pop-up.", true);
+           setTimeout(() => window.open(API_URL, '_blank'), 2000); 
+        } else { throw err; }
       }
     }
 
-    // --- AUTHENTICATION ---
-    async function attemptLogin() {
-      const nric = document.getElementById('loginNric').value.trim().toUpperCase();
-      const pass = document.getElementById('loginPass').value;
-      const btnText = document.getElementById('loginText');
-      const loader = document.getElementById('loginLoader');
-      const err = document.getElementById('loginError');
+    // --- CONFIG & SETUP ---
+    async function fetchConfig() {
+      try {
+        const config = await callBackend('getSettings');
+        appSettings.registrationOpen = config.registrationOpen;
+        
+        // Update Home View
+        const regBox = document.getElementById('landingRegBox');
+        if(appSettings.registrationOpen) regBox.classList.remove('hidden-force');
+        else regBox.classList.add('hidden-force');
+        
+        // Update Admin Button
+        applyRegVisual();
+      } catch (e) {
+        showToast("Error syncing settings.", true);
+      } finally {
+        document.getElementById('viewLoading').classList.add('hidden-force');
+      }
+    }
 
-      if(!nric || !pass) return showLoginError("Please enter NRIC and Password");
+    function toggleTraineeFields() {
+      const role = document.getElementById('regRole').value;
+      const el = document.getElementById('traineeRelationDiv');
+      if(role === 'CAREGIVER' || role === 'VOLUNTEER') el.classList.remove('hidden-force');
+      else el.classList.add('hidden-force');
+    }
+
+    async function submitRegistration() {
+      const btn = document.getElementById('regSubmitText');
+      const loader = document.getElementById('regLoader');
       
-      err.classList.add('hidden-force');
-      btnText.classList.add('hidden-force');
+      const payload = {
+        fullName: document.getElementById('regName').value,
+        email: document.getElementById('regEmail').value,
+        role: document.getElementById('regRole').value,
+        gender: document.getElementById('regGender').value,
+        contact: document.getElementById('regContact').value,
+        dob: document.getElementById('regDob').value,
+        relatedTrainee: document.getElementById('regRelatedTrainee').value,
+        relationship: document.getElementById('regRelationship').value,
+        nric: document.getElementById('regNric').value.toUpperCase(),
+        passportNo: document.getElementById('regPassport').value,
+        passportExpiry: document.getElementById('regExpiry').value,
+        nationality: document.getElementById('regNat').value
+      };
+
+      btn.classList.add('hidden-force');
       loader.classList.remove('hidden-force');
 
       try {
-        const res = await callBackend('login', { nric: nric, password: pass });
+        await callBackend('submitRegistration', { payload });
+        showToast("Registration Successful! Please login.");
+        setTimeout(() => navTo('login'), 1500);
+      } catch (e) {
+        showToast(e.message, true);
+      } finally {
+        btn.classList.remove('hidden-force');
+        loader.classList.add('hidden-force');
+      }
+    }
+
+    async function attemptLogin() {
+      const nric = document.getElementById('loginNric').value.trim().toUpperCase();
+      const pass = document.getElementById('loginPass').value;
+      const err = document.getElementById('loginError');
+
+      if(!nric || !pass) {
+        err.textContent = "Please enter NRIC and Password";
+        return err.classList.remove('hidden-force');
+      }
+      
+      err.classList.add('hidden-force');
+      document.getElementById('loginText').classList.add('hidden-force');
+      document.getElementById('loginLoader').classList.remove('hidden-force');
+
+      try {
+        const res = await callBackend('login', { nric, password: pass });
         currentUser = { nric: nric, role: res.role };
         localStorage.setItem('userSession', JSON.stringify(currentUser));
-        showDashboard();
+        renderDashboard();
       } catch (error) {
-        showLoginError(error.message);
+        err.textContent = error.message;
+        err.classList.remove('hidden-force');
       } finally {
-        btnText.classList.remove('hidden-force');
-        loader.classList.add('hidden-force');
+        document.getElementById('loginText').classList.remove('hidden-force');
+        document.getElementById('loginLoader').classList.add('hidden-force');
       }
     }
 
     function logout() {
       localStorage.removeItem('userSession');
       currentUser = null;
-      document.getElementById('viewDashboard').classList.add('hidden-force');
-      document.getElementById('viewLogin').classList.remove('hidden-force');
+      goHome();
     }
 
-    function showDashboard() {
-      document.getElementById('viewLogin').classList.add('hidden-force');
+    function renderDashboard() {
+      document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
       document.getElementById('viewDashboard').classList.remove('hidden-force');
       
       document.getElementById('userRoleBadge').textContent = `Role: ${currentUser.role === 'admin' ? 'Committee (Admin)' : 'Participant'}`;
-      document.getElementById('regNric').value = currentUser.nric; // pre-fill
 
       if(currentUser.role === 'admin') {
         document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-force'));
+        loadCommitteeList();
+      } else {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-force'));
       }
+      
+      switchTab('profile'); // Default tab
     }
 
-    // --- TABS & UI LOGIC ---
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-force'));
       document.querySelectorAll('.tab-btn').forEach(el => {
@@ -319,111 +380,63 @@
       event.target.classList.add('border-primary', 'text-primary');
     }
 
-    function toggleTraineeFields() {
-      const role = document.getElementById('regRole').value;
-      const el = document.getElementById('traineeRelationDiv');
-      if(role === 'CAREGIVER' || role === 'VOLUNTEER') {
-        el.classList.remove('hidden-force');
+    // --- ADMIN SETTINGS LOGIC ---
+    function applyRegVisual() {
+      const btn = document.getElementById('toggleRegBtn');
+      if(appSettings.registrationOpen) {
+        btn.textContent = "Currently OPEN (Click to Close)";
+        btn.className = "px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded shadow transition";
       } else {
-        el.classList.add('hidden-force');
+        btn.textContent = "Currently CLOSED (Click to Open)";
+        btn.className = "px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded shadow transition";
       }
     }
 
-    // --- OTP LOGIC ---
-    async function requestOTP() {
-      const btn = event.target;
-      btn.textContent = "Sending...";
+    async function toggleRegistrationState() {
+      const btn = document.getElementById('toggleRegBtn');
+      btn.textContent = "Updating...";
       btn.disabled = true;
+
+      const newState = !appSettings.registrationOpen;
       try {
-        const res = await callBackend('requestOTP', { nric: currentUser.nric });
-        showToast(`OTP sent to ${res.emailHint}`);
-        document.getElementById('otpBox').classList.remove('hidden-force');
-        btn.classList.add('hidden-force');
-      } catch (err) {
-        showToast(err.message, true);
-        btn.textContent = "Request Email OTP";
-        btn.disabled = false;
-      }
+        await callBackend('toggleRegistration', { status: newState });
+        appSettings.registrationOpen = newState;
+        applyRegVisual();
+        showToast(newState ? "Registration Opened" : "Registration Closed");
+      } catch(e) { showToast("Failed to update status.", true); applyRegVisual(); }
+      finally { btn.disabled = false; }
     }
 
-    async function verifyOTP() {
-      const otp = document.getElementById('otpInput').value;
-      if(!otp) return showToast("Please enter OTP", true);
+    async function loadCommitteeList() {
       try {
-        await callBackend('verifyOTP', { nric: currentUser.nric, otp: otp });
-        document.getElementById('sensitiveOverlay').classList.add('hidden-force');
-        showToast("Access Granted");
-      } catch (err) {
-        showToast(err.message, true);
-      }
+        const res = await callBackend('getCommittee');
+        renderCommList(res.list);
+      } catch(e) {}
     }
 
-    // --- OFFLINE ATTENDANCE & PWA BLOB ---
-    function updateNetworkStatus(isOnline) {
-      const span = document.getElementById('networkStatus');
-      if(isOnline) {
-        span.textContent = "Online";
-        span.className = "px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-bold";
-      } else {
-        span.textContent = "Offline (Local Storage)";
-        span.className = "px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-bold";
-      }
-    }
-
-    async function forceSyncAttendance() {
-      if(offlineQueue.length === 0) return showToast("No offline records to sync.");
-      if(!navigator.onLine) return showToast("Still offline. Cannot sync yet.", true);
-
+    async function addCommittee() {
+      const nric = document.getElementById('newCommNric').value;
+      if(!nric) return;
       try {
-        await callBackend('syncAttendance', { records: offlineQueue });
-        offlineQueue =[];
-        localStorage.setItem('offlineQueue', JSON.stringify([]));
-        showToast("Attendance synced successfully!");
-      } catch (err) {
-        showToast("Sync failed. Will retry later.", true);
-      }
+        const res = await callBackend('addCommittee', { nric });
+        document.getElementById('newCommNric').value = '';
+        renderCommList(res.list);
+        showToast("Added to Committee");
+      } catch(e) { showToast(e.message, true); }
     }
 
-    function markAttendance(name, nric, status) {
-      const record = {
-        juncture: new Date().toLocaleTimeString(),
-        group: "Bus 1", // Should be dynamic based on admin selector
-        name: name,
-        nric: nric,
-        status: status,
-        takenBy: currentUser.nric
-      };
-      offlineQueue.push(record);
-      localStorage.setItem('offlineQueue', JSON.stringify(offlineQueue));
-      showToast(`Saved: ${name} marked as ${status}`);
-      if(navigator.onLine) forceSyncAttendance();
+    async function removeCommittee(nric) {
+      try {
+        const res = await callBackend('removeCommittee', { nric });
+        renderCommList(res.list);
+        showToast("Removed from Committee");
+      } catch(e) { showToast(e.message, true); }
     }
 
-    // Dynamic Service Worker Injection (Fulfils Single File Constraint)
-    function registerInlineServiceWorker() {
-      if ('serviceWorker' in navigator) {
-        const swCode = `
-          const CACHE_NAME = 'trip-app-v1';
-          const urlsToCache =[ location.href ];
-          self.addEventListener('install', event => {
-            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
-          });
-          self.addEventListener('fetch', event => {
-            event.respondWith(
-              caches.match(event.request).then(response => {
-                return response || fetch(event.request).catch(() => caches.match(location.href));
-              })
-            );
-          });
-        `;
-        const blob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).then(reg => {
-          console.log("Inline PWA Service Worker Registered", reg);
-        });
-      }
-    }
-
-  </script>
-</body>
-</html>
+    function renderCommList(list) {
+      const ul = document.getElementById('commList');
+      ul.innerHTML = list.length === 0 ? '<li class="text-sm text-gray-500">No committee members assigned yet.</li>' : '';
+      list.forEach(nric => {
+        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-600">
+          <span class="font-mono font-bold">${nric}</span>
+          <button onclick="removeCommittee('${nric}')" class="text-r
