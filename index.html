@@ -19,11 +19,10 @@
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
 
-  <!-- DEV MODE INDICATOR -->
   <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE</div>
 
   <header class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center z-10">
-    <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">TripApp 2025</div>
+    <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">TripApp</div>
     <div class="flex items-center space-x-3">
       <button onclick="updateApp()" class="text-xs bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Update App</button>
       <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
@@ -41,7 +40,7 @@
     <!-- VIEW 1: LANDING PAGE -->
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
       <div class="text-center">
-        <h1 class="text-3xl font-bold mb-2">Overseas Trip 2025</h1>
+        <h1 class="text-3xl font-bold mb-2">Overseas Trip Planner</h1>
         <p class="text-gray-500">Welcome! Please select an option below.</p>
       </div>
       
@@ -153,7 +152,6 @@
         <p>You have successfully registered for the trip. Once the committee finalises the finances, your payment details will appear here.</p>
       </div>
 
-      <!-- Admin Tab Content Mocks -->
       <div id="tab-attendance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-lg shadow"><p>Offline Attendance Module</p></div>
       <div id="tab-finance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-lg shadow"><p>Finance Overview & CSV Upload</p></div>
 
@@ -179,11 +177,21 @@
             <!-- Populated via JS -->
           </ul>
         </div>
+
+        <!-- DANGER ZONE -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border-t-4 border-red-500">
+          <h3 class="text-lg font-bold mb-2 border-b pb-2 text-red-600">Danger Zone</h3>
+          <p class="text-sm text-gray-500 mb-4">Archive the current trip data into your Google Drive and wipe the active system to start fresh for a new trip. This action cannot be undone.</p>
+          <button onclick="archiveSystem()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow transition">
+            Archive & Reset System
+          </button>
+        </div>
+
       </div>
     </div>
   </main>
 
-<!-- JAVASCRIPT LOGIC -->
+  <!-- JAVASCRIPT LOGIC -->
   <script>
     const DEV_MODE = true; 
     const URLS = {
@@ -275,12 +283,10 @@
         const config = await callBackend('getSettings');
         appSettings.registrationOpen = config.registrationOpen;
         
-        // Update Home View
         const regBox = document.getElementById('landingRegBox');
         if(appSettings.registrationOpen) regBox.classList.remove('hidden-force');
         else regBox.classList.add('hidden-force');
         
-        // Update Admin Button
         applyRegVisual();
       } catch (e) {
         showToast("Error syncing settings.", true);
@@ -456,6 +462,21 @@
           <button onclick="removeCommittee('${nric}')" class="text-red-500 text-sm font-bold px-2 py-1 hover:bg-red-50 dark:hover:bg-gray-700 rounded">Remove</button>
         </li>`;
       });
+    }
+
+    async function archiveSystem() {
+      if(!confirm("⚠️ ARE YOU SURE?\n\nThis will archive the current trip data to Google Drive, close registration, and wipe the active system for a completely fresh start. All users must re-register.\n\nProceed?")) return;
+
+      showToast("Archiving system... please wait.", false);
+      try {
+        await callBackend('archiveAndReset');
+        showToast("System reset successfully! Logging out.");
+        setTimeout(() => {
+          updateApp(); // Force refresh to clear state completely
+        }, 2000);
+      } catch (e) {
+        showToast(e.message, true);
+      }
     }
 
     function updateApp() {
