@@ -15,14 +15,11 @@
     .hidden-force { display: none !important; }
     .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
     .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
     .picker-col::-webkit-scrollbar { display: none; }
     .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
-    /* Bolder highlight for the rolodex selection */
     .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 2px solid rgba(37, 99, 235, 0.6); border-bottom: 2px solid rgba(37, 99, 235, 0.6); pointer-events: none; z-index: 10; }
   </style>
 </head>
@@ -30,7 +27,7 @@
 
   <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE</div>
 
-  <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-3 flex justify-between items-center z-10">
+  <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-3 flex justify-between items-center z-10 sticky top-0">
     <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">TripApp</div>
     <div class="flex items-center space-x-3">
       <button onclick="updateApp()" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition font-bold">Update App</button>
@@ -45,6 +42,7 @@
       <div class="loader w-10 h-10"></div>
     </div>
 
+    <!-- VIEW 1: LANDING -->
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
       <div class="text-center">
         <h1 class="text-3xl font-extrabold mb-2">Overseas Trip Planner</h1>
@@ -64,53 +62,27 @@
       </div>
     </div>
 
-    <!-- VIEW 2: PUBLIC REGISTRATION -->
+    <!-- VIEW 2: DYNAMIC REGISTRATION FORM -->
     <div id="viewRegister" class="hidden-force max-w-3xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600 space-y-4 pb-20">
       <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
         <h3 class="text-2xl font-bold">New Registration</h3>
         <button onclick="goHome()" class="text-sm font-bold text-gray-500 hover:text-primary">Cancel</button>
       </div>
-      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-5">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div><label class="block text-sm font-bold mb-1">Full Name (As in Passport)</label><input id="regName" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
-          <div><label class="block text-sm font-bold mb-1">Email Address</label><input id="regEmail" required type="email" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
-          <div>
-            <label class="block text-sm font-bold mb-1">Role</label>
-            <select id="regRole" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-medium" onchange="toggleTraineeFields()">
-              <option value="TRAINEE">Trainee</option>
-              <option value="CAREGIVER">Caregiver</option>
-              <option value="VOLUNTEER">Volunteer</option>
-            </select>
-          </div>
-          <div><label class="block text-sm font-bold mb-1">Gender</label><select id="regGender" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-medium"><option>Male</option><option>Female</option></select></div>
-          <div><label class="block text-sm font-bold mb-1">Contact Number (8-digit)</label><input id="regContact" required type="tel" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
-          <div>
-            <label class="block text-sm font-bold mb-1">Date of Birth</label>
-            <input id="regDob" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regDob', 'dob')" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-4 focus:ring-primary focus:outline-none font-bold text-center">
-          </div>
+      
+      <p class="text-sm text-gray-500 mb-4 font-bold">You can register yourself and your family/group in a single submission. Person 1 will be considered the Main Point of Contact.</p>
+
+      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-6">
+        <div id="membersContainer" class="space-y-6">
+          <!-- Dynamic Members will be injected here -->
         </div>
 
-        <div id="traineeRelationDiv" class="hidden-force bg-blue-50 dark:bg-gray-700 p-5 rounded-lg mt-4 border-2 border-blue-200 dark:border-blue-900">
-           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-             <div><label class="block text-sm font-bold mb-1">Related Trainee's Name</label><input id="regRelatedTrainee" type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
-             <div><label class="block text-sm font-bold mb-1">Relationship to Trainee</label><input id="regRelationship" type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
-           </div>
-        </div>
+        <button type="button" onclick="addRegMember()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-extrabold py-3 rounded-lg border-2 border-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 border-dashed">
+          + Add Another Family / Group Member
+        </button>
 
-        <h4 class="font-extrabold text-lg mt-8 mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Identification & Passport</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div><label class="block text-sm font-bold mb-1">Full NRIC / FIN</label><input id="regNric" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase"></div>
-          <div><label class="block text-sm font-bold mb-1">Passport No.</label><input id="regPassport" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase"></div>
-          <div>
-            <label class="block text-sm font-bold mb-1">Passport Expiry (>6mths valid)</label>
-            <input id="regExpiry" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regExpiry', 'exp')" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-4 focus:ring-primary focus:outline-none font-bold text-center">
-          </div>
-          <div><label class="block text-sm font-bold mb-1">Nationality</label><input id="regNat" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
-        </div>
-
-        <div class="pt-6 flex items-center space-x-2">
-          <button type="submit" class="flex-grow bg-green-600 text-white font-extrabold text-lg py-4 rounded-lg hover:bg-green-700 flex justify-center items-center shadow-lg border-2 border-green-700">
-            <span id="regSubmitText">Submit Registration</span>
+        <div class="pt-6 border-t-2 border-gray-300 dark:border-gray-600">
+          <button type="submit" class="w-full bg-green-600 text-white font-extrabold text-lg py-4 rounded-lg hover:bg-green-700 flex justify-center items-center shadow-lg border-2 border-green-700">
+            <span id="regSubmitText">Submit Complete Registration</span>
             <div id="regLoader" class="loader hidden-force ml-2 border-white"></div>
           </button>
         </div>
@@ -124,18 +96,15 @@
         <button onclick="goHome()" class="text-sm font-bold text-gray-500 hover:text-primary">Cancel</button>
       </div>
       <div id="loginError" class="text-red-500 text-sm mb-3 font-bold hidden-force"></div>
-      
       <div class="mb-5">
         <label class="block text-sm font-bold mb-1">Full NRIC / FIN</label>
         <input type="text" id="loginNric" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-medium" placeholder="S1234567A" onkeypress="handleEnter(event, attemptLogin)">
       </div>
-
       <div class="mb-8 relative">
         <label class="block text-sm font-bold mb-1">Password</label>
         <input type="password" id="loginPass" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg pr-12 font-medium" placeholder="••••••••" onkeypress="handleEnter(event, attemptLogin)">
         <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-9 text-gray-500 text-xl font-bold">👁️</button>
       </div>
-
       <button onclick="attemptLogin()" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
         <span id="loginText">Login</span>
         <div id="loginLoader" class="loader hidden-force ml-2 border-white"></div>
@@ -154,16 +123,27 @@
       </div>
 
       <div class="flex space-x-2 overflow-x-auto pb-0 border-b-4 border-gray-300 dark:border-gray-600 scrollbar-hide mt-4" id="navTabs">
-        <!-- Changed tabs to have a bolder bottom border for selection -->
         <button onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-primary text-primary whitespace-nowrap mb-[-4px]">My Profile</button>
         <button onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-4px] hidden-force admin-only">Attendance</button>
         <button onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-4px] hidden-force admin-only">Finance</button>
         <button onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-4px] hidden-force admin-only">Settings</button>
       </div>
 
+      <!-- PROFILE TAB -->
       <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
-        <h3 class="text-2xl font-bold mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Registration Confirmed</h3>
-        <p class="font-medium">You have successfully registered for the trip. Once the committee finalises the finances, your payment details will appear here.</p>
+        <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
+          <h3 class="text-2xl font-bold">Family / Group Details</h3>
+        </div>
+
+        <div id="lockedProfileBanner" class="hidden-force bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-6 shadow-sm">
+          <p class="font-extrabold mb-2 text-lg">🔒 Editing is currently Locked.</p>
+          <p class="font-medium text-sm mb-3">To request changes to your details, please contact a Committee Member directly:</p>
+          <div id="commContactList" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <div id="profileCardsContainer" class="space-y-6">
+          <div class="loader w-8 h-8 border-primary mx-auto my-10"></div>
+        </div>
       </div>
 
       <div id="tab-attendance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4"><p class="font-bold">Offline Attendance Module coming soon...</p></div>
@@ -171,35 +151,38 @@
 
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Global Registration Status</h3>
-          <div class="flex items-center justify-between mt-4">
-            <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Allow new users to sign up using the public form.</p>
-            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md transition border-2 border-green-800">Loading...</button>
+        
+        <!-- App Settings -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Allow users to sign up.</p>
+            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800">Loading...</button>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Profile Editing</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Allow users to edit their details.</p>
+            <button id="toggleEditBtn" onclick="toggleEditState()" class="w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800">Loading...</button>
           </div>
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Committee Members</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Grants members Admin access immediately, even if they are not going for the trip.</p>
-          <div class="flex flex-col space-y-3 mb-5">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
             <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-            <div class="flex space-x-3">
-              <input type="text" id="newCommNric" placeholder="Full NRIC / FIN" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-bold">
-              <button onclick="addCommittee()" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800">Add</button>
+            <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-bold">
+            <div class="flex space-x-2">
+              <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
+              <button onclick="addCommittee()" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold hover:bg-blue-700 border-2 border-blue-800">Add</button>
             </div>
           </div>
-          <ul id="commList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700">
-            <!-- Populated via JS -->
-          </ul>
+          <ul id="commList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-red-500">
           <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-3 text-red-600">Danger Zone</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive the current trip data into your Google Drive and wipe the active system to start fresh for a new trip.</p>
-          <button onclick="archiveSystem()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md transition border-2 border-red-800">
-            Archive & Reset System
-          </button>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start.</p>
+          <button onclick="archiveSystem()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md border-2 border-red-800">Archive & Reset</button>
         </div>
       </div>
     </div>
@@ -209,30 +192,23 @@
   <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
       <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Initialize Trip Setup</h3>
-      <p class="text-sm font-bold text-gray-500 mb-5">You are opening registration. Please define the context of this trip so it can be neatly archived when concluded.</p>
-      <div class="space-y-5 mb-6">
-        <div>
-          <label class="block text-sm font-extrabold mb-1">Trip Title</label>
-          <input type="text" id="tripTitleInput" placeholder="e.g. Sinar Eco Resort" value="Overseas Trip" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700 font-bold">
-        </div>
-        <div>
-          <label class="block text-sm font-extrabold mb-1">Trip Year</label>
-          <input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700 font-bold">
-        </div>
+      <div class="space-y-5 mb-6 mt-4">
+        <div><label class="block text-sm font-extrabold mb-1">Trip Title</label><input type="text" id="tripTitleInput" value="Overseas Trip" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
+        <div><label class="block text-sm font-extrabold mb-1">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
       </div>
       <div class="flex space-x-3">
-        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold hover:bg-gray-300 dark:hover:bg-gray-600 transition border-2 border-gray-400 dark:border-gray-500">Cancel</button>
-        <button onclick="confirmTripSetup()" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold hover:bg-blue-700 shadow border-2 border-blue-800 transition">Open Reg</button>
+        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500">Cancel</button>
+        <button onclick="confirmTripSetup()" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800">Open Reg</button>
       </div>
     </div>
   </div>
 
-  <!-- CUSTOM BOTTOM SHEET ROLODEX -->
+  <!-- ROLODEX DATE PICKER -->
   <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600">
       <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700">
         <span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span>
-        <button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 text-3xl font-extrabold px-3">&times;</button>
+        <button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
       </div>
       <div class="relative flex h-[200px] text-xl font-bold">
         <div class="picker-highlight"></div>
@@ -241,17 +217,13 @@
         <div class="flex-1 picker-col" id="colYear"></div>
       </div>
       <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700">
-        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl hover:bg-blue-700 shadow-md transition border-2 border-blue-800">Done</button>
+        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800">Done</button>
       </div>
     </div>
   </div>
 
-  <style>
-    @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
-    .animate-slide-up { animation: slide-up 0.25s ease-out forwards; }
-  </style>
+  <style> @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } } .animate-slide-up { animation: slide-up 0.25s ease-out forwards; } </style>
 
-  <!-- JAVASCRIPT LOGIC -->
   <script>
     const DEV_MODE = true; 
     const URLS = {
@@ -260,55 +232,22 @@
     };
     const API_URL = DEV_MODE ? URLS.DEV : URLS.PROD;
 
-    let currentUser = null;
-    let appSettings = { registrationOpen: false };
+    let currentUser = null; let appSettings = { registrationOpen: false, allowEdits: false, committee:[] };
+    let regMemberCount = 0; let loadedFamily =[];
 
-    let currentPickerTarget = null;
-    const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
+    // --- ROLODEX LOGIC ---
+    let currentPickerTarget = null; const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     function openDatePicker(targetId, type) {
-      currentPickerTarget = targetId;
-      document.getElementById('datePickerSheet').classList.remove('hidden-force');
-      
-      const colD = document.getElementById('colDay');
-      const colM = document.getElementById('colMonth');
-      const colY = document.getElementById('colYear');
-
+      currentPickerTarget = targetId; document.getElementById('datePickerSheet').classList.remove('hidden-force');
+      const colD = document.getElementById('colDay'); const colM = document.getElementById('colMonth'); const colY = document.getElementById('colYear');
       const spacer = '<div style="height: 80px;"></div>';
-      
-      let dHtml = spacer;
-      for(let i=1; i<=31; i++) {
-        let val = String(i).padStart(2,'0');
-        dHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${val}" onclick="scrollToIndex('colDay', ${i-1})">${val}</div>`;
-      }
-      dHtml += spacer;
-
-      let mHtml = spacer;
-      monthsArr.forEach((m, i) => {
-        mHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${m}" onclick="scrollToIndex('colMonth', ${i})">${m}</div>`;
-      });
-      mHtml += spacer;
-
-      let yHtml = spacer;
-      const curYear = new Date().getFullYear();
-      let startYear, endYear, step;
-      
-      if(type === 'dob') { startYear = curYear; endYear = 1920; step = -1; } 
-      else { startYear = curYear; endYear = curYear + 20; step = 1; }
-
-      let idx = 0;
-      for(let i = startYear; type === 'dob' ? i >= endYear : i <= endYear; i += step) {
-        yHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${i}" onclick="scrollToIndex('colYear', ${idx})">${i}</div>`;
-        idx++;
-      }
-      yHtml += spacer;
-
+      let dHtml = spacer; for(let i=1; i<=31; i++) { let val = String(i).padStart(2,'0'); dHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${val}" onclick="scrollToIndex('colDay', ${i-1})">${val}</div>`; } dHtml += spacer;
+      let mHtml = spacer; monthsArr.forEach((m, i) => { mHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${m}" onclick="scrollToIndex('colMonth', ${i})">${m}</div>`; }); mHtml += spacer;
+      let yHtml = spacer; const curYear = new Date().getFullYear(); let startYear, endYear, step;
+      if(type === 'dob') { startYear = curYear; endYear = 1920; step = -1; } else { startYear = curYear; endYear = curYear + 20; step = 1; }
+      let idx = 0; for(let i = startYear; type === 'dob' ? i >= endYear : i <= endYear; i += step) { yHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${i}" onclick="scrollToIndex('colYear', ${idx})">${i}</div>`; idx++; } yHtml += spacer;
       colD.innerHTML = dHtml; colM.innerHTML = mHtml; colY.innerHTML = yHtml;
-
-      colD.onscroll = () => highlightCenterItem('colDay');
-      colM.onscroll = () => highlightCenterItem('colMonth');
-      colY.onscroll = () => highlightCenterItem('colYear');
-
+      colD.onscroll = () => highlightCenterItem('colDay'); colM.onscroll = () => highlightCenterItem('colMonth'); colY.onscroll = () => highlightCenterItem('colYear');
       const curVal = document.getElementById(targetId).value;
       setTimeout(() => {
         if(curVal) {
@@ -317,192 +256,166 @@
             const dIdx = Array.from(colD.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[0]);
             const mIdx = Array.from(colM.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[1]);
             const yIdx = Array.from(colY.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[2]);
-            if(dIdx > -1) colD.scrollTop = dIdx * 40;
-            if(mIdx > -1) colM.scrollTop = mIdx * 40;
-            if(yIdx > -1) colY.scrollTop = yIdx * 40;
+            if(dIdx > -1) colD.scrollTop = dIdx * 40; if(mIdx > -1) colM.scrollTop = mIdx * 40; if(yIdx > -1) colY.scrollTop = yIdx * 40;
           }
-        } else {
-          colD.scrollTop = 0; colM.scrollTop = 0; colY.scrollTop = 0;
-        }
+        } else { colD.scrollTop = 0; colM.scrollTop = 0; colY.scrollTop = 0; }
         highlightCenterItem('colMonth'); highlightCenterItem('colYear'); highlightCenterItem('colDay');
       }, 10);
     }
-
     function scrollToIndex(colId, index) { document.getElementById(colId).scrollTo({ top: index * 40, behavior: 'smooth' }); }
-
     function highlightCenterItem(colId) {
-      const col = document.getElementById(colId);
-      const visibleItems = Array.from(col.querySelectorAll('.picker-item')).filter(i => !i.classList.contains('hidden-force'));
+      const col = document.getElementById(colId); const visibleItems = Array.from(col.querySelectorAll('.picker-item')).filter(i => !i.classList.contains('hidden-force'));
       if(!visibleItems.length) return;
-
-      let index = Math.round(col.scrollTop / 40);
-      if (index >= visibleItems.length) index = visibleItems.length - 1; 
-
+      let index = Math.round(col.scrollTop / 40); if (index >= visibleItems.length) index = visibleItems.length - 1; 
       visibleItems.forEach((item, i) => {
-        if(i === index) {
-          item.classList.remove('text-gray-400', 'dark:text-gray-500'); item.classList.add('text-primary', 'font-extrabold', 'text-3xl');
-          item.dataset.selected = "true";
-        } else {
-          item.classList.add('text-gray-400', 'dark:text-gray-500'); item.classList.remove('text-primary', 'font-extrabold', 'text-3xl');
-          item.dataset.selected = "false";
-        }
+        if(i === index) { item.classList.remove('text-gray-400', 'dark:text-gray-500'); item.classList.add('text-primary', 'font-extrabold', 'text-3xl'); item.dataset.selected = "true"; } 
+        else { item.classList.add('text-gray-400', 'dark:text-gray-500'); item.classList.remove('text-primary', 'font-extrabold', 'text-3xl'); item.dataset.selected = "false"; }
       });
       if(colId === 'colMonth' || colId === 'colYear') updateValidDays();
     }
-
     function updateValidDays() {
-      const mItem = document.querySelector('#colMonth .picker-item[data-selected="true"]');
-      const yItem = document.querySelector('#colYear .picker-item[data-selected="true"]');
+      const mItem = document.querySelector('#colMonth .picker-item[data-selected="true"]'); const yItem = document.querySelector('#colYear .picker-item[data-selected="true"]');
       if(!mItem || !yItem) return;
-
-      const mIndex = monthsArr.indexOf(mItem.dataset.val);
-      const yVal = parseInt(yItem.dataset.val);
-      const maxDays = new Date(yVal, mIndex + 1, 0).getDate(); 
-
+      const maxDays = new Date(parseInt(yItem.dataset.val), monthsArr.indexOf(mItem.dataset.val) + 1, 0).getDate(); 
       const colD = document.getElementById('colDay');
-      const dayItems = colD.querySelectorAll('.picker-item');
-
-      dayItems.forEach((item) => {
-        const dayVal = parseInt(item.dataset.val);
-        const isHidden = item.classList.contains('hidden-force');
-        const shouldHide = dayVal > maxDays;
-        if(shouldHide && !isHidden) item.classList.add('hidden-force');
-        if(!shouldHide && isHidden) item.classList.remove('hidden-force');
+      colD.querySelectorAll('.picker-item').forEach((item) => {
+        const shouldHide = parseInt(item.dataset.val) > maxDays;
+        if(shouldHide && !item.classList.contains('hidden-force')) item.classList.add('hidden-force');
+        if(!shouldHide && item.classList.contains('hidden-force')) item.classList.remove('hidden-force');
       });
-
-      const maxScrollTop = (maxDays - 1) * 40;
-      if (colD.scrollTop > maxScrollTop) scrollToIndex('colDay', maxDays - 1);
+      if (colD.scrollTop > (maxDays - 1) * 40) scrollToIndex('colDay', maxDays - 1);
     }
-
     function confirmPicker() {
-      const d = document.querySelector('#colDay .picker-item[data-selected="true"]');
-      const m = document.querySelector('#colMonth .picker-item[data-selected="true"]');
-      const y = document.querySelector('#colYear .picker-item[data-selected="true"]');
-
+      const d = document.querySelector('#colDay .picker-item[data-selected="true"]'); const m = document.querySelector('#colMonth .picker-item[data-selected="true"]'); const y = document.querySelector('#colYear .picker-item[data-selected="true"]');
       if(d && m && y && currentPickerTarget) document.getElementById(currentPickerTarget).value = `${d.dataset.val} ${m.dataset.val} ${y.dataset.val}`;
       closePicker();
     }
-
     function closePicker() { document.getElementById('datePickerSheet').classList.add('hidden-force'); }
 
+    // --- MAIN APP ---
     window.onload = async () => {
       if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
       if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-      
       const savedSession = localStorage.getItem('userSession');
       if(savedSession) currentUser = JSON.parse(savedSession);
-      
+      addRegMember(); // Initialize 1st Member
       await fetchConfig();
-
-      if(currentUser) renderDashboard();
-      else goHome();
+      if(currentUser) renderDashboard(); else goHome();
     };
 
     function goHome() {
       if(currentUser) return renderDashboard();
       document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
       document.getElementById('viewLanding').classList.remove('hidden-force');
-      document.getElementById('toast').classList.add('opacity-0');
     }
 
     function navTo(view) {
       document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
-      if (view === 'register') { document.getElementById('viewRegister').classList.remove('hidden-force'); document.getElementById('regForm').reset(); }
-      if (view === 'login') { document.getElementById('viewLogin').classList.remove('hidden-force'); document.getElementById('loginError').classList.add('hidden-force'); document.getElementById('loginPass').value = ''; }
+      if (view === 'register') { document.getElementById('viewRegister').classList.remove('hidden-force'); document.getElementById('membersContainer').innerHTML = ''; regMemberCount = 0; addRegMember(); }
+      if (view === 'login') { document.getElementById('viewLogin').classList.remove('hidden-force'); document.getElementById('loginPass').value = ''; }
     }
 
-    function toggleTheme() {
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    }
-
-    function showToast(msg, isError = false) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 text-sm font-bold text-white ${isError ? 'bg-red-600 border-2 border-red-800' : 'bg-green-600 border-2 border-green-800'}`;
-      t.classList.remove('opacity-0');
-      setTimeout(() => t.classList.add('opacity-0'), 4000);
-    }
-
+    function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
     function togglePassword(id) { const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; }
     function handleEnter(e, func) { if(e.key === 'Enter') func(); }
 
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast'); t.textContent = msg;
+      t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 text-sm font-bold text-white border-2 ${isError ? 'bg-red-600 border-red-800' : 'bg-green-600 border-green-800'}`;
+      t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 4000);
+    }
+
     async function callBackend(action, payload = {}) {
       try {
-        const res = await fetch(API_URL, { 
-          method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-        if(!res.ok) throw new Error("Network response was not OK");
-        const data = await res.json();
-        if(data.status === 'error') throw new Error(data.message);
-        return data;
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+        if(!res.ok) throw new Error("Network error."); const data = await res.json();
+        if(data.status === 'error') throw new Error(data.message); return data;
       } catch (err) {
-        if(err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-           showToast("Network Error or Google Permissions needed.", true);
-           setTimeout(() => window.open(API_URL, '_blank'), 2000); 
-        } else { throw err; }
+        if(err.message.includes('Failed to fetch')) { showToast("Auth required.", true); setTimeout(() => window.open(API_URL, '_blank'), 2000); }
+        else { throw err; }
       }
     }
 
     async function fetchConfig() {
       try {
-        const config = await callBackend('getSettings');
-        appSettings.registrationOpen = config.registrationOpen;
+        const config = await callBackend('getSettings'); appSettings = config;
         const regBox = document.getElementById('landingRegBox');
-        if(appSettings.registrationOpen) regBox.classList.remove('hidden-force');
-        else regBox.classList.add('hidden-force');
-        applyRegVisual();
-      } catch (e) {
-        showToast("Error syncing settings.", true);
-      } finally {
-        document.getElementById('viewLoading').classList.add('hidden-force');
-      }
+        if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
+        applyAdminVisuals();
+      } catch (e) { showToast("Error syncing settings.", true); } 
+      finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
     }
 
-    function toggleTraineeFields() {
-      const role = document.getElementById('regRole').value;
-      const el = document.getElementById('traineeRelationDiv');
-      if(role === 'CAREGIVER' || role === 'VOLUNTEER') el.classList.remove('hidden-force');
-      else el.classList.add('hidden-force');
+    // --- DYNAMIC REGISTRATION ---
+    function addRegMember() {
+      const idx = regMemberCount++;
+      const html = `
+        <div class="member-block bg-white dark:bg-gray-700 p-5 rounded-lg border-2 border-gray-400 dark:border-gray-500 relative" data-idx="${idx}">
+          ${idx > 0 ? `<button type="button" onclick="this.closest('.member-block').remove()" class="absolute top-4 right-4 text-red-600 font-extrabold border-2 border-red-600 px-2 rounded hover:bg-red-50">X</button>` : `<div class="absolute top-4 right-4 bg-primary text-white font-bold px-2 py-1 text-xs rounded border-2 border-blue-800">MAIN POC</div>`}
+          <h4 class="font-extrabold text-lg mb-4">Person ${idx + 1}</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-bold mb-1">Full Name</label><input required type="text" class="reg-f-name w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Email</label><input ${idx===0?'required':''} type="email" class="reg-f-email w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+            <div>
+              <label class="block text-sm font-bold mb-1">Role</label>
+              <select class="reg-f-role w-full p-2 border-2 border-gray-400 rounded-lg font-bold" onchange="toggleTraineeFields(this)">
+                <option value="TRAINEE">Trainee</option><option value="CAREGIVER">Caregiver</option><option value="VOLUNTEER">Volunteer</option>
+              </select>
+            </div>
+            <div><label class="block text-sm font-bold mb-1">Gender</label><select class="reg-f-gender w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option>Male</option><option>Female</option></select></div>
+            <div><label class="block text-sm font-bold mb-1">Contact (8-digit)</label><input ${idx===0?'required':''} type="tel" pattern="[0-9]{8}" class="reg-f-contact w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Date of Birth</label><input required type="text" id="dob_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('dob_${idx}', 'dob')" class="reg-f-dob w-full p-2 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer"></div>
+          </div>
+          <div class="trainee-div hidden-force bg-blue-50 dark:bg-gray-600 p-4 rounded-lg mt-4 border-2 border-blue-300 dark:border-blue-800">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label class="block text-sm font-bold mb-1">Related Trainee</label><input type="text" class="reg-f-related w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+              <div><label class="block text-sm font-bold mb-1">Relationship</label><input type="text" class="reg-f-relation w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div><label class="block text-sm font-bold mb-1">NRIC / FIN</label><input required type="text" class="reg-f-nric w-full p-2 border-2 border-gray-400 rounded-lg uppercase"></div>
+            <div><label class="block text-sm font-bold mb-1">Nationality</label><input required type="text" class="reg-f-nat w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Passport No.</label><input required type="text" class="reg-f-pass w-full p-2 border-2 border-gray-400 rounded-lg uppercase"></div>
+            <div><label class="block text-sm font-bold mb-1">Passport Expiry</label><input required type="text" id="exp_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('exp_${idx}', 'exp')" class="reg-f-exp w-full p-2 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer"></div>
+          </div>
+        </div>`;
+      document.getElementById('membersContainer').insertAdjacentHTML('beforeend', html);
+    }
+
+    function toggleTraineeFields(selectEl) {
+      const div = selectEl.closest('.member-block').querySelector('.trainee-div');
+      if(selectEl.value === 'CAREGIVER') div.classList.remove('hidden-force'); else div.classList.add('hidden-force');
     }
 
     async function submitRegistration() {
-      const btn = document.getElementById('regSubmitText');
-      const loader = document.getElementById('regLoader');
-      
-      const payload = {
-        fullName: document.getElementById('regName').value,
-        email: document.getElementById('regEmail').value,
-        role: document.getElementById('regRole').value,
-        gender: document.getElementById('regGender').value,
-        contact: document.getElementById('regContact').value,
-        dob: document.getElementById('regDob').value,
-        relatedTrainee: document.getElementById('regRelatedTrainee').value,
-        relationship: document.getElementById('regRelationship').value,
-        nric: document.getElementById('regNric').value.toUpperCase(),
-        passportNo: document.getElementById('regPassport').value.toUpperCase(),
-        passportExpiry: document.getElementById('regExpiry').value,
-        nationality: document.getElementById('regNat').value
-      };
+      const blocks = document.querySelectorAll('.member-block');
+      const payloadArray =[];
+      blocks.forEach(b => {
+        payloadArray.push({
+          fullName: b.querySelector('.reg-f-name').value, email: b.querySelector('.reg-f-email').value,
+          role: b.querySelector('.reg-f-role').value, gender: b.querySelector('.reg-f-gender').value,
+          contact: b.querySelector('.reg-f-contact').value, dob: b.querySelector('.reg-f-dob').value,
+          relatedTrainee: b.querySelector('.reg-f-related').value, relationship: b.querySelector('.reg-f-relation').value,
+          nric: b.querySelector('.reg-f-nric').value.toUpperCase(), nationality: b.querySelector('.reg-f-nat').value,
+          passportNo: b.querySelector('.reg-f-pass').value.toUpperCase(), passportExpiry: b.querySelector('.reg-f-exp').value
+        });
+      });
 
+      const btn = document.getElementById('regSubmitText'); const loader = document.getElementById('regLoader');
       btn.classList.add('hidden-force'); loader.classList.remove('hidden-force');
+
       try {
-        await callBackend('submitRegistration', { payload });
-        showToast("Registration Successful! Please login.");
-        setTimeout(() => navTo('login'), 1500);
+        await callBackend('submitRegistration', { payload: payloadArray });
+        showToast("Registration Successful! Please login."); setTimeout(() => navTo('login'), 1500);
       } catch (e) { showToast(e.message, true); } 
       finally { btn.classList.remove('hidden-force'); loader.classList.add('hidden-force'); }
     }
 
     async function attemptLogin() {
-      const nric = document.getElementById('loginNric').value.trim().toUpperCase();
-      const pass = document.getElementById('loginPass').value;
+      const nric = document.getElementById('loginNric').value.trim().toUpperCase(); const pass = document.getElementById('loginPass').value;
       const err = document.getElementById('loginError');
-
       if(!nric || !pass) { err.textContent = "Please enter NRIC and Password"; return err.classList.remove('hidden-force'); }
-      err.classList.add('hidden-force');
-      document.getElementById('loginText').classList.add('hidden-force');
-      document.getElementById('loginLoader').classList.remove('hidden-force');
+      err.classList.add('hidden-force'); document.getElementById('loginText').classList.add('hidden-force'); document.getElementById('loginLoader').classList.remove('hidden-force');
 
       try {
         const res = await callBackend('login', { nric, password: pass });
@@ -513,16 +426,11 @@
       finally { document.getElementById('loginText').classList.remove('hidden-force'); document.getElementById('loginLoader').classList.add('hidden-force'); }
     }
 
-    function logout() { 
-      localStorage.removeItem('userSession'); 
-      currentUser = null; 
-      window.location.reload(); 
-    }
+    function logout() { localStorage.removeItem('userSession'); currentUser = null; window.location.reload(); }
 
-    function renderDashboard() {
+    async function renderDashboard() {
       document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
       document.getElementById('viewDashboard').classList.remove('hidden-force');
-      
       document.getElementById('welcomeUserText').textContent = `Welcome, ${currentUser.name || 'User'}!`;
       document.getElementById('userRoleBadge').textContent = `Role: ${currentUser.role === 'admin' ? 'Committee (Admin)' : 'Participant'}`;
 
@@ -536,97 +444,149 @@
       document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary', 'mb-[-4px]'); el.classList.add('border-transparent', 'text-gray-500'); });
       document.getElementById(`tab-${tabId}`).classList.remove('hidden-force');
       event.target.classList.remove('border-transparent', 'text-gray-500'); event.target.classList.add('border-primary', 'text-primary', 'mb-[-4px]');
+      
+      if(tabId === 'profile') loadProfileData();
     }
 
-    function applyRegVisual() {
-      const btn = document.getElementById('toggleRegBtn');
-      if(appSettings.registrationOpen) {
-        btn.textContent = "Currently OPEN (Click to Close)";
-        btn.className = "px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-lg shadow-md transition border-2 border-green-800";
-      } else {
-        btn.textContent = "Currently CLOSED (Click to Open)";
-        btn.className = "px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-lg shadow-md transition border-2 border-red-800";
-      }
+    // --- PROFILE FETCH & EDIT LOGIC ---
+    async function loadProfileData() {
+      const container = document.getElementById('profileCardsContainer');
+      const banner = document.getElementById('lockedProfileBanner');
+      container.innerHTML = '<div class="loader w-8 h-8 border-primary mx-auto my-10"></div>';
+      
+      if(!appSettings.allowEdits) {
+        banner.classList.remove('hidden-force');
+        const cList = document.getElementById('commContactList'); cList.innerHTML = '';
+        appSettings.committee.forEach(c => {
+          if(c.phone) cList.innerHTML += `<a href="https://wa.me/65${c.phone}" target="_blank" class="bg-green-500 text-white font-bold px-3 py-1 rounded shadow text-sm hover:bg-green-600 border border-green-700">Chat with ${c.name}</a>`;
+        });
+      } else { banner.classList.add('hidden-force'); }
+
+      try {
+        const res = await callBackend('getProfile', {nric: currentUser.nric});
+        loadedFamily = res.family; container.innerHTML = '';
+        loadedFamily.forEach((m, i) => {
+          container.innerHTML += `
+            <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg border-2 border-gray-300 dark:border-gray-500 relative" id="profCard_${i}">
+              <div class="flex justify-between items-start mb-4">
+                <h4 class="font-extrabold text-xl">${m.fullName} <span class="text-sm font-medium text-gray-500">(${m.role})</span></h4>
+                ${appSettings.allowEdits ? `<button onclick="enableEditMode(${i})" class="bg-primary text-white px-4 py-1 rounded font-bold border-2 border-blue-800 hover:bg-blue-700">Edit</button>` : ''}
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-sm font-medium">
+                <p><b>NRIC:</b> ${m.nric}</p><p><b>DOB:</b> ${m.dob}</p>
+                <p><b>Passport:</b> ${m.passportNo}</p><p><b>Expiry:</b> ${m.passportExpiry}</p>
+                <p><b>Gender:</b> ${m.gender}</p><p><b>Contact:</b> ${m.contact}</p>
+              </div>
+            </div>
+            
+            <form id="profEdit_${i}" onsubmit="event.preventDefault(); saveProfileEdit(${i});" class="hidden-force bg-blue-50 dark:bg-gray-700 p-5 rounded-lg border-2 border-primary space-y-4">
+              <h4 class="font-extrabold text-lg mb-2">Edit Details</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div><label class="text-xs font-bold">Name</label><input type="text" id="edName_${i}" value="${m.fullName}" class="w-full p-2 border-2 border-gray-400 rounded"></div>
+                <div><label class="text-xs font-bold">Email</label><input type="text" id="edEmail_${i}" value="${m.email}" class="w-full p-2 border-2 border-gray-400 rounded"></div>
+                <div><label class="text-xs font-bold">Contact</label><input type="tel" pattern="[0-9]{8}" id="edContact_${i}" value="${m.contact}" class="w-full p-2 border-2 border-gray-400 rounded"></div>
+                <div><label class="text-xs font-bold">Gender</label><select id="edGender_${i}" class="w-full p-2 border-2 border-gray-400 rounded font-bold"><option ${m.gender==='Male'?'selected':''}>Male</option><option ${m.gender==='Female'?'selected':''}>Female</option></select></div>
+                <div><label class="text-xs font-bold">Role</label><select id="edRole_${i}" class="w-full p-2 border-2 border-gray-400 rounded font-bold"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div>
+                <div><label class="text-xs font-bold">Nationality</label><input type="text" id="edNat_${i}" value="${m.nationality}" class="w-full p-2 border-2 border-gray-400 rounded"></div>
+                <div><label class="text-xs font-bold">Passport No.</label><input type="text" id="edPass_${i}" value="${m.passportNo}" class="w-full p-2 border-2 border-gray-400 rounded uppercase"></div>
+                <div><label class="text-xs font-bold">DOB</label><input type="text" id="edDob_${i}" value="${m.dob}" readonly onclick="openDatePicker('edDob_${i}', 'dob')" class="w-full p-2 border-2 border-gray-400 rounded text-center font-bold cursor-pointer bg-white"></div>
+                <div><label class="text-xs font-bold">Expiry</label><input type="text" id="edExp_${i}" value="${m.passportExpiry}" readonly onclick="openDatePicker('edExp_${i}', 'exp')" class="w-full p-2 border-2 border-gray-400 rounded text-center font-bold cursor-pointer bg-white"></div>
+              </div>
+              <div class="flex space-x-2 pt-2">
+                <button type="button" onclick="cancelEditMode(${i})" class="flex-1 bg-gray-200 text-gray-800 font-bold py-2 rounded border-2 border-gray-400 hover:bg-gray-300">Cancel</button>
+                <button type="submit" class="flex-1 bg-primary text-white font-bold py-2 rounded border-2 border-blue-800 hover:bg-blue-700">Save Changes</button>
+              </div>
+            </form>
+          `;
+        });
+      } catch (e) { container.innerHTML = '<p class="text-red-500 font-bold">Error loading profiles.</p>'; }
+    }
+
+    function enableEditMode(i) { document.getElementById(`profCard_${i}`).classList.add('hidden-force'); document.getElementById(`profEdit_${i}`).classList.remove('hidden-force'); }
+    function cancelEditMode(i) { document.getElementById(`profEdit_${i}`).classList.add('hidden-force'); document.getElementById(`profCard_${i}`).classList.remove('hidden-force'); }
+
+    async function saveProfileEdit(i) {
+      const updated = {
+        nric: loadedFamily[i].nric, // Cannot edit NRIC
+        fullName: document.getElementById(`edName_${i}`).value, email: document.getElementById(`edEmail_${i}`).value,
+        role: document.getElementById(`edRole_${i}`).value, gender: document.getElementById(`edGender_${i}`).value,
+        contact: document.getElementById(`edContact_${i}`).value, dob: document.getElementById(`edDob_${i}`).value,
+        nationality: document.getElementById(`edNat_${i}`).value, passportNo: document.getElementById(`edPass_${i}`).value.toUpperCase(),
+        passportExpiry: document.getElementById(`edExp_${i}`).value, relatedTrainee: loadedFamily[i].relatedTrainee, relationship: loadedFamily[i].relationship
+      };
+      try {
+        await callBackend('updateProfile', {member: updated}); showToast("Profile Updated!"); loadProfileData();
+      } catch (e) { showToast(e.message, true); }
+    }
+
+    // --- ADMIN SETTINGS ---
+    function applyAdminVisuals() {
+      const rBtn = document.getElementById('toggleRegBtn'); const eBtn = document.getElementById('toggleEditBtn');
+      if(!rBtn || !eBtn) return;
+      if(appSettings.registrationOpen) { rBtn.textContent = "OPEN (Click to Close)"; rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800"; } 
+      else { rBtn.textContent = "CLOSED (Click to Open)"; rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800"; }
+      
+      if(appSettings.allowEdits) { eBtn.textContent = "ENABLED (Click to Lock)"; eBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800"; } 
+      else { eBtn.textContent = "LOCKED (Click to Enable)"; eBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800"; }
     }
 
     function initiateRegistrationToggle() {
-      if(!appSettings.registrationOpen) {
-        document.getElementById('tripYearInput').value = new Date().getFullYear();
-        document.getElementById('tripSetupModal').classList.remove('hidden-force');
-      } else {
-        executeToggleRegistration(false);
-      }
+      if(!appSettings.registrationOpen) { document.getElementById('tripYearInput').value = new Date().getFullYear(); document.getElementById('tripSetupModal').classList.remove('hidden-force'); } 
+      else { executeToggleRegistration(false); }
     }
-
     function cancelTripSetup() { document.getElementById('tripSetupModal').classList.add('hidden-force'); }
-
     function confirmTripSetup() {
       document.getElementById('tripSetupModal').classList.add('hidden-force');
-      const title = document.getElementById('tripTitleInput').value.trim() || 'Overseas Trip';
-      const year = document.getElementById('tripYearInput').value.trim() || new Date().getFullYear();
-      executeToggleRegistration(true, title, year);
+      executeToggleRegistration(true, document.getElementById('tripTitleInput').value.trim() || 'Overseas Trip', document.getElementById('tripYearInput').value.trim() || new Date().getFullYear());
     }
 
     async function executeToggleRegistration(newState, title = '', year = '') {
-      const btn = document.getElementById('toggleRegBtn');
-      btn.textContent = "Updating..."; btn.disabled = true;
-      try {
-        await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year });
-        appSettings.registrationOpen = newState;
-        applyRegVisual();
-        showToast(newState ? "Registration Opened" : "Registration Closed");
-      } catch(e) { showToast("Failed to update status.", true); applyRegVisual(); }
-      finally { btn.disabled = false; }
+      const btn = document.getElementById('toggleRegBtn'); btn.textContent = "Updating..."; btn.disabled = true;
+      try { await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); appSettings.registrationOpen = newState; applyAdminVisuals(); showToast(newState ? "Registration Opened" : "Registration Closed");
+      } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { btn.disabled = false; }
+    }
+
+    async function toggleEditState() {
+      const btn = document.getElementById('toggleEditBtn'); btn.textContent = "Updating..."; btn.disabled = true;
+      const newState = !appSettings.allowEdits;
+      try { await callBackend('toggleEdits', { status: newState }); appSettings.allowEdits = newState; applyAdminVisuals(); showToast(newState ? "Edits Enabled" : "Edits Locked");
+      } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { btn.disabled = false; }
     }
 
     async function loadCommitteeList() { try { const res = await callBackend('getCommittee'); renderCommList(res.list); } catch(e) {} }
 
     async function addCommittee() {
-      const name = document.getElementById('newCommName').value.trim();
-      const nric = document.getElementById('newCommNric').value.trim();
-      if(!nric || !name) return showToast("Please provide both Name and NRIC", true);
-      
+      const name = document.getElementById('newCommName').value.trim(); const nric = document.getElementById('newCommNric').value.trim(); const phone = document.getElementById('newCommPhone').value.trim();
+      if(!nric || !name || !phone) return showToast("Name, NRIC, and Phone required", true);
       try {
-        const res = await callBackend('addCommittee', { nric, name });
-        document.getElementById('newCommName').value = '';
-        document.getElementById('newCommNric').value = '';
+        const res = await callBackend('addCommittee', { nric, name, phone });
+        document.getElementById('newCommName').value = ''; document.getElementById('newCommNric').value = ''; document.getElementById('newCommPhone').value = '';
         renderCommList(res.list); showToast("Added to Committee");
       } catch(e) { showToast(e.message, true); }
     }
 
-    async function removeCommittee(nric) {
-      try { const res = await callBackend('removeCommittee', { nric }); renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); }
-    }
+    async function removeCommittee(nric) { try { const res = await callBackend('removeCommittee', { nric }); renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); } }
 
     function renderCommList(list) {
       const ul = document.getElementById('commList');
       ul.innerHTML = list.length === 0 ? '<li class="text-sm font-bold text-gray-500">No committee members assigned yet.</li>' : '';
-      list.forEach(member => { 
-        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm">
-          <div>
-            <p class="font-extrabold text-lg">${member.name}</p>
-            <p class="text-sm text-gray-500 font-mono font-bold">${member.nric}</p>
-          </div>
-          <button onclick="removeCommittee('${member.nric}')" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 dark:hover:bg-gray-700 rounded-lg transition">Remove</button>
+      list.forEach(m => { 
+        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
+          <div><p class="font-extrabold text-lg">${m.name}</p><p class="text-sm text-gray-500 font-mono font-bold">${m.nric} | ${m.phone}</p></div>
+          <button onclick="removeCommittee('${m.nric}')" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg">Remove</button>
         </li>`; 
       });
     }
 
     async function archiveSystem() {
-      if(!confirm("⚠️ ARE YOU SURE?\n\nThis will archive the current trip data to Google Drive, close registration, and wipe the active system for a completely fresh start. All users must re-register.\n\nProceed?")) return;
-      showToast("Archiving system... please wait.", false);
-      try {
-        await callBackend('archiveAndReset');
-        showToast("System reset successfully! Logging out.");
-        setTimeout(() => { window.location.reload(); }, 2000);
-      } catch (e) { showToast(e.message, true); }
+      if(!confirm("⚠️ ARE YOU SURE?\n\nThis archives the database and completely resets the system.")) return;
+      showToast("Archiving system...", false);
+      try { await callBackend('archiveAndReset'); showToast("Reset successful!"); setTimeout(() => { window.location.reload(); }, 2000); } catch (e) { showToast(e.message, true); }
     }
 
     function updateApp() {
       showToast("Updating app data and clearing caches...");
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } });
-      }
+      if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } }); }
       setTimeout(() => location.reload(true), 1000);
     }
   </script>
