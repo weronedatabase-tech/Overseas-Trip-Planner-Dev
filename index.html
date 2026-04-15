@@ -146,10 +146,10 @@
       
       <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex justify-between items-center border-l-4 border-primary">
         <div>
-          <h3 class="text-lg font-bold">Welcome back!</h3>
+          <h3 class="text-xl font-bold" id="welcomeUserText">Welcome!</h3>
           <p class="text-sm text-gray-500" id="userRoleBadge">Role: Participant</p>
         </div>
-        <button onclick="logout()" class="text-red-500 text-sm font-medium border border-red-500 px-3 py-1 rounded hover:bg-red-50 dark:hover:bg-gray-700">Logout</button>
+        <button onclick="logout()" class="text-red-500 text-sm font-medium border border-red-500 px-3 py-1 rounded hover:bg-red-50 dark:hover:bg-gray-700 transition">Logout</button>
       </div>
 
       <div class="flex space-x-2 overflow-x-auto pb-2 border-b dark:border-gray-700 scrollbar-hide" id="navTabs">
@@ -173,16 +173,19 @@
           <h3 class="text-lg font-bold mb-2 border-b pb-2">Global Registration Status</h3>
           <div class="flex items-center justify-between mt-4">
             <p class="text-sm">Allow new users to sign up using the public form.</p>
-            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="px-4 py-2 bg-green-600 text-white font-bold rounded shadow">Loading...</button>
+            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="px-4 py-2 bg-green-600 text-white font-bold rounded shadow transition">Loading...</button>
           </div>
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h3 class="text-lg font-bold mb-2 border-b pb-2">Committee Members</h3>
-          <p class="text-sm text-gray-500 mb-4">Users must register first. Add their NRIC here to grant them admin access.</p>
-          <div class="flex space-x-2 mb-4">
-            <input type="text" id="newCommNric" placeholder="Enter Registered NRIC" class="flex-grow p-2 border rounded uppercase">
-            <button onclick="addCommittee()" class="bg-primary text-white px-4 py-2 rounded font-bold">Add</button>
+          <p class="text-sm text-gray-500 mb-4">Grants members Admin access immediately, even if they are not going for the trip.</p>
+          <div class="flex flex-col space-y-2 mb-4">
+            <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-2 border rounded">
+            <div class="flex space-x-2">
+              <input type="text" id="newCommNric" placeholder="Full NRIC / FIN" class="flex-grow p-2 border rounded uppercase">
+              <button onclick="addCommittee()" class="bg-primary text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">Add</button>
+            </div>
           </div>
           <ul id="commList" class="space-y-2 border rounded p-4 bg-gray-50 dark:bg-gray-700">
             <!-- Populated via JS -->
@@ -216,8 +219,8 @@
         </div>
       </div>
       <div class="flex space-x-2">
-        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded font-bold hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
-        <button onclick="confirmTripSetup()" class="flex-1 bg-primary text-white py-2 rounded font-bold hover:bg-blue-700 shadow">Open Reg</button>
+        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+        <button onclick="confirmTripSetup()" class="flex-1 bg-primary text-white py-2 rounded font-bold hover:bg-blue-700 shadow transition">Open Reg</button>
       </div>
     </div>
   </div>
@@ -258,7 +261,6 @@
     let currentUser = null;
     let appSettings = { registrationOpen: false };
 
-    // --- ROLODEX LOGIC W/ INVALID DATE PREVENTION ---
     let currentPickerTarget = null;
     const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -381,7 +383,6 @@
 
     function closePicker() { document.getElementById('datePickerSheet').classList.add('hidden-force'); }
 
-    // --- MAIN APP LOGIC ---
     window.onload = async () => {
       if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
       if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
@@ -503,18 +504,24 @@
 
       try {
         const res = await callBackend('login', { nric, password: pass });
-        currentUser = { nric: nric, role: res.role };
+        currentUser = { nric: nric, role: res.role, name: res.name };
         localStorage.setItem('userSession', JSON.stringify(currentUser));
         renderDashboard();
       } catch (error) { err.textContent = error.message; err.classList.remove('hidden-force'); } 
       finally { document.getElementById('loginText').classList.remove('hidden-force'); document.getElementById('loginLoader').classList.add('hidden-force'); }
     }
 
-    function logout() { localStorage.removeItem('userSession'); currentUser = null; goHome(); }
+    function logout() { 
+      localStorage.removeItem('userSession'); 
+      currentUser = null; 
+      window.location.reload(); 
+    }
 
     function renderDashboard() {
       document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
       document.getElementById('viewDashboard').classList.remove('hidden-force');
+      
+      document.getElementById('welcomeUserText').textContent = `Welcome, ${currentUser.name || 'User'}!`;
       document.getElementById('userRoleBadge').textContent = `Role: ${currentUser.role === 'admin' ? 'Committee (Admin)' : 'Participant'}`;
 
       if(currentUser.role === 'admin') { document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-force')); loadCommitteeList(); } 
@@ -529,7 +536,6 @@
       event.target.classList.remove('border-transparent', 'text-gray-500'); event.target.classList.add('border-primary', 'text-primary');
     }
 
-    // --- REGISTRATION TOGGLE WITH SETUP MODAL ---
     function applyRegVisual() {
       const btn = document.getElementById('toggleRegBtn');
       if(appSettings.registrationOpen) {
@@ -543,18 +549,14 @@
 
     function initiateRegistrationToggle() {
       if(!appSettings.registrationOpen) {
-        // Prepare to open -> ask for trip context
         document.getElementById('tripYearInput').value = new Date().getFullYear();
         document.getElementById('tripSetupModal').classList.remove('hidden-force');
       } else {
-        // Prepare to close -> just execute
         executeToggleRegistration(false);
       }
     }
 
-    function cancelTripSetup() {
-      document.getElementById('tripSetupModal').classList.add('hidden-force');
-    }
+    function cancelTripSetup() { document.getElementById('tripSetupModal').classList.add('hidden-force'); }
 
     function confirmTripSetup() {
       document.getElementById('tripSetupModal').classList.add('hidden-force');
@@ -578,10 +580,13 @@
     async function loadCommitteeList() { try { const res = await callBackend('getCommittee'); renderCommList(res.list); } catch(e) {} }
 
     async function addCommittee() {
-      const nric = document.getElementById('newCommNric').value;
-      if(!nric) return;
+      const name = document.getElementById('newCommName').value.trim();
+      const nric = document.getElementById('newCommNric').value.trim();
+      if(!nric || !name) return showToast("Please provide both Name and NRIC", true);
+      
       try {
-        const res = await callBackend('addCommittee', { nric });
+        const res = await callBackend('addCommittee', { nric, name });
+        document.getElementById('newCommName').value = '';
         document.getElementById('newCommNric').value = '';
         renderCommList(res.list); showToast("Added to Committee");
       } catch(e) { showToast(e.message, true); }
@@ -594,7 +599,15 @@
     function renderCommList(list) {
       const ul = document.getElementById('commList');
       ul.innerHTML = list.length === 0 ? '<li class="text-sm text-gray-500">No committee members assigned yet.</li>' : '';
-      list.forEach(nric => { ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-600"><span class="font-mono font-bold">${nric}</span><button onclick="removeCommittee('${nric}')" class="text-red-500 text-sm font-bold px-2 py-1 hover:bg-red-50 dark:hover:bg-gray-700 rounded">Remove</button></li>`; });
+      list.forEach(member => { 
+        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-600">
+          <div>
+            <p class="font-bold">${member.name}</p>
+            <p class="text-xs text-gray-500 font-mono">${member.nric}</p>
+          </div>
+          <button onclick="removeCommittee('${member.nric}')" class="text-red-500 text-sm font-bold px-3 py-1 hover:bg-red-50 dark:hover:bg-gray-700 rounded">Remove</button>
+        </li>`; 
+      });
     }
 
     async function archiveSystem() {
