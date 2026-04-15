@@ -15,9 +15,15 @@
     .hidden-force { display: none !important; }
     .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    /* Hide scrollbar for tabs */
+    
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Custom Rolodex Physics & Styles */
+    .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+    .picker-col::-webkit-scrollbar { display: none; }
+    .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
+    .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 1px solid rgba(37, 99, 235, 0.3); border-bottom: 1px solid rgba(37, 99, 235, 0.3); pointer-events: none; z-index: 10; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
@@ -33,7 +39,7 @@
   </header>
 
   <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
-    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium"></div>
+    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium z-[100]"></div>
 
     <!-- VIEW 0: LOADING -->
     <div id="viewLoading" class="flex justify-center items-center h-full">
@@ -61,7 +67,7 @@
     </div>
 
     <!-- VIEW 2: PUBLIC REGISTRATION -->
-    <div id="viewRegister" class="hidden-force max-w-3xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow space-y-4">
+    <div id="viewRegister" class="hidden-force max-w-3xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow space-y-4 pb-20">
       <div class="flex justify-between items-center border-b pb-2 mb-4">
         <h3 class="text-xl font-bold">New Registration</h3>
         <button onclick="goHome()" class="text-sm text-gray-500 hover:text-primary">Cancel</button>
@@ -81,8 +87,11 @@
           <div><label class="block text-sm mb-1">Gender</label><select id="regGender" class="w-full p-2 border rounded"><option>Male</option><option>Female</option></select></div>
           <div><label class="block text-sm mb-1">Contact Number (8-digit)</label><input id="regContact" required type="tel" pattern="[0-9]{8}" class="w-full p-2 border rounded"></div>
           
-          <!-- SINGLE NATIVE ROLODEX DATE OF BIRTH -->
-          <div><label class="block text-sm mb-1">Date of Birth</label><input id="regDob" required type="date" class="w-full p-2 border rounded appearance-none"></div>
+          <!-- UNIFIED ROLODEX DATE TRIGGER -->
+          <div>
+            <label class="block text-sm mb-1">Date of Birth</label>
+            <input id="regDob" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regDob', 'dob')" class="w-full p-2 border rounded cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-2 focus:ring-primary focus:outline-none">
+          </div>
         </div>
 
         <div id="traineeRelationDiv" class="hidden-force bg-blue-50 dark:bg-gray-700 p-4 rounded mt-4">
@@ -97,8 +106,11 @@
           <div><label class="block text-sm mb-1">Full NRIC / FIN</label><input id="regNric" required type="text" class="w-full p-2 border rounded uppercase"></div>
           <div><label class="block text-sm mb-1">Passport No.</label><input id="regPassport" required type="text" class="w-full p-2 border rounded uppercase"></div>
           
-          <!-- SINGLE NATIVE ROLODEX PASSPORT EXPIRY -->
-          <div><label class="block text-sm mb-1">Passport Expiry (>6mths valid)</label><input id="regExpiry" required type="date" class="w-full p-2 border rounded appearance-none"></div>
+          <!-- UNIFIED ROLODEX DATE TRIGGER -->
+          <div>
+            <label class="block text-sm mb-1">Passport Expiry (>6mths valid)</label>
+            <input id="regExpiry" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regExpiry', 'exp')" class="w-full p-2 border rounded cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-2 focus:ring-primary focus:outline-none">
+          </div>
 
           <div><label class="block text-sm mb-1">Nationality</label><input id="regNat" required type="text" class="w-full p-2 border rounded"></div>
         </div>
@@ -165,7 +177,6 @@
 
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="tab-content hidden-force space-y-6">
-        
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h3 class="text-lg font-bold mb-2 border-b pb-2">Global Registration Status</h3>
           <div class="flex items-center justify-between mt-4">
@@ -186,18 +197,40 @@
           </ul>
         </div>
 
-        <!-- DANGER ZONE -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border-t-4 border-red-500">
           <h3 class="text-lg font-bold mb-2 border-b pb-2 text-red-600">Danger Zone</h3>
-          <p class="text-sm text-gray-500 mb-4">Archive the current trip data into your Google Drive and wipe the active system to start fresh for a new trip. This action cannot be undone.</p>
+          <p class="text-sm text-gray-500 mb-4">Archive the current trip data into your Google Drive and wipe the active system to start fresh for a new trip.</p>
           <button onclick="archiveSystem()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow transition">
             Archive & Reset System
           </button>
         </div>
-
       </div>
     </div>
   </main>
+
+  <!-- CUSTOM BOTTOM SHEET ROLODEX -->
+  <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end transition-opacity">
+    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up">
+      <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+        <span class="font-bold text-lg text-gray-800 dark:text-gray-100">Select Date</span>
+        <button type="button" onclick="closePicker()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2">&times;</button>
+      </div>
+      <div class="relative flex h-[200px] text-lg font-medium">
+        <div class="picker-highlight"></div>
+        <div class="flex-1 picker-col" id="colDay"></div>
+        <div class="flex-1 picker-col" id="colMonth"></div>
+        <div class="flex-1 picker-col" id="colYear"></div>
+      </div>
+      <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700">
+        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 shadow transition">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
+    .animate-slide-up { animation: slide-up 0.25s ease-out forwards; }
+  </style>
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
@@ -210,6 +243,113 @@
 
     let currentUser = null;
     let appSettings = { registrationOpen: false };
+
+    // --- ROLODEX LOGIC ---
+    let currentPickerTarget = null;
+    const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    function openDatePicker(targetId, type) {
+      currentPickerTarget = targetId;
+      document.getElementById('datePickerSheet').classList.remove('hidden-force');
+      
+      const colD = document.getElementById('colDay');
+      const colM = document.getElementById('colMonth');
+      const colY = document.getElementById('colYear');
+
+      const spacer = '<div style="height: 80px;"></div>'; // Padding items
+      
+      let dHtml = spacer;
+      for(let i=1; i<=31; i++) {
+        let val = String(i).padStart(2,'0');
+        dHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${val}" onclick="scrollToIndex('colDay', ${i-1})">${val}</div>`;
+      }
+      dHtml += spacer;
+
+      let mHtml = spacer;
+      monthsArr.forEach((m, i) => {
+        mHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${m}" onclick="scrollToIndex('colMonth', ${i})">${m}</div>`;
+      });
+      mHtml += spacer;
+
+      let yHtml = spacer;
+      const curYear = new Date().getFullYear();
+      let startYear, endYear, step;
+      
+      if(type === 'dob') { startYear = curYear; endYear = 1920; step = -1; } 
+      else { startYear = curYear; endYear = curYear + 20; step = 1; }
+
+      let idx = 0;
+      for(let i = startYear; type === 'dob' ? i >= endYear : i <= endYear; i += step) {
+        yHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${i}" onclick="scrollToIndex('colYear', ${idx})">${i}</div>`;
+        idx++;
+      }
+      yHtml += spacer;
+
+      colD.innerHTML = dHtml;
+      colM.innerHTML = mHtml;
+      colY.innerHTML = yHtml;
+
+      // Attach scroll listeners
+      [colD, colM, colY].forEach(col => {
+        col.onscroll = () => highlightCenterItem(col);
+      });
+
+      // Pre-select existing value or default to first
+      const curVal = document.getElementById(targetId).value;
+      setTimeout(() => {
+        if(curVal) {
+          const parts = curVal.split(' ');
+          if(parts.length === 3) {
+            const dIdx = Array.from(colD.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[0]);
+            const mIdx = Array.from(colM.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[1]);
+            const yIdx = Array.from(colY.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[2]);
+            if(dIdx > -1) colD.scrollTop = dIdx * 40;
+            if(mIdx > -1) colM.scrollTop = mIdx * 40;
+            if(yIdx > -1) colY.scrollTop = yIdx * 40;
+          }
+        } else {
+          colD.scrollTop = 0; colM.scrollTop = 0; colY.scrollTop = 0;
+        }
+        // Force highlight evaluation
+        highlightCenterItem(colD); highlightCenterItem(colM); highlightCenterItem(colY);
+      }, 10);
+    }
+
+    function scrollToIndex(colId, index) {
+      document.getElementById(colId).scrollTo({ top: index * 40, behavior: 'smooth' });
+    }
+
+    function highlightCenterItem(col) {
+      const items = col.querySelectorAll('.picker-item');
+      const index = Math.round(col.scrollTop / 40);
+      items.forEach((item, i) => {
+        if(i === index) {
+          item.classList.remove('text-gray-400', 'dark:text-gray-500');
+          item.classList.add('text-primary', 'font-bold', 'text-2xl');
+          item.dataset.selected = "true";
+        } else {
+          item.classList.add('text-gray-400', 'dark:text-gray-500');
+          item.classList.remove('text-primary', 'font-bold', 'text-2xl');
+          item.dataset.selected = "false";
+        }
+      });
+    }
+
+    function confirmPicker() {
+      const d = document.querySelector('#colDay .picker-item[data-selected="true"]');
+      const m = document.querySelector('#colMonth .picker-item[data-selected="true"]');
+      const y = document.querySelector('#colYear .picker-item[data-selected="true"]');
+
+      if(d && m && y && currentPickerTarget) {
+        document.getElementById(currentPickerTarget).value = `${d.dataset.val} ${m.dataset.val} ${y.dataset.val}`;
+      }
+      closePicker();
+    }
+
+    function closePicker() {
+      document.getElementById('datePickerSheet').classList.add('hidden-force');
+    }
+    // ----------------------
 
     window.onload = async () => {
       if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
@@ -258,20 +398,14 @@
     }
 
     function togglePassword(id) { 
-      const el = document.getElementById(id); 
-      el.type = el.type === 'password' ? 'text' : 'password'; 
+      const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; 
     }
-    
-    function handleEnter(e, func) { 
-      if(e.key === 'Enter') func(); 
-    }
+    function handleEnter(e, func) { if(e.key === 'Enter') func(); }
 
     async function callBackend(action, payload = {}) {
       try {
         const res = await fetch(API_URL, { 
-          method: 'POST', 
-          body: JSON.stringify({ action, ...payload }), 
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+          method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }
         });
         if(!res.ok) throw new Error("Network response was not OK");
         const data = await res.json();
@@ -285,16 +419,13 @@
       }
     }
 
-    // --- CONFIG & SETUP ---
     async function fetchConfig() {
       try {
         const config = await callBackend('getSettings');
         appSettings.registrationOpen = config.registrationOpen;
-        
         const regBox = document.getElementById('landingRegBox');
         if(appSettings.registrationOpen) regBox.classList.remove('hidden-force');
         else regBox.classList.add('hidden-force');
-        
         applyRegVisual();
       } catch (e) {
         showToast("Error syncing settings.", true);
@@ -349,11 +480,7 @@
       const pass = document.getElementById('loginPass').value;
       const err = document.getElementById('loginError');
 
-      if(!nric || !pass) {
-        err.textContent = "Please enter NRIC and Password";
-        return err.classList.remove('hidden-force');
-      }
-      
+      if(!nric || !pass) { err.textContent = "Please enter NRIC and Password"; return err.classList.remove('hidden-force'); }
       err.classList.add('hidden-force');
       document.getElementById('loginText').classList.add('hidden-force');
       document.getElementById('loginLoader').classList.remove('hidden-force');
@@ -364,24 +491,18 @@
         localStorage.setItem('userSession', JSON.stringify(currentUser));
         renderDashboard();
       } catch (error) {
-        err.textContent = error.message;
-        err.classList.remove('hidden-force');
+        err.textContent = error.message; err.classList.remove('hidden-force');
       } finally {
         document.getElementById('loginText').classList.remove('hidden-force');
         document.getElementById('loginLoader').classList.add('hidden-force');
       }
     }
 
-    function logout() {
-      localStorage.removeItem('userSession');
-      currentUser = null;
-      goHome();
-    }
+    function logout() { localStorage.removeItem('userSession'); currentUser = null; goHome(); }
 
     function renderDashboard() {
       document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
       document.getElementById('viewDashboard').classList.remove('hidden-force');
-      
       document.getElementById('userRoleBadge').textContent = `Role: ${currentUser.role === 'admin' ? 'Committee (Admin)' : 'Participant'}`;
 
       if(currentUser.role === 'admin') {
@@ -390,22 +511,19 @@
       } else {
         document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-force'));
       }
-      
-      switchTab('profile'); // Default tab
+      switchTab('profile');
     }
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-force'));
       document.querySelectorAll('.tab-btn').forEach(el => {
-        el.classList.remove('border-primary', 'text-primary');
-        el.classList.add('border-transparent', 'text-gray-500');
+        el.classList.remove('border-primary', 'text-primary'); el.classList.add('border-transparent', 'text-gray-500');
       });
       document.getElementById(`tab-${tabId}`).classList.remove('hidden-force');
       event.target.classList.remove('border-transparent', 'text-gray-500');
       event.target.classList.add('border-primary', 'text-primary');
     }
 
-    // --- ADMIN SETTINGS LOGIC ---
     function applyRegVisual() {
       const btn = document.getElementById('toggleRegBtn');
       if(appSettings.registrationOpen) {
@@ -419,28 +537,18 @@
 
     async function toggleRegistrationState() {
       const btn = document.getElementById('toggleRegBtn');
-      btn.textContent = "Updating...";
-      btn.disabled = true;
-
+      btn.textContent = "Updating..."; btn.disabled = true;
       const newState = !appSettings.registrationOpen;
       try {
         await callBackend('toggleRegistration', { status: newState });
         appSettings.registrationOpen = newState;
         applyRegVisual();
         showToast(newState ? "Registration Opened" : "Registration Closed");
-      } catch(e) { 
-        showToast("Failed to update status.", true); 
-        applyRegVisual(); 
-      }
+      } catch(e) { showToast("Failed to update status.", true); applyRegVisual(); }
       finally { btn.disabled = false; }
     }
 
-    async function loadCommitteeList() {
-      try {
-        const res = await callBackend('getCommittee');
-        renderCommList(res.list);
-      } catch(e) {}
-    }
+    async function loadCommitteeList() { try { const res = await callBackend('getCommittee'); renderCommList(res.list); } catch(e) {} }
 
     async function addCommittee() {
       const nric = document.getElementById('newCommNric').value;
@@ -448,51 +556,36 @@
       try {
         const res = await callBackend('addCommittee', { nric });
         document.getElementById('newCommNric').value = '';
-        renderCommList(res.list);
-        showToast("Added to Committee");
+        renderCommList(res.list); showToast("Added to Committee");
       } catch(e) { showToast(e.message, true); }
     }
 
     async function removeCommittee(nric) {
-      try {
-        const res = await callBackend('removeCommittee', { nric });
-        renderCommList(res.list);
-        showToast("Removed from Committee");
-      } catch(e) { showToast(e.message, true); }
+      try { const res = await callBackend('removeCommittee', { nric }); renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); }
     }
 
     function renderCommList(list) {
       const ul = document.getElementById('commList');
       ul.innerHTML = list.length === 0 ? '<li class="text-sm text-gray-500">No committee members assigned yet.</li>' : '';
       list.forEach(nric => {
-        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-600">
-          <span class="font-mono font-bold">${nric}</span>
-          <button onclick="removeCommittee('${nric}')" class="text-red-500 text-sm font-bold px-2 py-1 hover:bg-red-50 dark:hover:bg-gray-700 rounded">Remove</button>
-        </li>`;
+        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-600"><span class="font-mono font-bold">${nric}</span><button onclick="removeCommittee('${nric}')" class="text-red-500 text-sm font-bold px-2 py-1 hover:bg-red-50 dark:hover:bg-gray-700 rounded">Remove</button></li>`;
       });
     }
 
     async function archiveSystem() {
       if(!confirm("⚠️ ARE YOU SURE?\n\nThis will archive the current trip data to Google Drive, close registration, and wipe the active system for a completely fresh start. All users must re-register.\n\nProceed?")) return;
-
       showToast("Archiving system... please wait.", false);
       try {
         await callBackend('archiveAndReset');
         showToast("System reset successfully! Logging out.");
-        setTimeout(() => {
-          updateApp(); 
-        }, 2000);
-      } catch (e) {
-        showToast(e.message, true);
-      }
+        setTimeout(() => { updateApp(); }, 2000);
+      } catch (e) { showToast(e.message, true); }
     }
 
     function updateApp() {
       showToast("Updating app data and clearing caches...");
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) { registration.unregister(); }
-        });
+        navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } });
       }
       setTimeout(() => location.reload(true), 1000);
     }
