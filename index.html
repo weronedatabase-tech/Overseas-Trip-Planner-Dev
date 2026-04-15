@@ -244,7 +244,7 @@
     let currentUser = null;
     let appSettings = { registrationOpen: false };
 
-    // --- ROLODEX LOGIC ---
+    // --- ROLODEX LOGIC W/ INVALID DATE PREVENTION ---
     let currentPickerTarget = null;
     const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -256,7 +256,7 @@
       const colM = document.getElementById('colMonth');
       const colY = document.getElementById('colYear');
 
-      const spacer = '<div style="height: 80px;"></div>'; // Padding items
+      const spacer = '<div style="height: 80px;"></div>';
       
       let dHtml = spacer;
       for(let i=1; i<=31; i++) {
@@ -285,16 +285,12 @@
       }
       yHtml += spacer;
 
-      colD.innerHTML = dHtml;
-      colM.innerHTML = mHtml;
-      colY.innerHTML = yHtml;
+      colD.innerHTML = dHtml; colM.innerHTML = mHtml; colY.innerHTML = yHtml;
 
-      // Attach scroll listeners
-      [colD, colM, colY].forEach(col => {
-        col.onscroll = () => highlightCenterItem(col);
-      });
+      colD.onscroll = () => highlightCenterItem('colDay');
+      colM.onscroll = () => highlightCenterItem('colMonth');
+      colY.onscroll = () => highlightCenterItem('colYear');
 
-      // Pre-select existing value or default to first
       const curVal = document.getElementById(targetId).value;
       setTimeout(() => {
         if(curVal) {
@@ -310,8 +306,7 @@
         } else {
           colD.scrollTop = 0; colM.scrollTop = 0; colY.scrollTop = 0;
         }
-        // Force highlight evaluation
-        highlightCenterItem(colD); highlightCenterItem(colM); highlightCenterItem(colY);
+        highlightCenterItem('colMonth'); highlightCenterItem('colYear'); highlightCenterItem('colDay');
       }, 10);
     }
 
@@ -319,10 +314,16 @@
       document.getElementById(colId).scrollTo({ top: index * 40, behavior: 'smooth' });
     }
 
-    function highlightCenterItem(col) {
-      const items = col.querySelectorAll('.picker-item');
-      const index = Math.round(col.scrollTop / 40);
-      items.forEach((item, i) => {
+    function highlightCenterItem(colId) {
+      const col = document.getElementById(colId);
+      // Only map scroll index to items that are currently visible (valid dates)
+      const visibleItems = Array.from(col.querySelectorAll('.picker-item')).filter(i => !i.classList.contains('hidden-force'));
+      if(!visibleItems.length) return;
+
+      let index = Math.round(col.scrollTop / 40);
+      if (index >= visibleItems.length) index = visibleItems.length - 1; // Clamp
+
+      visibleItems.forEach((item, i) => {
         if(i === index) {
           item.classList.remove('text-gray-400', 'dark:text-gray-500');
           item.classList.add('text-primary', 'font-bold', 'text-2xl');
@@ -333,6 +334,40 @@
           item.dataset.selected = "false";
         }
       });
+
+      // If Month or Year changed, update valid days to prevent Feb 30th, leap years, etc.
+      if(colId === 'colMonth' || colId === 'colYear') {
+         updateValidDays();
+      }
+    }
+
+    function updateValidDays() {
+      const mItem = document.querySelector('#colMonth .picker-item[data-selected="true"]');
+      const yItem = document.querySelector('#colYear .picker-item[data-selected="true"]');
+      if(!mItem || !yItem) return;
+
+      const mIndex = monthsArr.indexOf(mItem.dataset.val);
+      const yVal = parseInt(yItem.dataset.val);
+      // Native JS leap year / max days calculation
+      const maxDays = new Date(yVal, mIndex + 1, 0).getDate(); 
+
+      const colD = document.getElementById('colDay');
+      const dayItems = colD.querySelectorAll('.picker-item');
+
+      dayItems.forEach((item) => {
+        const dayVal = parseInt(item.dataset.val);
+        const isHidden = item.classList.contains('hidden-force');
+        const shouldHide = dayVal > maxDays;
+        
+        if(shouldHide && !isHidden) item.classList.add('hidden-force');
+        if(!shouldHide && isHidden) item.classList.remove('hidden-force');
+      });
+
+      // If the user was scrolled down to 31, and month switched to Feb (max 28), snap it back smoothly.
+      const maxScrollTop = (maxDays - 1) * 40;
+      if (colD.scrollTop > maxScrollTop) {
+         scrollToIndex('colDay', maxDays - 1);
+      }
     }
 
     function confirmPicker() {
