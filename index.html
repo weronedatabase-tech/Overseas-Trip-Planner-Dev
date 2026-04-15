@@ -11,7 +11,7 @@
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.3s, color 0.3s; }
     .dark body { background-color: #1a202c; color: #e2e8f0; }
-    .dark input, .dark select, .dark textarea { background-color: #2d3748; color: white; border-color: #4a5568; }
+    .dark input, .dark select, .dark textarea { background-color: #2d3748; color: white; }
     .hidden-force { display: none !important; }
     .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -22,23 +22,24 @@
     .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
     .picker-col::-webkit-scrollbar { display: none; }
     .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
-    .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 1px solid rgba(37, 99, 235, 0.3); border-bottom: 1px solid rgba(37, 99, 235, 0.3); pointer-events: none; z-index: 10; }
+    /* Bolder highlight for the rolodex selection */
+    .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 2px solid rgba(37, 99, 235, 0.6); border-bottom: 2px solid rgba(37, 99, 235, 0.6); pointer-events: none; z-index: 10; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
 
   <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE</div>
 
-  <header class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center z-10">
+  <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-3 flex justify-between items-center z-10">
     <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">TripApp</div>
     <div class="flex items-center space-x-3">
-      <button onclick="updateApp()" class="text-xs bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Update App</button>
+      <button onclick="updateApp()" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition font-bold">Update App</button>
       <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
     </div>
   </header>
 
   <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
-    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium z-[100]"></div>
+    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-bold z-[100]"></div>
 
     <div id="viewLoading" class="flex justify-center items-center h-full">
       <div class="loader w-10 h-10"></div>
@@ -46,69 +47,69 @@
 
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
       <div class="text-center">
-        <h1 class="text-3xl font-bold mb-2">Overseas Trip Planner</h1>
-        <p class="text-gray-500">Welcome! Please select an option below.</p>
+        <h1 class="text-3xl font-extrabold mb-2">Overseas Trip Planner</h1>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">Welcome! Please select an option below.</p>
       </div>
       
-      <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center border-t-4 border-green-500 hidden-force">
-        <h3 class="text-xl font-bold mb-2">Join the Trip</h3>
-        <p class="text-sm mb-4">Registration is currently open.</p>
-        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">Register Now</button>
+      <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-green-500 hidden-force">
+        <h3 class="text-2xl font-bold mb-2">Join the Trip</h3>
+        <p class="text-sm font-medium mb-4">Registration is currently open.</p>
+        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded font-extrabold text-lg hover:bg-green-700 shadow-md">Register Now</button>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center border-t-4 border-primary">
-        <h3 class="text-xl font-bold mb-2">Participant Portal</h3>
-        <p class="text-sm mb-4">Already registered? Log in to view details.</p>
-        <button onclick="navTo('login')" class="w-full bg-primary text-white py-2 rounded font-bold hover:bg-blue-700">Log In</button>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-primary">
+        <h3 class="text-2xl font-bold mb-2">Participant Portal</h3>
+        <p class="text-sm font-medium mb-4">Already registered? Log in to view details.</p>
+        <button onclick="navTo('login')" class="w-full bg-primary text-white py-3 rounded font-extrabold text-lg hover:bg-blue-700 shadow-md">Log In</button>
       </div>
     </div>
 
     <!-- VIEW 2: PUBLIC REGISTRATION -->
-    <div id="viewRegister" class="hidden-force max-w-3xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow space-y-4 pb-20">
-      <div class="flex justify-between items-center border-b pb-2 mb-4">
-        <h3 class="text-xl font-bold">New Registration</h3>
-        <button onclick="goHome()" class="text-sm text-gray-500 hover:text-primary">Cancel</button>
+    <div id="viewRegister" class="hidden-force max-w-3xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600 space-y-4 pb-20">
+      <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
+        <h3 class="text-2xl font-bold">New Registration</h3>
+        <button onclick="goHome()" class="text-sm font-bold text-gray-500 hover:text-primary">Cancel</button>
       </div>
-      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label class="block text-sm mb-1">Full Name (As in Passport)</label><input id="regName" required type="text" class="w-full p-2 border rounded"></div>
-          <div><label class="block text-sm mb-1">Email Address</label><input id="regEmail" required type="email" class="w-full p-2 border rounded"></div>
+      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div><label class="block text-sm font-bold mb-1">Full Name (As in Passport)</label><input id="regName" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
+          <div><label class="block text-sm font-bold mb-1">Email Address</label><input id="regEmail" required type="email" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
           <div>
-            <label class="block text-sm mb-1">Role</label>
-            <select id="regRole" class="w-full p-2 border rounded" onchange="toggleTraineeFields()">
+            <label class="block text-sm font-bold mb-1">Role</label>
+            <select id="regRole" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-medium" onchange="toggleTraineeFields()">
               <option value="TRAINEE">Trainee</option>
               <option value="CAREGIVER">Caregiver</option>
               <option value="VOLUNTEER">Volunteer</option>
             </select>
           </div>
-          <div><label class="block text-sm mb-1">Gender</label><select id="regGender" class="w-full p-2 border rounded"><option>Male</option><option>Female</option></select></div>
-          <div><label class="block text-sm mb-1">Contact Number (8-digit)</label><input id="regContact" required type="tel" pattern="[0-9]{8}" class="w-full p-2 border rounded"></div>
+          <div><label class="block text-sm font-bold mb-1">Gender</label><select id="regGender" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-medium"><option>Male</option><option>Female</option></select></div>
+          <div><label class="block text-sm font-bold mb-1">Contact Number (8-digit)</label><input id="regContact" required type="tel" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
           <div>
-            <label class="block text-sm mb-1">Date of Birth</label>
-            <input id="regDob" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regDob', 'dob')" class="w-full p-2 border rounded cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-2 focus:ring-primary focus:outline-none">
+            <label class="block text-sm font-bold mb-1">Date of Birth</label>
+            <input id="regDob" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regDob', 'dob')" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-4 focus:ring-primary focus:outline-none font-bold text-center">
           </div>
         </div>
 
-        <div id="traineeRelationDiv" class="hidden-force bg-blue-50 dark:bg-gray-700 p-4 rounded mt-4">
-           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div><label class="block text-sm mb-1">Related Trainee's Name</label><input id="regRelatedTrainee" type="text" class="w-full p-2 border rounded"></div>
-             <div><label class="block text-sm mb-1">Relationship to Trainee</label><input id="regRelationship" type="text" class="w-full p-2 border rounded"></div>
+        <div id="traineeRelationDiv" class="hidden-force bg-blue-50 dark:bg-gray-700 p-5 rounded-lg mt-4 border-2 border-blue-200 dark:border-blue-900">
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+             <div><label class="block text-sm font-bold mb-1">Related Trainee's Name</label><input id="regRelatedTrainee" type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
+             <div><label class="block text-sm font-bold mb-1">Relationship to Trainee</label><input id="regRelationship" type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
            </div>
         </div>
 
-        <h4 class="font-bold mt-6 mb-2 border-b pb-1">Identification & Passport</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label class="block text-sm mb-1">Full NRIC / FIN</label><input id="regNric" required type="text" class="w-full p-2 border rounded uppercase"></div>
-          <div><label class="block text-sm mb-1">Passport No.</label><input id="regPassport" required type="text" class="w-full p-2 border rounded uppercase"></div>
+        <h4 class="font-extrabold text-lg mt-8 mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Identification & Passport</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div><label class="block text-sm font-bold mb-1">Full NRIC / FIN</label><input id="regNric" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase"></div>
+          <div><label class="block text-sm font-bold mb-1">Passport No.</label><input id="regPassport" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase"></div>
           <div>
-            <label class="block text-sm mb-1">Passport Expiry (>6mths valid)</label>
-            <input id="regExpiry" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regExpiry', 'exp')" class="w-full p-2 border rounded cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-2 focus:ring-primary focus:outline-none">
+            <label class="block text-sm font-bold mb-1">Passport Expiry (>6mths valid)</label>
+            <input id="regExpiry" required type="text" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('regExpiry', 'exp')" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg cursor-pointer bg-white dark:bg-gray-700 caret-transparent focus:ring-4 focus:ring-primary focus:outline-none font-bold text-center">
           </div>
-          <div><label class="block text-sm mb-1">Nationality</label><input id="regNat" required type="text" class="w-full p-2 border rounded"></div>
+          <div><label class="block text-sm font-bold mb-1">Nationality</label><input id="regNat" required type="text" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg"></div>
         </div>
 
-        <div class="pt-4 flex items-center space-x-2">
-          <button type="submit" class="flex-grow bg-green-600 text-white font-bold py-3 rounded hover:bg-green-700 flex justify-center items-center">
+        <div class="pt-6 flex items-center space-x-2">
+          <button type="submit" class="flex-grow bg-green-600 text-white font-extrabold text-lg py-4 rounded-lg hover:bg-green-700 flex justify-center items-center shadow-lg border-2 border-green-700">
             <span id="regSubmitText">Submit Registration</span>
             <div id="regLoader" class="loader hidden-force ml-2 border-white"></div>
           </button>
@@ -117,25 +118,25 @@
     </div>
 
     <!-- VIEW 3: LOGIN -->
-    <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold">Secure Login</h2>
-        <button onclick="goHome()" class="text-sm text-gray-500 hover:text-primary">Cancel</button>
+    <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600">
+      <div class="flex justify-between items-center mb-6 border-b-2 border-gray-300 dark:border-gray-600 pb-2">
+        <h2 class="text-2xl font-bold">Secure Login</h2>
+        <button onclick="goHome()" class="text-sm font-bold text-gray-500 hover:text-primary">Cancel</button>
       </div>
-      <div id="loginError" class="text-red-500 text-sm mb-2 font-medium hidden-force"></div>
+      <div id="loginError" class="text-red-500 text-sm mb-3 font-bold hidden-force"></div>
       
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Full NRIC / FIN</label>
-        <input type="text" id="loginNric" class="w-full p-2 border rounded uppercase" placeholder="S1234567A" onkeypress="handleEnter(event, attemptLogin)">
+      <div class="mb-5">
+        <label class="block text-sm font-bold mb-1">Full NRIC / FIN</label>
+        <input type="text" id="loginNric" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-medium" placeholder="S1234567A" onkeypress="handleEnter(event, attemptLogin)">
       </div>
 
-      <div class="mb-6 relative">
-        <label class="block text-sm font-medium mb-1">Password</label>
-        <input type="password" id="loginPass" class="w-full p-2 border rounded pr-10" placeholder="••••••••" onkeypress="handleEnter(event, attemptLogin)">
-        <button type="button" onclick="togglePassword('loginPass')" class="absolute right-2 top-8 text-gray-500">👁️</button>
+      <div class="mb-8 relative">
+        <label class="block text-sm font-bold mb-1">Password</label>
+        <input type="password" id="loginPass" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg pr-12 font-medium" placeholder="••••••••" onkeypress="handleEnter(event, attemptLogin)">
+        <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-9 text-gray-500 text-xl font-bold">👁️</button>
       </div>
 
-      <button onclick="attemptLogin()" class="w-full bg-primary text-white py-2 rounded hover:bg-blue-700 transition flex justify-center items-center">
+      <button onclick="attemptLogin()" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
         <span id="loginText">Login</span>
         <div id="loginLoader" class="loader hidden-force ml-2 border-white"></div>
       </button>
@@ -144,58 +145,59 @@
     <!-- VIEW 4: DASHBOARD (Post Login) -->
     <div id="viewDashboard" class="hidden-force max-w-4xl mx-auto space-y-6">
       
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex justify-between items-center border-l-4 border-primary">
+      <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-2 border-l-8 border-gray-300 dark:border-gray-600 border-l-primary flex justify-between items-center">
         <div>
-          <h3 class="text-xl font-bold" id="welcomeUserText">Welcome!</h3>
-          <p class="text-sm text-gray-500" id="userRoleBadge">Role: Participant</p>
+          <h3 class="text-2xl font-extrabold" id="welcomeUserText">Welcome!</h3>
+          <p class="text-sm font-bold text-gray-500" id="userRoleBadge">Role: Participant</p>
         </div>
-        <button onclick="logout()" class="text-red-500 text-sm font-medium border border-red-500 px-3 py-1 rounded hover:bg-red-50 dark:hover:bg-gray-700 transition">Logout</button>
+        <button onclick="logout()" class="text-red-600 text-sm font-bold border-2 border-red-600 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 transition">Logout</button>
       </div>
 
-      <div class="flex space-x-2 overflow-x-auto pb-2 border-b dark:border-gray-700 scrollbar-hide" id="navTabs">
-        <button onclick="switchTab('profile')" class="tab-btn px-4 py-2 font-medium border-b-2 border-primary text-primary whitespace-nowrap">My Profile</button>
-        <button onclick="switchTab('attendance')" class="tab-btn px-4 py-2 font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap hidden-force admin-only">Attendance</button>
-        <button onclick="switchTab('finance')" class="tab-btn px-4 py-2 font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap hidden-force admin-only">Finance</button>
-        <button onclick="switchTab('settings')" class="tab-btn px-4 py-2 font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap hidden-force admin-only">Settings</button>
+      <div class="flex space-x-2 overflow-x-auto pb-0 border-b-4 border-gray-300 dark:border-gray-600 scrollbar-hide mt-4" id="navTabs">
+        <!-- Changed tabs to have a bolder bottom border for selection -->
+        <button onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-primary text-primary whitespace-nowrap mb-[-4px]">My Profile</button>
+        <button onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-4px] hidden-force admin-only">Attendance</button>
+        <button onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-4px] hidden-force admin-only">Finance</button>
+        <button onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-4px] hidden-force admin-only">Settings</button>
       </div>
 
-      <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h3 class="text-xl font-bold mb-4">Registration Confirmed</h3>
-        <p>You have successfully registered for the trip. Once the committee finalises the finances, your payment details will appear here.</p>
+      <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
+        <h3 class="text-2xl font-bold mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Registration Confirmed</h3>
+        <p class="font-medium">You have successfully registered for the trip. Once the committee finalises the finances, your payment details will appear here.</p>
       </div>
 
-      <div id="tab-attendance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-lg shadow"><p>Offline Attendance Module coming soon...</p></div>
-      <div id="tab-finance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-lg shadow"><p>Finance Overview & CSV Upload coming soon...</p></div>
+      <div id="tab-attendance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4"><p class="font-bold">Offline Attendance Module coming soon...</p></div>
+      <div id="tab-finance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4"><p class="font-bold">Finance Overview & CSV Upload coming soon...</p></div>
 
       <!-- SETTINGS TAB -->
-      <div id="tab-settings" class="tab-content hidden-force space-y-6">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h3 class="text-lg font-bold mb-2 border-b pb-2">Global Registration Status</h3>
+      <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Global Registration Status</h3>
           <div class="flex items-center justify-between mt-4">
-            <p class="text-sm">Allow new users to sign up using the public form.</p>
-            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="px-4 py-2 bg-green-600 text-white font-bold rounded shadow transition">Loading...</button>
+            <p class="text-sm font-bold text-gray-600 dark:text-gray-400">Allow new users to sign up using the public form.</p>
+            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md transition border-2 border-green-800">Loading...</button>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h3 class="text-lg font-bold mb-2 border-b pb-2">Committee Members</h3>
-          <p class="text-sm text-gray-500 mb-4">Grants members Admin access immediately, even if they are not going for the trip.</p>
-          <div class="flex flex-col space-y-2 mb-4">
-            <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-2 border rounded">
-            <div class="flex space-x-2">
-              <input type="text" id="newCommNric" placeholder="Full NRIC / FIN" class="flex-grow p-2 border rounded uppercase">
-              <button onclick="addCommittee()" class="bg-primary text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">Add</button>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Committee Members</h3>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Grants members Admin access immediately, even if they are not going for the trip.</p>
+          <div class="flex flex-col space-y-3 mb-5">
+            <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
+            <div class="flex space-x-3">
+              <input type="text" id="newCommNric" placeholder="Full NRIC / FIN" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-bold">
+              <button onclick="addCommittee()" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800">Add</button>
             </div>
           </div>
-          <ul id="commList" class="space-y-2 border rounded p-4 bg-gray-50 dark:bg-gray-700">
+          <ul id="commList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700">
             <!-- Populated via JS -->
           </ul>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border-t-4 border-red-500">
-          <h3 class="text-lg font-bold mb-2 border-b pb-2 text-red-600">Danger Zone</h3>
-          <p class="text-sm text-gray-500 mb-4">Archive the current trip data into your Google Drive and wipe the active system to start fresh for a new trip.</p>
-          <button onclick="archiveSystem()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow transition">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-red-500">
+          <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-3 text-red-600">Danger Zone</h3>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive the current trip data into your Google Drive and wipe the active system to start fresh for a new trip.</p>
+          <button onclick="archiveSystem()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md transition border-2 border-red-800">
             Archive & Reset System
           </button>
         </div>
@@ -205,41 +207,41 @@
 
   <!-- TRIP SETUP MODAL -->
   <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
-    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-sm p-6 shadow-2xl">
-      <h3 class="text-xl font-bold mb-2">Initialize Trip Setup</h3>
-      <p class="text-sm text-gray-500 mb-4">You are opening registration. Please define the context of this trip so it can be neatly archived when concluded.</p>
-      <div class="space-y-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
+      <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Initialize Trip Setup</h3>
+      <p class="text-sm font-bold text-gray-500 mb-5">You are opening registration. Please define the context of this trip so it can be neatly archived when concluded.</p>
+      <div class="space-y-5 mb-6">
         <div>
-          <label class="block text-sm font-medium mb-1">Trip Title</label>
-          <input type="text" id="tripTitleInput" placeholder="e.g. Sinar Eco Resort" value="Overseas Trip" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700">
+          <label class="block text-sm font-extrabold mb-1">Trip Title</label>
+          <input type="text" id="tripTitleInput" placeholder="e.g. Sinar Eco Resort" value="Overseas Trip" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700 font-bold">
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Trip Year</label>
-          <input type="number" id="tripYearInput" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700">
+          <label class="block text-sm font-extrabold mb-1">Trip Year</label>
+          <input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700 font-bold">
         </div>
       </div>
-      <div class="flex space-x-2">
-        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
-        <button onclick="confirmTripSetup()" class="flex-1 bg-primary text-white py-2 rounded font-bold hover:bg-blue-700 shadow transition">Open Reg</button>
+      <div class="flex space-x-3">
+        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold hover:bg-gray-300 dark:hover:bg-gray-600 transition border-2 border-gray-400 dark:border-gray-500">Cancel</button>
+        <button onclick="confirmTripSetup()" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold hover:bg-blue-700 shadow border-2 border-blue-800 transition">Open Reg</button>
       </div>
     </div>
   </div>
 
   <!-- CUSTOM BOTTOM SHEET ROLODEX -->
   <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end transition-opacity">
-    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up">
-      <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-        <span class="font-bold text-lg text-gray-800 dark:text-gray-100">Select Date</span>
-        <button type="button" onclick="closePicker()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2">&times;</button>
+    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600">
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700">
+        <span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span>
+        <button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 text-3xl font-extrabold px-3">&times;</button>
       </div>
-      <div class="relative flex h-[200px] text-lg font-medium">
+      <div class="relative flex h-[200px] text-xl font-bold">
         <div class="picker-highlight"></div>
         <div class="flex-1 picker-col" id="colDay"></div>
         <div class="flex-1 picker-col" id="colMonth"></div>
         <div class="flex-1 picker-col" id="colYear"></div>
       </div>
-      <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700">
-        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 shadow transition">Done</button>
+      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700">
+        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl hover:bg-blue-700 shadow-md transition border-2 border-blue-800">Done</button>
       </div>
     </div>
   </div>
@@ -338,10 +340,10 @@
 
       visibleItems.forEach((item, i) => {
         if(i === index) {
-          item.classList.remove('text-gray-400', 'dark:text-gray-500'); item.classList.add('text-primary', 'font-bold', 'text-2xl');
+          item.classList.remove('text-gray-400', 'dark:text-gray-500'); item.classList.add('text-primary', 'font-extrabold', 'text-3xl');
           item.dataset.selected = "true";
         } else {
-          item.classList.add('text-gray-400', 'dark:text-gray-500'); item.classList.remove('text-primary', 'font-bold', 'text-2xl');
+          item.classList.add('text-gray-400', 'dark:text-gray-500'); item.classList.remove('text-primary', 'font-extrabold', 'text-3xl');
           item.dataset.selected = "false";
         }
       });
@@ -417,7 +419,7 @@
     function showToast(msg, isError = false) {
       const t = document.getElementById('toast');
       t.textContent = msg;
-      t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 text-sm font-medium text-white ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+      t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 text-sm font-bold text-white ${isError ? 'bg-red-600 border-2 border-red-800' : 'bg-green-600 border-2 border-green-800'}`;
       t.classList.remove('opacity-0');
       setTimeout(() => t.classList.add('opacity-0'), 4000);
     }
@@ -531,19 +533,19 @@
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-force'));
-      document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary'); el.classList.add('border-transparent', 'text-gray-500'); });
+      document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary', 'mb-[-4px]'); el.classList.add('border-transparent', 'text-gray-500'); });
       document.getElementById(`tab-${tabId}`).classList.remove('hidden-force');
-      event.target.classList.remove('border-transparent', 'text-gray-500'); event.target.classList.add('border-primary', 'text-primary');
+      event.target.classList.remove('border-transparent', 'text-gray-500'); event.target.classList.add('border-primary', 'text-primary', 'mb-[-4px]');
     }
 
     function applyRegVisual() {
       const btn = document.getElementById('toggleRegBtn');
       if(appSettings.registrationOpen) {
         btn.textContent = "Currently OPEN (Click to Close)";
-        btn.className = "px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded shadow transition";
+        btn.className = "px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-lg shadow-md transition border-2 border-green-800";
       } else {
         btn.textContent = "Currently CLOSED (Click to Open)";
-        btn.className = "px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded shadow transition";
+        btn.className = "px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-lg shadow-md transition border-2 border-red-800";
       }
     }
 
@@ -598,14 +600,14 @@
 
     function renderCommList(list) {
       const ul = document.getElementById('commList');
-      ul.innerHTML = list.length === 0 ? '<li class="text-sm text-gray-500">No committee members assigned yet.</li>' : '';
+      ul.innerHTML = list.length === 0 ? '<li class="text-sm font-bold text-gray-500">No committee members assigned yet.</li>' : '';
       list.forEach(member => { 
-        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-600">
+        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm">
           <div>
-            <p class="font-bold">${member.name}</p>
-            <p class="text-xs text-gray-500 font-mono">${member.nric}</p>
+            <p class="font-extrabold text-lg">${member.name}</p>
+            <p class="text-sm text-gray-500 font-mono font-bold">${member.nric}</p>
           </div>
-          <button onclick="removeCommittee('${member.nric}')" class="text-red-500 text-sm font-bold px-3 py-1 hover:bg-red-50 dark:hover:bg-gray-700 rounded">Remove</button>
+          <button onclick="removeCommittee('${member.nric}')" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 dark:hover:bg-gray-700 rounded-lg transition">Remove</button>
         </li>`; 
       });
     }
@@ -616,7 +618,7 @@
       try {
         await callBackend('archiveAndReset');
         showToast("System reset successfully! Logging out.");
-        setTimeout(() => { updateApp(); }, 2000);
+        setTimeout(() => { window.location.reload(); }, 2000);
       } catch (e) { showToast(e.message, true); }
     }
 
