@@ -170,13 +170,18 @@
             <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition">Loading...</button>
           </div>
           
-          <!-- Edit Toggle with YES/NO Segmented Control -->
+          <!-- Edit Toggle with Dynamic Slider -->
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
-            <p class="text-sm font-bold text-gray-500 mb-4">Allow participants to edit their details.</p>
-            <div class="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-lg border-2 border-gray-300 dark:border-gray-600">
-              <button id="editToggleYes" onclick="setEditState(true)" class="flex-1 py-2 px-4 rounded-md font-bold transition">Yes</button>
-              <button id="editToggleNo" onclick="setEditState(false)" class="flex-1 py-2 px-4 rounded-md font-bold transition">No</button>
+            <div class="flex items-center space-x-4 mt-6">
+              <!-- Slider Knob -->
+              <button id="editSliderToggle" onclick="toggleEditSlider()" class="relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner">
+                <span id="editSliderKnob" class="inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center">
+                  <!-- Loading spinner hidden by default -->
+                  <div id="editSliderLoader" class="loader hidden-force" style="width: 14px; height: 14px; border-width: 2px; border-color: #e5e7eb; border-top-color: #2563eb;"></div>
+                </span>
+              </button>
+              <span id="editStatusText" class="font-extrabold text-lg text-gray-600 dark:text-gray-400 transition-colors">No</span>
             </div>
           </div>
         </div>
@@ -665,15 +670,21 @@
         rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800 transition"; 
       }
       
-      const yesBtn = document.getElementById('editToggleYes');
-      const noBtn = document.getElementById('editToggleNo');
-      if (yesBtn && noBtn) {
+      const sliderBtn = document.getElementById('editSliderToggle');
+      const sliderKnob = document.getElementById('editSliderKnob');
+      const statusText = document.getElementById('editStatusText');
+      
+      if (sliderBtn && sliderKnob && statusText) {
         if(appSettings.allowEdits) { 
-          yesBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition bg-green-600 text-white shadow";
-          noBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600";
+          sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-green-800 bg-green-600 shadow-inner";
+          sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-7 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center";
+          statusText.textContent = "Yes";
+          statusText.className = "font-extrabold text-lg text-green-600 dark:text-green-400 transition-colors";
         } else { 
-          yesBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600";
-          noBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition bg-red-600 text-white shadow";
+          sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner";
+          sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center";
+          statusText.textContent = "No";
+          statusText.className = "font-extrabold text-lg text-gray-600 dark:text-gray-400 transition-colors";
         }
       }
     }
@@ -694,11 +705,14 @@
       } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { btn.disabled = false; }
     }
 
-    async function setEditState(newState) {
-      if (appSettings.allowEdits === newState) return;
-      const yesBtn = document.getElementById('editToggleYes');
-      const noBtn = document.getElementById('editToggleNo');
-      yesBtn.disabled = true; noBtn.disabled = true;
+    async function toggleEditSlider() {
+      const sliderBtn = document.getElementById('editSliderToggle');
+      const sliderLoader = document.getElementById('editSliderLoader');
+      if(sliderBtn.disabled) return;
+
+      const newState = !appSettings.allowEdits;
+      sliderBtn.disabled = true;
+      sliderLoader.classList.remove('hidden-force');
       
       try { 
         await callBackend('toggleEdits', { status: newState }); 
@@ -706,9 +720,11 @@
         applyAdminVisuals(); 
         showToast(newState ? "Edits Enabled" : "Edits Locked");
       } catch(e) { 
-        showToast("Failed.", true); applyAdminVisuals(); 
+        showToast("Failed to update.", true); 
+        applyAdminVisuals(); 
       } finally { 
-        yesBtn.disabled = false; noBtn.disabled = false; 
+        sliderBtn.disabled = false; 
+        sliderLoader.classList.add('hidden-force'); 
       }
     }
 
