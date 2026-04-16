@@ -74,7 +74,7 @@
     <div id="viewRegister" class="hidden-force max-w-4xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600 space-y-4 pb-20">
       <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
         <h3 class="text-2xl font-bold">New Registration</h3>
-        <button onclick="goHome()" class="text-sm font-bold text-gray-500 hover:text-primary">Cancel</button>
+        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
       </div>
       
       <p class="text-sm text-gray-500 mb-4 font-bold">You can register yourself and your family/group in a single submission. Person 1 will be considered the Main Point of Contact.</p>
@@ -101,7 +101,7 @@
     <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600">
       <div class="flex justify-between items-center mb-6 border-b-2 border-gray-300 dark:border-gray-600 pb-2">
         <h2 class="text-2xl font-bold">Secure Login</h2>
-        <button onclick="goHome()" class="text-sm font-bold text-gray-500 hover:text-primary">Cancel</button>
+        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
       </div>
       <div id="loginError" class="text-red-500 text-sm mb-3 font-bold hidden-force"></div>
       <div class="mb-5">
@@ -130,7 +130,7 @@
           <h3 class="text-2xl font-extrabold" id="welcomeUserText">Welcome!</h3>
           <p class="text-sm font-bold text-gray-500" id="userRoleBadge">Role: Participant</p>
         </div>
-        <button onclick="logout(this)" class="text-red-600 text-sm font-bold border-2 border-red-600 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 transition flex items-center justify-center">
+        <button onclick="logout(this)" class="text-red-600 text-sm font-bold border-2 border-red-600 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 transition flex items-center justify-center shadow-sm">
           <span class="btn-text">Logout</span><div class="btn-spinner spinner-red hidden-force ml-2 !w-4 !h-4 border-2"></div>
         </button>
       </div>
@@ -195,7 +195,7 @@
           <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project.</p>
           <div class="flex space-x-3 mb-5">
             <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-            <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center">
+            <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center shadow-sm">
               <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
             </button>
           </div>
@@ -210,7 +210,7 @@
             <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-bold">
             <div class="flex space-x-2">
               <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-              <button onclick="addCommittee(this)" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold hover:bg-blue-700 border-2 border-blue-800 flex justify-center items-center">
+              <button onclick="addCommittee(this)" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold hover:bg-blue-700 border-2 border-blue-800 flex justify-center items-center shadow-sm">
                 <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
               </button>
             </div>
@@ -234,12 +234,12 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
       <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Initialize Trip Setup</h3>
       <div class="space-y-5 mb-6 mt-4">
-        <div><label class="block text-sm font-extrabold mb-1">Trip Title</label><input type="text" id="tripTitleInput" value="Overseas Trip" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
+        <div><label class="block text-sm font-extrabold mb-1">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
         <div><label class="block text-sm font-extrabold mb-1">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
       </div>
       <div class="flex space-x-3">
-        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500">Cancel</button>
-        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center">
+        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500 shadow-sm transition">Cancel</button>
+        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center shadow-sm transition">
           <span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
         </button>
       </div>
@@ -260,7 +260,7 @@
         <div class="flex-1 picker-col" id="colYear"></div>
       </div>
       <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700">
-        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800">Done</button>
+        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm">Done</button>
       </div>
     </div>
   </div>
@@ -429,7 +429,7 @@
     function addRegMember() {
       const idx = regMemberCount++;
       
-      let groupOpts = `<option value="">None / Not Applicable</option>`;
+      let groupOpts = `<option value="">Select...</option>`;
       if(appSettings.projectGroups) {
         appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}">${g}</option>`; });
       }
@@ -592,7 +592,7 @@
         
         loadedFamily.forEach((m, i) => {
           
-          let groupOpts = `<option value="">None / Not Applicable</option>`;
+          let groupOpts = `<option value="">Select...</option>`;
           if(appSettings.projectGroups) {
             appSettings.projectGroups.forEach(g => { 
               groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; 
@@ -734,7 +734,7 @@
     function cancelTripSetup() { document.getElementById('tripSetupModal').classList.add('hidden-force'); }
     
     async function confirmTripSetup(btn) {
-      const title = document.getElementById('tripTitleInput').value.trim() || 'Overseas Trip';
+      const title = document.getElementById('tripTitleInput').value.trim() || 'MYG Overseas Trip';
       const year = document.getElementById('tripYearInput').value.trim() || new Date().getFullYear();
       await executeToggleRegistration(true, title, year, btn);
       document.getElementById('tripSetupModal').classList.add('hidden-force');
