@@ -103,7 +103,17 @@
       <div class="mb-8 relative">
         <label class="block text-sm font-bold mb-1">Password</label>
         <input type="password" id="loginPass" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg pr-12 font-medium" placeholder="••••••••" onkeypress="handleEnter(event, attemptLogin)">
-        <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-9 text-gray-500 text-xl font-bold">👁️</button>
+        <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-9 text-gray-500 hover:text-primary transition">
+          <!-- Eye Open SVG -->
+          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <!-- Eye Closed SVG -->
+          <svg id="eyeClosed" class="hidden-force" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+          </svg>
+        </button>
       </div>
       <button onclick="attemptLogin()" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
         <span id="loginText">Login</span>
@@ -153,23 +163,29 @@
       <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Reg Toggle -->
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
-            <p class="text-sm font-bold text-gray-500 mb-4">Allow users to sign up.</p>
-            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800">Loading...</button>
+            <p class="text-sm font-bold text-gray-500 mb-4">Allow new participants to sign up using the public form.</p>
+            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition">Loading...</button>
           </div>
+          
+          <!-- Edit Toggle with YES/NO Segmented Control -->
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
-            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Profile Editing</h3>
-            <p class="text-sm font-bold text-gray-500 mb-4">Allow users to edit their details.</p>
-            <button id="toggleEditBtn" onclick="toggleEditState()" class="w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800">Loading...</button>
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Allow participants to edit their details.</p>
+            <div class="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-lg border-2 border-gray-300 dark:border-gray-600">
+              <button id="editToggleYes" onclick="setEditState(true)" class="flex-1 py-2 px-4 rounded-md font-bold transition">Yes</button>
+              <button id="editToggleNo" onclick="setEditState(false)" class="flex-1 py-2 px-4 rounded-md font-bold transition">No</button>
+            </div>
           </div>
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Project Groups</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project Group.</p>
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Projects</h3>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project.</p>
           <div class="flex space-x-3 mb-5">
-            <input type="text" id="newGroupName" placeholder="e.g. Group A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
+            <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
             <button onclick="addProjectGroup()" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800">Add</button>
           </div>
           <ul id="groupList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
@@ -331,7 +347,22 @@
     }
 
     function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
-    function togglePassword(id) { const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; }
+    
+    function togglePassword(id) { 
+      const el = document.getElementById(id); 
+      const eyeOpen = document.getElementById('eyeOpen');
+      const eyeClosed = document.getElementById('eyeClosed');
+      if(el.type === 'password') { 
+        el.type = 'text'; 
+        eyeOpen.classList.add('hidden-force');
+        eyeClosed.classList.remove('hidden-force');
+      } else { 
+        el.type = 'password'; 
+        eyeOpen.classList.remove('hidden-force');
+        eyeClosed.classList.add('hidden-force');
+      } 
+    }
+    
     function handleEnter(e, func) { if(e.key === 'Enter') func(); }
 
     function showToast(msg, isError = false) {
@@ -388,7 +419,7 @@
             <div><label class="block text-sm font-bold mb-1">Gender</label><select class="reg-f-gender w-full p-3 border-2 border-gray-400 rounded-lg font-bold"><option>Male</option><option>Female</option></select></div>
             <div><label class="block text-sm font-bold mb-1">Contact Number (8-digit)</label><input ${idx===0?'required':''} type="tel" pattern="[0-9]{8}" class="reg-f-contact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
             <div><label class="block text-sm font-bold mb-1">Date of Birth</label><input required type="text" id="dob_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('dob_${idx}', 'dob')" class="reg-f-dob w-full p-3 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer bg-white dark:bg-gray-700"></div>
-            <div><label class="block text-sm font-bold mb-1">Project Group</label><select class="reg-f-group w-full p-3 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
+            <div><label class="block text-sm font-bold mb-1">Project</label><select class="reg-f-group w-full p-3 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
             <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Home Address</label><textarea required class="reg-f-address w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
           </div>
 
@@ -549,7 +580,7 @@
                 <div><p class="font-bold text-gray-500 text-xs">Gender & Nat.</p><p class="font-extrabold">${m.gender} | ${m.nationality}</p></div>
                 <div><p class="font-bold text-gray-500 text-xs">Contact & Email</p><p class="font-extrabold">${m.contact} | ${m.email || 'N/A'}</p></div>
                 
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Project Group</p><p class="font-extrabold text-primary">${m.group || 'None'}</p></div>
+                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Project</p><p class="font-extrabold text-primary">${m.group || 'None'}</p></div>
                 <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Home Address</p><p class="font-bold">${m.address}</p></div>
                 
                 <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport No.</p><p class="font-extrabold uppercase">${m.passportNo}</p></div>
@@ -574,7 +605,7 @@
                 <div><label class="text-xs font-bold mb-1 block">Contact</label><input type="tel" pattern="[0-9]{8}" id="edContact_${i}" value="${m.contact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
                 <div><label class="text-xs font-bold mb-1 block">Gender</label><select id="edGender_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.gender==='Male'?'selected':''}>Male</option><option ${m.gender==='Female'?'selected':''}>Female</option></select></div>
                 <div><label class="text-xs font-bold mb-1 block">Role</label><select id="edRole_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div>
-                <div><label class="text-xs font-bold mb-1 block">Project Group</label><select id="edGroup_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
+                <div><label class="text-xs font-bold mb-1 block">Project</label><select id="edGroup_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
                 <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Address</label><textarea id="edAddress_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.address}</textarea></div>
                 
                 <div><label class="text-xs font-bold mb-1 block">Nationality</label><input type="text" id="edNat_${i}" value="${m.nationality}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
@@ -624,13 +655,27 @@
 
     // --- ADMIN SETTINGS LOGIC ---
     function applyAdminVisuals() {
-      const rBtn = document.getElementById('toggleRegBtn'); const eBtn = document.getElementById('toggleEditBtn');
-      if(!rBtn || !eBtn) return;
-      if(appSettings.registrationOpen) { rBtn.textContent = "OPEN (Click to Close)"; rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800"; } 
-      else { rBtn.textContent = "CLOSED (Click to Open)"; rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800"; }
+      const rBtn = document.getElementById('toggleRegBtn'); 
+      if(!rBtn) return;
+      if(appSettings.registrationOpen) { 
+        rBtn.textContent = "OPEN (Click to Close)"; 
+        rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition"; 
+      } else { 
+        rBtn.textContent = "CLOSED (Click to Open)"; 
+        rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800 transition"; 
+      }
       
-      if(appSettings.allowEdits) { eBtn.textContent = "ENABLED (Click to Lock)"; eBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800"; } 
-      else { eBtn.textContent = "LOCKED (Click to Enable)"; eBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800"; }
+      const yesBtn = document.getElementById('editToggleYes');
+      const noBtn = document.getElementById('editToggleNo');
+      if (yesBtn && noBtn) {
+        if(appSettings.allowEdits) { 
+          yesBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition bg-green-600 text-white shadow";
+          noBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600";
+        } else { 
+          yesBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600";
+          noBtn.className = "flex-1 py-2 px-4 rounded-md font-bold transition bg-red-600 text-white shadow";
+        }
+      }
     }
 
     function initiateRegistrationToggle() {
@@ -649,22 +694,33 @@
       } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { btn.disabled = false; }
     }
 
-    async function toggleEditState() {
-      const btn = document.getElementById('toggleEditBtn'); btn.textContent = "Updating..."; btn.disabled = true;
-      const newState = !appSettings.allowEdits;
-      try { await callBackend('toggleEdits', { status: newState }); appSettings.allowEdits = newState; applyAdminVisuals(); showToast(newState ? "Edits Enabled" : "Edits Locked");
-      } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { btn.disabled = false; }
+    async function setEditState(newState) {
+      if (appSettings.allowEdits === newState) return;
+      const yesBtn = document.getElementById('editToggleYes');
+      const noBtn = document.getElementById('editToggleNo');
+      yesBtn.disabled = true; noBtn.disabled = true;
+      
+      try { 
+        await callBackend('toggleEdits', { status: newState }); 
+        appSettings.allowEdits = newState; 
+        applyAdminVisuals(); 
+        showToast(newState ? "Edits Enabled" : "Edits Locked");
+      } catch(e) { 
+        showToast("Failed.", true); applyAdminVisuals(); 
+      } finally { 
+        yesBtn.disabled = false; noBtn.disabled = false; 
+      }
     }
 
     // PROJECT GROUPS MANAGEMENT
     async function addProjectGroup() {
       const name = document.getElementById('newGroupName').value.trim();
-      if(!name) return showToast("Group name is required", true);
+      if(!name) return showToast("Project name is required", true);
       try {
         const res = await callBackend('addProjectGroup', { groupName: name });
         document.getElementById('newGroupName').value = '';
         appSettings.projectGroups = res.groups;
-        renderGroupList(res.groups); showToast("Group Added");
+        renderGroupList(res.groups); showToast("Project Added");
       } catch(e) { showToast(e.message, true); }
     }
 
@@ -672,14 +728,14 @@
       try { 
         const res = await callBackend('removeProjectGroup', { groupName: name }); 
         appSettings.projectGroups = res.groups;
-        renderGroupList(res.groups); showToast("Group Removed"); 
+        renderGroupList(res.groups); showToast("Project Removed"); 
       } catch(e) { showToast(e.message, true); }
     }
 
     function renderGroupList(list) {
       const ul = document.getElementById('groupList');
       if(!ul) return;
-      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No project groups defined yet.</li>' : '';
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No projects defined yet.</li>' : '';
       if(list) list.forEach(g => { 
         const safeGroup = g.replace(/'/g, "\\'");
         ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
