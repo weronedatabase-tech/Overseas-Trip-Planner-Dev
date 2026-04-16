@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Overseas Trip Planner</title>
+  <title>MYG Overseas Trip Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#2563eb' } } } }
@@ -21,6 +21,12 @@
     .picker-col::-webkit-scrollbar { display: none; }
     .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
     .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 2px solid rgba(37, 99, 235, 0.6); border-bottom: 2px solid rgba(37, 99, 235, 0.6); pointer-events: none; z-index: 10; }
+    
+    /* Inline Button Spinners */
+    .btn-spinner { width: 18px; height: 18px; border: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+    .spinner-white { border-color: rgba(255,255,255,0.3); border-top-color: #ffffff; }
+    .spinner-red { border-color: rgba(220,38,38,0.3); border-top-color: #dc2626; }
+    .spinner-primary { border-color: rgba(37,99,235,0.3); border-top-color: #2563eb; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
@@ -28,9 +34,11 @@
   <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE</div>
 
   <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-3 flex justify-between items-center z-10 sticky top-0">
-    <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">TripApp</div>
+    <div class="font-bold text-lg text-primary cursor-pointer" onclick="goHome()">MYG Overseas Trip</div>
     <div class="flex items-center space-x-3">
-      <button onclick="updateApp()" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition font-bold">Update App</button>
+      <button onclick="updateApp(this)" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition font-bold flex justify-center items-center">
+        <span class="btn-text">Update App</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
+      </button>
       <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
     </div>
   </header>
@@ -45,7 +53,7 @@
     <!-- VIEW 1: LANDING -->
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
       <div class="text-center">
-        <h1 class="text-3xl font-extrabold mb-2">Overseas Trip Planner</h1>
+        <h1 class="text-3xl font-extrabold mb-2">MYG Overseas Trip Planner</h1>
         <p class="text-gray-600 dark:text-gray-400 font-medium">Welcome! Please select an option below.</p>
       </div>
       
@@ -71,7 +79,7 @@
       
       <p class="text-sm text-gray-500 mb-4 font-bold">You can register yourself and your family/group in a single submission. Person 1 will be considered the Main Point of Contact.</p>
 
-      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-6">
+      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration(this.querySelector('button[type=submit]'));" class="space-y-6">
         <div id="membersContainer" class="space-y-8">
           <!-- Dynamic Members will be injected here -->
         </div>
@@ -82,8 +90,8 @@
 
         <div class="pt-6 border-t-2 border-gray-300 dark:border-gray-600">
           <button type="submit" class="w-full bg-green-600 text-white font-extrabold text-lg py-4 rounded-lg hover:bg-green-700 flex justify-center items-center shadow-lg border-2 border-green-700 transition">
-            <span id="regSubmitText">Submit</span>
-            <div id="regLoader" class="loader hidden-force ml-2 border-white"></div>
+            <span class="btn-text">Submit</span>
+            <div class="btn-spinner spinner-white hidden-force ml-2"></div>
           </button>
         </div>
       </form>
@@ -98,26 +106,19 @@
       <div id="loginError" class="text-red-500 text-sm mb-3 font-bold hidden-force"></div>
       <div class="mb-5">
         <label class="block text-sm font-bold mb-1">Full NRIC / FIN</label>
-        <input type="text" id="loginNric" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-medium" placeholder="S1234567A" onkeypress="handleEnter(event, attemptLogin)">
+        <input type="text" id="loginNric" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-medium" placeholder="S1234567A" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
       </div>
       <div class="mb-8 relative">
         <label class="block text-sm font-bold mb-1">Password</label>
-        <input type="password" id="loginPass" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg pr-12 font-medium" placeholder="••••••••" onkeypress="handleEnter(event, attemptLogin)">
+        <input type="password" id="loginPass" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg pr-12 font-medium" placeholder="••••••••" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
         <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-9 text-gray-500 hover:text-primary transition">
-          <!-- Eye Open SVG -->
-          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <!-- Eye Closed SVG -->
-          <svg id="eyeClosed" class="hidden-force" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-          </svg>
+          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          <svg id="eyeClosed" class="hidden-force" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
         </button>
       </div>
-      <button onclick="attemptLogin()" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
-        <span id="loginText">Login</span>
-        <div id="loginLoader" class="loader hidden-force ml-2 border-white"></div>
+      <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
+        <span class="btn-text">Login</span>
+        <div class="btn-spinner spinner-white hidden-force ml-2"></div>
       </button>
     </div>
 
@@ -129,7 +130,9 @@
           <h3 class="text-2xl font-extrabold" id="welcomeUserText">Welcome!</h3>
           <p class="text-sm font-bold text-gray-500" id="userRoleBadge">Role: Participant</p>
         </div>
-        <button onclick="logout()" class="text-red-600 text-sm font-bold border-2 border-red-600 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 transition">Logout</button>
+        <button onclick="logout(this)" class="text-red-600 text-sm font-bold border-2 border-red-600 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 transition flex items-center justify-center">
+          <span class="btn-text">Logout</span><div class="btn-spinner spinner-red hidden-force ml-2 !w-4 !h-4 border-2"></div>
+        </button>
       </div>
 
       <div class="flex space-x-2 overflow-x-auto pb-0 border-b-4 border-gray-300 dark:border-gray-600 scrollbar-hide mt-4" id="navTabs">
@@ -167,17 +170,17 @@
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
             <p class="text-sm font-bold text-gray-500 mb-4">Allow new participants to sign up using the public form.</p>
-            <button id="toggleRegBtn" onclick="initiateRegistrationToggle()" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition">Loading...</button>
+            <button id="toggleRegBtn" onclick="initiateRegistrationToggle(this)" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition flex justify-center items-center">
+              <span class="btn-text">Loading...</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+            </button>
           </div>
           
           <!-- Edit Toggle with Dynamic Slider -->
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
             <div class="flex items-center space-x-4 mt-6">
-              <!-- Slider Knob -->
-              <button id="editSliderToggle" onclick="toggleEditSlider()" class="relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner">
+              <button id="editSliderToggle" onclick="toggleEditSlider(this)" class="relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner">
                 <span id="editSliderKnob" class="inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center">
-                  <!-- Loading spinner hidden by default -->
                   <div id="editSliderLoader" class="loader hidden-force" style="width: 14px; height: 14px; border-width: 2px; border-color: #e5e7eb; border-top-color: #2563eb;"></div>
                 </span>
               </button>
@@ -186,16 +189,20 @@
           </div>
         </div>
 
+        <!-- Project Groups -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Projects</h3>
           <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project.</p>
           <div class="flex space-x-3 mb-5">
             <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-            <button onclick="addProjectGroup()" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800">Add</button>
+            <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center">
+              <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+            </button>
           </div>
           <ul id="groupList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
         </div>
 
+        <!-- Committee Management -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Committee Members</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
@@ -203,7 +210,9 @@
             <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-bold">
             <div class="flex space-x-2">
               <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-              <button onclick="addCommittee()" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold hover:bg-blue-700 border-2 border-blue-800">Add</button>
+              <button onclick="addCommittee(this)" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold hover:bg-blue-700 border-2 border-blue-800 flex justify-center items-center">
+                <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+              </button>
             </div>
           </div>
           <ul id="commList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
@@ -211,8 +220,10 @@
 
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-red-500">
           <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-3 text-red-600">Danger Zone</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start.</p>
-          <button onclick="archiveSystem()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md border-2 border-red-800">Archive & Reset</button>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start. All participants must re-register.</p>
+          <button onclick="archiveSystem(this)" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center">
+            <span class="btn-text">Archive & Reset</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+          </button>
         </div>
       </div>
     </div>
@@ -228,7 +239,9 @@
       </div>
       <div class="flex space-x-3">
         <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500">Cancel</button>
-        <button onclick="confirmTripSetup()" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800">Open Reg</button>
+        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center">
+          <span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+        </button>
       </div>
     </div>
   </div>
@@ -265,6 +278,21 @@
     let currentUser = null; 
     let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[] };
     let regMemberCount = 0; let loadedFamily =[];
+
+    // --- BUTTON LOADER HELPER ---
+    function setBtnLoading(btn, isLoading) {
+      if (!btn) return;
+      const spinner = btn.querySelector('.btn-spinner');
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-80', 'cursor-not-allowed');
+        if (spinner) spinner.classList.remove('hidden-force');
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-80', 'cursor-not-allowed');
+        if (spinner) spinner.classList.add('hidden-force');
+      }
+    }
 
     // --- ROLODEX LOGIC ---
     let currentPickerTarget = null; const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -472,7 +500,7 @@
       if(selectEl.value === 'CAREGIVER') div.classList.remove('hidden-force'); else div.classList.add('hidden-force');
     }
 
-    async function submitRegistration() {
+    async function submitRegistration(btn) {
       const blocks = document.querySelectorAll('.member-block');
       const payloadArray =[];
       blocks.forEach(b => {
@@ -490,21 +518,20 @@
         });
       });
 
-      const btn = document.getElementById('regSubmitText'); const loader = document.getElementById('regLoader');
-      btn.classList.add('hidden-force'); loader.classList.remove('hidden-force');
-
+      setBtnLoading(btn, true);
       try {
         await callBackend('submitRegistration', { payload: payloadArray });
         showToast("Registration Successful! Please login."); setTimeout(() => navTo('login'), 1500);
       } catch (e) { showToast(e.message, true); } 
-      finally { btn.classList.remove('hidden-force'); loader.classList.add('hidden-force'); }
+      finally { setBtnLoading(btn, false); }
     }
 
-    async function attemptLogin() {
+    async function attemptLogin(btn) {
       const nric = document.getElementById('loginNric').value.trim().toUpperCase(); const pass = document.getElementById('loginPass').value;
       const err = document.getElementById('loginError');
       if(!nric || !pass) { err.textContent = "Please enter NRIC and Password"; return err.classList.remove('hidden-force'); }
-      err.classList.add('hidden-force'); document.getElementById('loginText').classList.add('hidden-force'); document.getElementById('loginLoader').classList.remove('hidden-force');
+      err.classList.add('hidden-force'); 
+      setBtnLoading(btn, true);
 
       try {
         const res = await callBackend('login', { nric, password: pass });
@@ -512,10 +539,13 @@
         localStorage.setItem('userSession', JSON.stringify(currentUser));
         renderDashboard();
       } catch (error) { err.textContent = error.message; err.classList.remove('hidden-force'); } 
-      finally { document.getElementById('loginText').classList.remove('hidden-force'); document.getElementById('loginLoader').classList.add('hidden-force'); }
+      finally { setBtnLoading(btn, false); }
     }
 
-    function logout() { localStorage.removeItem('userSession'); currentUser = null; window.location.reload(); }
+    function logout(btn) { 
+      setBtnLoading(btn, true);
+      localStorage.removeItem('userSession'); currentUser = null; window.location.reload(); 
+    }
 
     async function renderDashboard() {
       document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
@@ -601,7 +631,7 @@
               </div>
             </div>
             
-            <form id="profEdit_${i}" onsubmit="event.preventDefault(); saveProfileEdit(${i});" class="hidden-force bg-blue-50 dark:bg-gray-800 p-6 rounded-xl border-2 border-primary space-y-5 shadow-lg">
+            <form id="profEdit_${i}" onsubmit="event.preventDefault(); saveProfileEdit(${i}, this.querySelector('button[type=submit]'));" class="hidden-force bg-blue-50 dark:bg-gray-800 p-6 rounded-xl border-2 border-primary space-y-5 shadow-lg">
               <h4 class="font-extrabold text-2xl mb-4 border-b-2 border-blue-200 dark:border-gray-600 pb-2">Edit Details</h4>
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -628,7 +658,9 @@
               
               <div class="flex space-x-3 pt-4 border-t-2 border-blue-200 dark:border-gray-600">
                 <button type="button" onclick="cancelEditMode(${i})" class="flex-1 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-extrabold py-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 transition">Cancel</button>
-                <button type="submit" class="flex-1 bg-primary text-white font-extrabold py-3 rounded-lg border-2 border-blue-800 hover:bg-blue-700 shadow transition">Save Changes</button>
+                <button type="submit" class="flex-1 bg-primary text-white font-extrabold py-3 rounded-lg border-2 border-blue-800 hover:bg-blue-700 shadow transition flex justify-center items-center">
+                  <span class="btn-text">Save Changes</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+                </button>
               </div>
             </form>
           `;
@@ -639,7 +671,8 @@
     function enableEditMode(i) { document.getElementById(`profCard_${i}`).classList.add('hidden-force'); document.getElementById(`profEdit_${i}`).classList.remove('hidden-force'); }
     function cancelEditMode(i) { document.getElementById(`profEdit_${i}`).classList.add('hidden-force'); document.getElementById(`profCard_${i}`).classList.remove('hidden-force'); }
 
-    async function saveProfileEdit(i) {
+    async function saveProfileEdit(i, btn) {
+      setBtnLoading(btn, true);
       const updated = {
         nric: loadedFamily[i].nric, 
         fullName: document.getElementById(`edName_${i}`).value, email: document.getElementById(`edEmail_${i}`).value,
@@ -656,18 +689,20 @@
       try {
         await callBackend('updateProfile', {member: updated}); showToast("Profile Updated!"); loadProfileData();
       } catch (e) { showToast(e.message, true); }
+      finally { setBtnLoading(btn, false); }
     }
 
     // --- ADMIN SETTINGS LOGIC ---
     function applyAdminVisuals() {
       const rBtn = document.getElementById('toggleRegBtn'); 
-      if(!rBtn) return;
-      if(appSettings.registrationOpen) { 
-        rBtn.textContent = "OPEN (Click to Close)"; 
-        rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition"; 
-      } else { 
-        rBtn.textContent = "CLOSED (Click to Open)"; 
-        rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800 transition"; 
+      if(rBtn) {
+        if(appSettings.registrationOpen) { 
+          rBtn.innerHTML = `<span class="btn-text">OPEN (Click to Close)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; 
+          rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition flex justify-center items-center"; 
+        } else { 
+          rBtn.innerHTML = `<span class="btn-text">CLOSED (Click to Open)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; 
+          rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center"; 
+        }
       }
       
       const sliderBtn = document.getElementById('editSliderToggle');
@@ -689,63 +724,80 @@
       }
     }
 
-    function initiateRegistrationToggle() {
-      if(!appSettings.registrationOpen) { document.getElementById('tripYearInput').value = new Date().getFullYear(); document.getElementById('tripSetupModal').classList.remove('hidden-force'); } 
-      else { executeToggleRegistration(false); }
+    function initiateRegistrationToggle(btn) {
+      if(!appSettings.registrationOpen) { 
+        document.getElementById('tripYearInput').value = new Date().getFullYear(); 
+        document.getElementById('tripSetupModal').classList.remove('hidden-force'); 
+      } 
+      else { executeToggleRegistration(false, '', '', btn); }
     }
     function cancelTripSetup() { document.getElementById('tripSetupModal').classList.add('hidden-force'); }
-    function confirmTripSetup() {
+    
+    async function confirmTripSetup(btn) {
+      const title = document.getElementById('tripTitleInput').value.trim() || 'Overseas Trip';
+      const year = document.getElementById('tripYearInput').value.trim() || new Date().getFullYear();
+      await executeToggleRegistration(true, title, year, btn);
       document.getElementById('tripSetupModal').classList.add('hidden-force');
-      executeToggleRegistration(true, document.getElementById('tripTitleInput').value.trim() || 'Overseas Trip', document.getElementById('tripYearInput').value.trim() || new Date().getFullYear());
     }
 
-    async function executeToggleRegistration(newState, title = '', year = '') {
-      const btn = document.getElementById('toggleRegBtn'); btn.textContent = "Updating..."; btn.disabled = true;
-      try { await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); appSettings.registrationOpen = newState; applyAdminVisuals(); showToast(newState ? "Registration Opened" : "Registration Closed");
-      } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { btn.disabled = false; }
+    async function executeToggleRegistration(newState, title = '', year = '', sourceBtn = null) {
+      const mainBtn = document.getElementById('toggleRegBtn'); 
+      setBtnLoading(mainBtn, true);
+      if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, true);
+      
+      try { 
+        await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); 
+        appSettings.registrationOpen = newState; applyAdminVisuals(); 
+        showToast(newState ? "Registration Opened" : "Registration Closed");
+      } catch(e) { 
+        showToast("Failed.", true); applyAdminVisuals(); 
+      } finally { 
+        setBtnLoading(mainBtn, false);
+        if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, false);
+      }
     }
 
-    async function toggleEditSlider() {
-      const sliderBtn = document.getElementById('editSliderToggle');
+    async function toggleEditSlider(btn) {
+      if(btn.disabled) return;
       const sliderLoader = document.getElementById('editSliderLoader');
-      if(sliderBtn.disabled) return;
-
       const newState = !appSettings.allowEdits;
-      sliderBtn.disabled = true;
+      
+      btn.disabled = true;
       sliderLoader.classList.remove('hidden-force');
       
       try { 
         await callBackend('toggleEdits', { status: newState }); 
-        appSettings.allowEdits = newState; 
-        applyAdminVisuals(); 
+        appSettings.allowEdits = newState; applyAdminVisuals(); 
         showToast(newState ? "Edits Enabled" : "Edits Locked");
       } catch(e) { 
-        showToast("Failed to update.", true); 
-        applyAdminVisuals(); 
+        showToast("Failed to update.", true); applyAdminVisuals(); 
       } finally { 
-        sliderBtn.disabled = false; 
-        sliderLoader.classList.add('hidden-force'); 
+        btn.disabled = false; sliderLoader.classList.add('hidden-force'); 
       }
     }
 
     // PROJECT GROUPS MANAGEMENT
-    async function addProjectGroup() {
+    async function addProjectGroup(btn) {
       const name = document.getElementById('newGroupName').value.trim();
       if(!name) return showToast("Project name is required", true);
+      setBtnLoading(btn, true);
       try {
         const res = await callBackend('addProjectGroup', { groupName: name });
         document.getElementById('newGroupName').value = '';
         appSettings.projectGroups = res.groups;
         renderGroupList(res.groups); showToast("Project Added");
       } catch(e) { showToast(e.message, true); }
+      finally { setBtnLoading(btn, false); }
     }
 
-    async function removeProjectGroup(name) {
+    async function removeProjectGroup(name, btn) {
+      setBtnLoading(btn, true);
       try { 
         const res = await callBackend('removeProjectGroup', { groupName: name }); 
         appSettings.projectGroups = res.groups;
         renderGroupList(res.groups); showToast("Project Removed"); 
       } catch(e) { showToast(e.message, true); }
+      finally { setBtnLoading(btn, false); }
     }
 
     function renderGroupList(list) {
@@ -756,24 +808,34 @@
         const safeGroup = g.replace(/'/g, "\\'");
         ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
           <span class="font-extrabold text-lg">${g}</span>
-          <button onclick="removeProjectGroup('${safeGroup}')" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg">Remove</button>
+          <button onclick="removeProjectGroup('${safeGroup}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center">
+            <span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div>
+          </button>
         </li>`; 
       });
     }
 
     // COMMITTEE MANAGEMENT
-    async function addCommittee() {
+    async function addCommittee(btn) {
       const name = document.getElementById('newCommName').value.trim(); const nric = document.getElementById('newCommNric').value.trim(); const phone = document.getElementById('newCommPhone').value.trim();
       if(!nric || !name || !phone) return showToast("Name, NRIC, and Phone required", true);
+      
+      setBtnLoading(btn, true);
       try {
         const res = await callBackend('addCommittee', { nric, name, phone });
         document.getElementById('newCommName').value = ''; document.getElementById('newCommNric').value = ''; document.getElementById('newCommPhone').value = '';
         appSettings.committee = res.list; renderCommList(res.list); showToast("Added to Committee");
       } catch(e) { showToast(e.message, true); }
+      finally { setBtnLoading(btn, false); }
     }
 
-    async function removeCommittee(nric) { 
-      try { const res = await callBackend('removeCommittee', { nric }); appSettings.committee = res.list; renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); } 
+    async function removeCommittee(nric, btn) { 
+      setBtnLoading(btn, true);
+      try { 
+        const res = await callBackend('removeCommittee', { nric }); 
+        appSettings.committee = res.list; renderCommList(res.list); showToast("Removed from Committee"); 
+      } catch(e) { showToast(e.message, true); } 
+      finally { setBtnLoading(btn, false); }
     }
 
     function renderCommList(list) {
@@ -783,18 +845,24 @@
       if(list) list.forEach(m => { 
         ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
           <div><p class="font-extrabold text-lg">${m.name}</p><p class="text-sm text-gray-500 font-mono font-bold">${m.nric} | ${m.phone}</p></div>
-          <button onclick="removeCommittee('${m.nric}')" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg">Remove</button>
+          <button onclick="removeCommittee('${m.nric}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center">
+            <span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div>
+          </button>
         </li>`; 
       });
     }
 
-    async function archiveSystem() {
-      if(!confirm("⚠️ ARE YOU SURE?\n\nThis archives the database and completely resets the system.")) return;
+    async function archiveSystem(btn) {
+      if(!confirm("⚠️ ARE YOU SURE?\n\nThis archives the database and completely resets the system. All participants must re-register.")) return;
       showToast("Archiving system...", false);
-      try { await callBackend('archiveAndReset'); showToast("Reset successful!"); setTimeout(() => { window.location.reload(); }, 2000); } catch (e) { showToast(e.message, true); }
+      setBtnLoading(btn, true);
+      try { 
+        await callBackend('archiveAndReset'); showToast("Reset successful!"); setTimeout(() => { window.location.reload(); }, 2000); 
+      } catch (e) { showToast(e.message, true); setBtnLoading(btn, false); }
     }
 
-    function updateApp() {
+    function updateApp(btn) {
+      setBtnLoading(btn, true);
       showToast("Updating app data and clearing caches...");
       if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } }); }
       setTimeout(() => location.reload(true), 1000);
