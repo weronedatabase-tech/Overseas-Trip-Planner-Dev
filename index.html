@@ -165,6 +165,17 @@
           </div>
         </div>
 
+        <!-- NEW: PROJECT GROUPS MANAGEMENT -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Project Groups</h3>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project Group.</p>
+          <div class="flex space-x-3 mb-5">
+            <input type="text" id="newGroupName" placeholder="e.g. Group A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
+            <button onclick="addProjectGroup()" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800">Add</button>
+          </div>
+          <ul id="groupList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
+        </div>
+
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Committee Members</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
@@ -231,7 +242,8 @@
     };
     const API_URL = DEV_MODE ? URLS.DEV : URLS.PROD;
 
-    let currentUser = null; let appSettings = { registrationOpen: false, allowEdits: false, committee:[] };
+    let currentUser = null; 
+    let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[] };
     let regMemberCount = 0; let loadedFamily =[];
 
     // --- ROLODEX LOGIC ---
@@ -353,6 +365,12 @@
     // --- DYNAMIC REGISTRATION BLOCK ---
     function addRegMember() {
       const idx = regMemberCount++;
+      
+      let groupOpts = `<option value="">None / Not Applicable</option>`;
+      if(appSettings.projectGroups) {
+        appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}">${g}</option>`; });
+      }
+
       const html = `
         <div class="member-block bg-white dark:bg-gray-800 p-6 rounded-xl border-2 border-gray-400 dark:border-gray-500 shadow-md relative" data-idx="${idx}">
           ${idx > 0 ? `<button type="button" onclick="this.closest('.member-block').remove()" class="absolute top-4 right-4 text-red-600 font-extrabold border-2 border-red-600 px-3 py-1 rounded-lg hover:bg-red-50 transition">Remove</button>` : `<div class="absolute top-4 right-4 bg-primary text-white font-extrabold px-3 py-1 text-sm rounded border-2 border-blue-800">MAIN POC</div>`}
@@ -371,11 +389,10 @@
             <div><label class="block text-sm font-bold mb-1">Gender</label><select class="reg-f-gender w-full p-3 border-2 border-gray-400 rounded-lg font-bold"><option>Male</option><option>Female</option></select></div>
             <div><label class="block text-sm font-bold mb-1">Contact Number (8-digit)</label><input ${idx===0?'required':''} type="tel" pattern="[0-9]{8}" class="reg-f-contact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
             <div><label class="block text-sm font-bold mb-1">Date of Birth</label><input required type="text" id="dob_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('dob_${idx}', 'dob')" class="reg-f-dob w-full p-3 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer bg-white dark:bg-gray-700"></div>
-            <div><label class="block text-sm font-bold mb-1">Project Group</label><input type="text" class="reg-f-group w-full p-3 border-2 border-gray-400 rounded-lg" placeholder="e.g. Group 1 (Optional)"></div>
+            <div><label class="block text-sm font-bold mb-1">Project Group</label><select class="reg-f-group w-full p-3 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
             <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Home Address</label><textarea required class="reg-f-address w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
           </div>
 
-          <!-- Conditionally shown only if role == Caregiver -->
           <div class="trainee-div hidden-force bg-blue-50 dark:bg-gray-700 p-5 rounded-lg mb-6 border-2 border-blue-200 dark:border-gray-500">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div><label class="block text-sm font-bold mb-1">Related Trainee's Name</label><input type="text" class="reg-f-related w-full p-3 border-2 border-gray-400 rounded-lg"></div>
@@ -465,8 +482,13 @@
       document.getElementById('welcomeUserText').textContent = `Welcome, ${currentUser.name || 'User'}!`;
       document.getElementById('userRoleBadge').textContent = `Role: ${currentUser.role === 'admin' ? 'Committee (Admin)' : 'Participant'}`;
 
-      if(currentUser.role === 'admin') { document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-force')); loadCommitteeList(); } 
-      else { document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-force')); }
+      if(currentUser.role === 'admin') { 
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-force')); 
+        renderCommList(appSettings.committee);
+        renderGroupList(appSettings.projectGroups);
+      } else { 
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-force')); 
+      }
       switchTab('profile');
     }
 
@@ -496,7 +518,20 @@
       try {
         const res = await callBackend('getProfile', {nric: currentUser.nric});
         loadedFamily = res.family; container.innerHTML = '';
+        
         loadedFamily.forEach((m, i) => {
+          
+          let groupOpts = `<option value="">None / Not Applicable</option>`;
+          if(appSettings.projectGroups) {
+            appSettings.projectGroups.forEach(g => { 
+              groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; 
+            });
+          }
+          // Failsafe: if they have a group assigned that was deleted from settings, show it as Archived
+          if(m.group && (!appSettings.projectGroups || !appSettings.projectGroups.includes(m.group))) {
+            groupOpts += `<option value="${m.group}" selected>${m.group} (Archived)</option>`;
+          }
+
           container.innerHTML += `
             <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border-2 border-gray-300 dark:border-gray-500 shadow-md relative" id="profCard_${i}">
               <div class="flex justify-between items-start border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
@@ -510,7 +545,8 @@
                 <div><p class="font-bold text-gray-500 text-xs">Gender & Nat.</p><p class="font-extrabold">${m.gender} | ${m.nationality}</p></div>
                 <div><p class="font-bold text-gray-500 text-xs">Contact & Email</p><p class="font-extrabold">${m.contact} | ${m.email || 'N/A'}</p></div>
                 
-                <div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Home Address</p><p class="font-bold">${m.address}</p></div>
+                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Project Group</p><p class="font-extrabold text-primary">${m.group || 'None'}</p></div>
+                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Home Address</p><p class="font-bold">${m.address}</p></div>
                 
                 <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport No.</p><p class="font-extrabold uppercase">${m.passportNo}</p></div>
                 <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport Expiry</p><p class="font-extrabold">${m.passportExpiry}</p></div>
@@ -533,7 +569,7 @@
                 <div><label class="text-xs font-bold mb-1 block">Contact</label><input type="tel" pattern="[0-9]{8}" id="edContact_${i}" value="${m.contact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
                 <div><label class="text-xs font-bold mb-1 block">Gender</label><select id="edGender_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.gender==='Male'?'selected':''}>Male</option><option ${m.gender==='Female'?'selected':''}>Female</option></select></div>
                 <div><label class="text-xs font-bold mb-1 block">Role</label><select id="edRole_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div>
-                <div><label class="text-xs font-bold mb-1 block">Group</label><input type="text" id="edGroup_${i}" value="${m.group}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+                <div><label class="text-xs font-bold mb-1 block">Project Group</label><select id="edGroup_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
                 <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Address</label><textarea id="edAddress_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.address}</textarea></div>
                 
                 <div><label class="text-xs font-bold mb-1 block">Nationality</label><input type="text" id="edNat_${i}" value="${m.nationality}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
@@ -563,7 +599,7 @@
 
     async function saveProfileEdit(i) {
       const updated = {
-        nric: loadedFamily[i].nric, // Block NRIC edits
+        nric: loadedFamily[i].nric, 
         fullName: document.getElementById(`edName_${i}`).value, email: document.getElementById(`edEmail_${i}`).value,
         role: document.getElementById(`edRole_${i}`).value, gender: document.getElementById(`edGender_${i}`).value,
         contact: document.getElementById(`edContact_${i}`).value, dob: document.getElementById(`edDob_${i}`).value,
@@ -579,7 +615,7 @@
       } catch (e) { showToast(e.message, true); }
     }
 
-    // --- ADMIN SETTINGS ---
+    // --- ADMIN SETTINGS LOGIC ---
     function applyAdminVisuals() {
       const rBtn = document.getElementById('toggleRegBtn'); const eBtn = document.getElementById('toggleEditBtn');
       if(!rBtn || !eBtn) return;
@@ -613,24 +649,60 @@
       } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { btn.disabled = false; }
     }
 
-    async function loadCommitteeList() { try { const res = await callBackend('getCommittee'); renderCommList(res.list); } catch(e) {} }
+    // PROJECT GROUPS MANAGEMENT
+    async function addProjectGroup() {
+      const name = document.getElementById('newGroupName').value.trim();
+      if(!name) return showToast("Group name is required", true);
+      try {
+        const res = await callBackend('addProjectGroup', { groupName: name });
+        document.getElementById('newGroupName').value = '';
+        appSettings.projectGroups = res.groups;
+        renderGroupList(res.groups); showToast("Group Added");
+      } catch(e) { showToast(e.message, true); }
+    }
 
+    async function removeProjectGroup(name) {
+      try { 
+        const res = await callBackend('removeProjectGroup', { groupName: name }); 
+        appSettings.projectGroups = res.groups;
+        renderGroupList(res.groups); showToast("Group Removed"); 
+      } catch(e) { showToast(e.message, true); }
+    }
+
+    function renderGroupList(list) {
+      const ul = document.getElementById('groupList');
+      if(!ul) return;
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No project groups defined yet.</li>' : '';
+      if(list) list.forEach(g => { 
+        // Note: safely escape single quotes if user typed them
+        const safeGroup = g.replace(/'/g, "\\'");
+        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
+          <span class="font-extrabold text-lg">${g}</span>
+          <button onclick="removeProjectGroup('${safeGroup}')" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg">Remove</button>
+        </li>`; 
+      });
+    }
+
+    // COMMITTEE MANAGEMENT
     async function addCommittee() {
       const name = document.getElementById('newCommName').value.trim(); const nric = document.getElementById('newCommNric').value.trim(); const phone = document.getElementById('newCommPhone').value.trim();
       if(!nric || !name || !phone) return showToast("Name, NRIC, and Phone required", true);
       try {
         const res = await callBackend('addCommittee', { nric, name, phone });
         document.getElementById('newCommName').value = ''; document.getElementById('newCommNric').value = ''; document.getElementById('newCommPhone').value = '';
-        renderCommList(res.list); showToast("Added to Committee");
+        appSettings.committee = res.list; renderCommList(res.list); showToast("Added to Committee");
       } catch(e) { showToast(e.message, true); }
     }
 
-    async function removeCommittee(nric) { try { const res = await callBackend('removeCommittee', { nric }); renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); } }
+    async function removeCommittee(nric) { 
+      try { const res = await callBackend('removeCommittee', { nric }); appSettings.committee = res.list; renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); } 
+    }
 
     function renderCommList(list) {
       const ul = document.getElementById('commList');
-      ul.innerHTML = list.length === 0 ? '<li class="text-sm font-bold text-gray-500">No committee members assigned yet.</li>' : '';
-      list.forEach(m => { 
+      if(!ul) return;
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No committee members assigned yet.</li>' : '';
+      if(list) list.forEach(m => { 
         ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
           <div><p class="font-extrabold text-lg">${m.name}</p><p class="text-sm text-gray-500 font-mono font-bold">${m.nric} | ${m.phone}</p></div>
           <button onclick="removeCommittee('${m.nric}')" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg">Remove</button>
