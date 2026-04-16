@@ -82,7 +82,7 @@
 
         <div class="pt-6 border-t-2 border-gray-300 dark:border-gray-600">
           <button type="submit" class="w-full bg-green-600 text-white font-extrabold text-lg py-4 rounded-lg hover:bg-green-700 flex justify-center items-center shadow-lg border-2 border-green-700 transition">
-            <span id="regSubmitText">Submit Complete Registration</span>
+            <span id="regSubmitText">Submit</span>
             <div id="regLoader" class="loader hidden-force ml-2 border-white"></div>
           </button>
         </div>
@@ -165,7 +165,6 @@
           </div>
         </div>
 
-        <!-- NEW: PROJECT GROUPS MANAGEMENT -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Project Groups</h3>
           <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project Group.</p>
@@ -416,11 +415,17 @@
             <div><label class="block text-sm font-bold mb-1">Relationship to Emerg. Contact</label><input required type="text" class="reg-f-emrelation w-full p-3 border-2 border-gray-400 rounded-lg"></div>
           </div>
 
-          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Logistics</h4>
-          <div>
-            <label class="block text-sm font-bold mb-1">Sleeping Arrangement Request</label>
-            <p class="text-xs text-gray-500 mb-2 font-bold leading-tight">If you are requesting a Family Room despite having fewer than 4 persons, we will try our best to accommodate. Approval is subjected to room availability and may incur additional charges.</p>
-            <textarea class="reg-f-sleep w-full p-3 border-2 border-gray-400 rounded-lg" rows="2" placeholder="e.g. Prefer Container Room, Need Family Room..."></textarea>
+          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Remarks</h4>
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-bold mb-1">Sleeping Arrangement Request</label>
+              <p class="text-xs text-gray-500 mb-2 font-bold leading-tight">We will try our best to accommodate. Approval is subjected to room availability and may incur additional charges.</p>
+              <textarea class="reg-f-sleep w-full p-3 border-2 border-gray-400 rounded-lg" rows="2" placeholder="e.g. Prefer Container Room, Need Family Room..."></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-bold mb-1">Other Points to Note</label>
+              <textarea class="reg-f-other w-full p-3 border-2 border-gray-400 rounded-lg" rows="2" placeholder="Any other remarks..."></textarea>
+            </div>
           </div>
         </div>`;
       document.getElementById('membersContainer').insertAdjacentHTML('beforeend', html);
@@ -445,7 +450,7 @@
           passportNo: b.querySelector('.reg-f-pass').value.toUpperCase(), passportExpiry: b.querySelector('.reg-f-exp').value,
           diet: b.querySelector('.reg-f-diet').value, emergencyName: b.querySelector('.reg-f-emname').value,
           emergencyContact: b.querySelector('.reg-f-emcontact').value, emergencyRelation: b.querySelector('.reg-f-emrelation').value,
-          sleeping: b.querySelector('.reg-f-sleep').value
+          sleeping: b.querySelector('.reg-f-sleep').value, otherPoints: b.querySelector('.reg-f-other').value
         });
       });
 
@@ -527,7 +532,6 @@
               groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; 
             });
           }
-          // Failsafe: if they have a group assigned that was deleted from settings, show it as Archived
           if(m.group && (!appSettings.projectGroups || !appSettings.projectGroups.includes(m.group))) {
             groupOpts += `<option value="${m.group}" selected>${m.group} (Archived)</option>`;
           }
@@ -555,6 +559,7 @@
                 <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Dietary Needs</p><p class="font-bold text-red-600">${m.diet || 'None'}</p></div>
                 
                 <div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Sleeping Arrangement</p><p class="font-bold text-blue-600 dark:text-blue-400">${m.sleeping || 'No special request'}</p></div>
+                <div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Other Points to Note</p><p class="font-bold">${m.otherPoints || 'None'}</p></div>
                 
                 ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Caregiver For</p><p class="font-extrabold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''}
               </div>
@@ -582,6 +587,7 @@
                 <div><label class="text-xs font-bold mb-1 block">Emergency Relation</label><input type="text" id="edEmRel_${i}" value="${m.emergencyRelation}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
                 <div><label class="text-xs font-bold mb-1 block">Dietary Needs</label><input type="text" id="edDiet_${i}" value="${m.diet}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
                 <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Sleeping Arrangement Request</label><textarea id="edSleep_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.sleeping}</textarea></div>
+                <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Other Points to Note</label><textarea id="edOther_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.otherPoints}</textarea></div>
               </div>
               
               <div class="flex space-x-3 pt-4 border-t-2 border-blue-200 dark:border-gray-600">
@@ -608,6 +614,7 @@
         passportExpiry: document.getElementById(`edExp_${i}`).value, diet: document.getElementById(`edDiet_${i}`).value,
         emergencyName: document.getElementById(`edEmName_${i}`).value, emergencyContact: document.getElementById(`edEmCont_${i}`).value,
         emergencyRelation: document.getElementById(`edEmRel_${i}`).value, sleeping: document.getElementById(`edSleep_${i}`).value,
+        otherPoints: document.getElementById(`edOther_${i}`).value,
         relatedTrainee: loadedFamily[i].relatedTrainee, relationship: loadedFamily[i].relationship
       };
       try {
@@ -674,7 +681,6 @@
       if(!ul) return;
       ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No project groups defined yet.</li>' : '';
       if(list) list.forEach(g => { 
-        // Note: safely escape single quotes if user typed them
         const safeGroup = g.replace(/'/g, "\\'");
         ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
           <span class="font-extrabold text-lg">${g}</span>
