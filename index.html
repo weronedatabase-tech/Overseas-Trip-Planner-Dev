@@ -17,6 +17,8 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Rolodex Physics */
     .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
     .picker-col::-webkit-scrollbar { display: none; }
     .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
@@ -27,12 +29,17 @@
     .spinner-white { border-color: rgba(255,255,255,0.3); border-top-color: #ffffff; }
     .spinner-red { border-color: rgba(220,38,38,0.3); border-top-color: #dc2626; }
     .spinner-primary { border-color: rgba(37,99,235,0.3); border-top-color: #2563eb; }
+    
+    /* Slide Animation */
+    @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
+    .animate-slide-up { animation: slide-up 0.25s ease-out forwards; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
 
   <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE</div>
 
+  <!-- HEADER -->
   <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-2 flex justify-between items-center z-10 sticky top-0">
     <div class="cursor-pointer" onclick="goHome()">
       <div class="font-bold text-lg text-primary leading-tight">MYG Overseas Trip</div>
@@ -139,9 +146,10 @@
         </button>
       </div>
 
-      <!-- More Obvious Tab Selector -->
+      <!-- Elevated Tab Selector -->
       <div class="flex space-x-2 overflow-x-auto pb-0 border-b-4 border-gray-300 dark:border-gray-600 scrollbar-hide mt-4" id="navTabs">
         <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors">My Profile</button>
+        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Logistics</button>
         <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Attendance</button>
         <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Finance</button>
         <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Settings</button>
@@ -164,14 +172,144 @@
         </div>
       </div>
 
-      <div id="tab-attendance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4"><p class="font-bold">Offline Attendance Module coming soon...</p></div>
+      <!-- LOGISTICS TAB -->
+      <div id="tab-logistics" class="tab-content hidden-force mt-4 space-y-6">
+        <div class="flex overflow-x-auto border-b-2 border-gray-300 dark:border-gray-600 scrollbar-hide pb-2">
+          <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-4 py-2 font-extrabold border-b-4 border-primary text-primary whitespace-nowrap mb-[-10px] transition">1. Pairings</button>
+          <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">2. Rooms</button>
+          <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">3. Groups</button>
+          <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">4. Buses</button>
+        </div>
+        
+        <div id="log-pairings" class="space-y-4">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+            <h3 class="text-xl font-bold mb-2">Volunteer - Trainee Pairings</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Tap a Trainee to assign a Volunteer to them.</p>
+            <div class="space-y-3">
+              <h4 class="font-extrabold text-red-600 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Requires Pairing (Preview)</h4>
+              <div onclick="openSelectionSheet('S1000001A', 'volunteer')" class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 shadow-sm cursor-pointer hover:bg-blue-50 transition">
+                <div>
+                  <p class="font-extrabold text-lg text-blue-700 dark:text-blue-400">Tom Lee</p>
+                  <p class="text-xs font-bold text-gray-500">Trainee • Traveling with Family</p>
+                </div>
+                <span class="text-sm font-extrabold bg-red-100 text-red-700 px-3 py-1 rounded-full border border-red-300">Unassigned +</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="log-rooms" class="hidden-force space-y-4">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary">
+            <h3 class="text-xl font-bold mb-2">1. Define Room Configurations</h3>
+            <div class="flex space-x-2 mb-4">
+              <input type="text" placeholder="e.g. Container Room" class="w-1/2 p-3 border-2 border-gray-400 rounded-lg font-bold text-sm">
+              <input type="number" placeholder="Pax" class="w-1/4 p-3 border-2 border-gray-400 rounded-lg font-bold text-sm">
+              <input type="number" placeholder="Qty" class="w-1/4 p-3 border-2 border-gray-400 rounded-lg font-bold text-sm">
+              <button class="bg-primary text-white px-4 py-3 rounded-lg font-extrabold border-2 border-blue-800">+</button>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <span class="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-lg text-sm font-bold border-2 border-gray-400">Container Room (2 Pax) x 15</span>
+              <span class="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-lg text-sm font-bold border-2 border-gray-400">Family Room (5 Pax) x 5</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border-2 border-gray-300 overflow-hidden">
+              <div class="bg-gray-100 dark:bg-gray-700 p-3 border-b-2 border-gray-300 flex justify-between items-center">
+                <h4 class="font-extrabold text-lg">Room 101 <span class="text-xs bg-white border-2 px-2 py-1 rounded-md ml-2 text-gray-600">Container</span></h4>
+                <span class="text-sm font-extrabold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">0 / 2 Pax</span>
+              </div>
+              <div class="p-4">
+                <p class="text-sm font-bold text-gray-400 italic mb-3">Empty</p>
+                <button onclick="openSelectionSheet('101', 'room')" class="w-full bg-gray-200 dark:bg-gray-700 text-primary font-extrabold py-2 rounded border-2 border-primary border-dashed hover:bg-blue-50 transition">
+                  + Assign Participants
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="log-groups" class="hidden-force space-y-4">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-purple-500 text-center">
+            <h3 class="text-xl font-bold mb-2">Smart Group Generator</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Auto-group participants, ensuring families, roommates, and paired volunteers stay together.</p>
+            <div class="flex justify-center items-center space-x-3 max-w-xs mx-auto mb-4">
+              <label class="font-bold">Target Size:</label>
+              <input type="number" value="10" class="w-20 p-2 border-2 border-gray-400 rounded text-center font-extrabold">
+              <span class="font-bold">Pax</span>
+            </div>
+            <button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">
+              ✨ Generate Proposed Groups
+            </button>
+          </div>
+        </div>
+
+        <div id="log-buses" class="hidden-force space-y-4">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
+            <h3 class="text-xl font-bold mb-2">Bus Allocation</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Assign Small Groups directly to buses to keep them together.</p>
+            <div class="space-y-4">
+              <div class="border-2 border-gray-300 rounded-lg p-4">
+                <div class="flex justify-between items-center border-b-2 border-gray-200 pb-2 mb-3">
+                  <h4 class="font-extrabold text-lg">🚌 Bus 1 (40 Pax)</h4>
+                  <select class="p-2 border-2 border-gray-300 rounded font-bold text-sm bg-gray-50">
+                    <option>+ Add Group</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATTENDANCE TAB -->
+      <div id="tab-attendance" class="tab-content hidden-force mt-4 space-y-6">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary admin-only">
+          <div class="flex justify-between items-center mb-4 border-b-2 border-gray-200 pb-2">
+            <h3 class="text-xl font-extrabold">Take Attendance</h3>
+            <span class="bg-green-100 text-green-800 text-xs font-extrabold px-2 py-1 rounded border border-green-300">🟢 Online & Syncing</span>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Juncture</label>
+              <select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>Morning Assembly</option></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">My Assignment</label>
+              <select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>Group 1</option></select>
+            </div>
+          </div>
+          <div class="space-y-2 border-2 border-gray-300 p-2 rounded-lg bg-gray-50 dark:bg-gray-700 h-64 overflow-y-auto">
+            <label class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-200 cursor-pointer">
+              <span class="font-extrabold">Tom Lee <span class="text-xs text-blue-500 ml-1">(Trainee)</span></span>
+              <input type="checkbox" checked class="w-6 h-6 text-primary rounded border-gray-300">
+            </label>
+          </div>
+          <button class="w-full mt-4 bg-primary text-white font-extrabold py-3 rounded-lg shadow border-2 border-blue-800 flex justify-center items-center">
+            <span class="btn-text">Submit Attendance</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+          </button>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
+          <h3 class="text-xl font-bold mb-4">Live Dashboards</h3>
+          <div class="mb-6">
+            <h4 class="font-extrabold text-gray-600 border-b-2 border-gray-200 mb-3">All Buses (Morning Assembly)</h4>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-sm font-bold mb-1"><span>Bus 1</span><span class="text-green-600">40 / 40 Present</span></div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-green-600 h-2.5 rounded-full" style="width: 100%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINANCE TAB -->
       <div id="tab-finance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4"><p class="font-bold">Finance Overview & CSV Upload coming soon...</p></div>
 
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Reg Toggle -->
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
             <p class="text-sm font-bold text-gray-500 mb-4">Allow new participants to sign up using the public form.</p>
@@ -180,7 +318,6 @@
             </button>
           </div>
           
-          <!-- Edit Toggle with Dynamic Slider -->
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
             <div class="flex items-center space-x-4 mt-6">
@@ -249,6 +386,26 @@
     </div>
   </div>
 
+  <!-- SELECTION BOTTOM SHEET (Rooms / Pairings) -->
+  <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end transition-opacity">
+    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600 h-[70vh] flex flex-col">
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <span id="sheetTitle" class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Participant</span>
+        <button type="button" onclick="closeSelectionSheet()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
+      </div>
+      <div class="p-3 border-b-2 border-gray-200">
+        <input type="text" placeholder="Search name..." class="w-full p-2 border-2 border-gray-300 rounded-lg font-bold">
+      </div>
+      <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100 dark:bg-gray-800" id="sheetListContainer">
+        <!-- Dummy Data for Preview -->
+        <div class="bg-white p-3 rounded-lg border-2 border-gray-300 shadow-sm cursor-pointer hover:bg-blue-50">
+          <p class="font-extrabold text-lg">The Lee Family <span class="text-xs font-bold text-gray-500 ml-1">(2 Pax)</span></p>
+          <p class="text-xs font-bold text-blue-600">Tom Lee (T), Mary Lee (C)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ROLODEX DATE PICKER -->
   <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600">
@@ -268,8 +425,6 @@
     </div>
   </div>
 
-  <style> @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } } .animate-slide-up { animation: slide-up 0.25s ease-out forwards; } </style>
-
   <script>
     const DEV_MODE = true; 
     const URLS = {
@@ -286,6 +441,7 @@
     function setBtnLoading(btn, isLoading) {
       if (!btn) return;
       const spinner = btn.querySelector('.btn-spinner');
+      const textSpan = btn.querySelector('.btn-text');
       if (isLoading) {
         btn.disabled = true;
         btn.classList.add('opacity-80', 'cursor-not-allowed');
@@ -571,8 +727,9 @@
 
       if(currentUser.role === 'admin') { 
         document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-force')); 
-        renderCommList(appSettings.committee);
-        renderGroupList(appSettings.projectGroups);
+        
+        if(appSettings.committee) renderCommList(appSettings.committee);
+        if(appSettings.projectGroups) renderGroupList(appSettings.projectGroups);
         
         if (currentUser.nric === 'ADMIN') {
           document.getElementById('tabBtn-profile').classList.add('hidden-force');
@@ -604,7 +761,36 @@
       }
       
       if(tabId === 'profile') loadProfileData();
+      if(tabId === 'logistics') switchLogisticsSubTab('pairings');
     }
+
+    // --- LOGISTICS WIZARD (UI Logic) ---
+    function switchLogisticsSubTab(tabId) {['pairings', 'rooms', 'groups', 'buses'].forEach(id => {
+        document.getElementById(`log-${id}`).classList.add('hidden-force');
+        const btn = document.getElementById(`subTab-${id}`);
+        if(btn) {
+          btn.classList.remove('border-primary', 'text-primary');
+          btn.classList.add('border-transparent', 'text-gray-500');
+        }
+      });
+      document.getElementById(`log-${tabId}`).classList.remove('hidden-force');
+      const targetBtn = document.getElementById(`subTab-${tabId}`);
+      if(targetBtn) {
+        targetBtn.classList.remove('border-transparent', 'text-gray-500');
+        targetBtn.classList.add('border-primary', 'text-primary');
+      }
+    }
+
+    function openSelectionSheet(targetId, type) {
+      if(type === 'volunteer') {
+        document.getElementById('sheetTitle').textContent = "Select Volunteer to Pair";
+      } else if (type === 'room') {
+        document.getElementById('sheetTitle').textContent = `Assign to Room ${targetId}`;
+      }
+      document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
+    }
+    function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
+
 
     // --- PROFILE FETCH & EDIT LOGIC ---
     async function loadProfileData() {
@@ -780,8 +966,19 @@
       if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, true);
       
       try { 
-        await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); 
-        appSettings.registrationOpen = newState; applyAdminVisuals(); 
+        const res = await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); 
+        appSettings.registrationOpen = newState; 
+        
+        // Update header dynamically
+        const headerTripName = document.getElementById('headerTripName');
+        if(newState && res.tripTitle && res.tripYear) {
+          headerTripName.textContent = `${res.tripTitle} ${res.tripYear}`;
+          headerTripName.classList.remove('hidden-force');
+        } else {
+          headerTripName.classList.add('hidden-force');
+        }
+
+        applyAdminVisuals(); 
         showToast(newState ? "Registration Opened" : "Registration Closed");
       } catch(e) { 
         showToast("Failed.", true); applyAdminVisuals(); 
