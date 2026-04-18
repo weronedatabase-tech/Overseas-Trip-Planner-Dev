@@ -175,7 +175,7 @@
             </button>
           </div>
           
-          <!-- Edit Toggle with Dynamic Slider -->
+          <!-- Edit Toggle -->
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
             <div class="flex items-center space-x-4 mt-6">
@@ -189,7 +189,6 @@
           </div>
         </div>
 
-        <!-- Project Groups -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Projects</h3>
           <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project.</p>
@@ -202,7 +201,6 @@
           <ul id="groupList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
         </div>
 
-        <!-- Committee Management -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Committee Members</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
@@ -475,7 +473,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
             <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Dietary Restrictions</label><input type="text" class="reg-f-diet w-full p-3 border-2 border-gray-400 rounded-lg" placeholder="Nil if none"></div>
             <div><label class="block text-sm font-bold mb-1">Emergency Contact Name</label><input required type="text" class="reg-f-emname w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-            <div><label class="block text-sm font-bold mb-1">Emergency Contact Number</label><input required type="tel" pattern="[0-9]{8}" class="reg-f-emcontact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Emergency Contact Number (8-digit)</label><input required type="tel" pattern="[0-9]{8}" class="reg-f-emcontact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
             <div><label class="block text-sm font-bold mb-1">Relationship to Emerg. Contact</label><input required type="text" class="reg-f-emrelation w-full p-3 border-2 border-gray-400 rounded-lg"></div>
           </div>
 
@@ -611,7 +609,7 @@
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                 <div><p class="font-bold text-gray-500 text-xs">NRIC / FIN</p><p class="font-extrabold uppercase">${m.nric}</p></div>
-                <div><p class="font-bold text-gray-500 text-xs">DOB</p><p class="font-extrabold">${m.dob}</p></div>
+                <div><p class="font-bold text-gray-500 text-xs">Date of Birth</p><p class="font-extrabold">${m.dob}</p></div>
                 <div><p class="font-bold text-gray-500 text-xs">Gender & Nat.</p><p class="font-extrabold">${m.gender} | ${m.nationality}</p></div>
                 <div><p class="font-bold text-gray-500 text-xs">Contact & Email</p><p class="font-extrabold">${m.contact} | ${m.email || 'N/A'}</p></div>
                 
@@ -644,12 +642,12 @@
                 <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Address</label><textarea id="edAddress_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.address}</textarea></div>
                 
                 <div><label class="text-xs font-bold mb-1 block">Nationality</label><input type="text" id="edNat_${i}" value="${m.nationality}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
-                <div><label class="text-xs font-bold mb-1 block">DOB</label><input type="text" id="edDob_${i}" value="${m.dob}" readonly onclick="openDatePicker('edDob_${i}', 'dob')" class="w-full p-2 border-2 border-gray-400 rounded-lg text-center font-bold cursor-pointer bg-white dark:bg-gray-700"></div>
+                <div><label class="text-xs font-bold mb-1 block">Date of Birth</label><input type="text" id="edDob_${i}" value="${m.dob}" readonly onclick="openDatePicker('edDob_${i}', 'dob')" class="w-full p-2 border-2 border-gray-400 rounded-lg text-center font-bold cursor-pointer bg-white dark:bg-gray-700"></div>
                 <div><label class="text-xs font-bold mb-1 block">Passport No.</label><input type="text" id="edPass_${i}" value="${m.passportNo}" class="w-full p-2 border-2 border-gray-400 rounded-lg uppercase"></div>
                 <div><label class="text-xs font-bold mb-1 block">Passport Expiry</label><input type="text" id="edExp_${i}" value="${m.passportExpiry}" readonly onclick="openDatePicker('edExp_${i}', 'exp')" class="w-full p-2 border-2 border-gray-400 rounded-lg text-center font-bold cursor-pointer bg-white dark:bg-gray-700"></div>
                 
                 <div><label class="text-xs font-bold mb-1 block">Emergency Contact Name</label><input type="text" id="edEmName_${i}" value="${m.emergencyName}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
-                <div><label class="text-xs font-bold mb-1 block">Emergency Contact No.</label><input type="text" id="edEmCont_${i}" value="${m.emergencyContact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+                <div><label class="text-xs font-bold mb-1 block">Emergency Contact No. (8-digit)</label><input type="tel" pattern="[0-9]{8}" id="edEmCont_${i}" value="${m.emergencyContact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
                 <div><label class="text-xs font-bold mb-1 block">Emergency Relation</label><input type="text" id="edEmRel_${i}" value="${m.emergencyRelation}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
                 <div><label class="text-xs font-bold mb-1 block">Dietary Needs</label><input type="text" id="edDiet_${i}" value="${m.diet}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
                 <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Sleeping Arrangement Request</label><textarea id="edSleep_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.sleeping}</textarea></div>
