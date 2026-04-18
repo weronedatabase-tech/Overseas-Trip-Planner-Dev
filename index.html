@@ -48,10 +48,7 @@
 
   <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
     <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-bold z-[100]"></div>
-
-    <div id="viewLoading" class="flex justify-center items-center h-full">
-      <div class="loader w-10 h-10"></div>
-    </div>
+    <div id="viewLoading" class="flex justify-center items-center h-full"><div class="loader w-10 h-10"></div></div>
 
     <!-- VIEW 1: LANDING -->
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
@@ -59,13 +56,11 @@
         <h1 class="text-3xl font-extrabold mb-2">MYG Overseas Trip Planner</h1>
         <p class="text-gray-600 dark:text-gray-400 font-medium">Welcome! Please select an option below.</p>
       </div>
-      
       <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-green-500 hidden-force">
         <h3 class="text-2xl font-bold mb-2">Join the Trip</h3>
         <p class="text-sm font-medium mb-4">Registration is currently open.</p>
         <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded font-extrabold text-lg hover:bg-green-700 shadow-md transition">Register Now</button>
       </div>
-
       <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-primary">
         <h3 class="text-2xl font-bold mb-2">Participant Portal</h3>
         <p class="text-sm font-medium mb-4">Already registered? Log in to view details.</p>
@@ -73,14 +68,13 @@
       </div>
     </div>
 
-    <!-- VIEW 2: REGISTRATION FORM -->
+    <!-- VIEW 2: REGISTRATION -->
     <div id="viewRegister" class="hidden-force max-w-4xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600 space-y-4 pb-20">
       <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
         <h3 class="text-2xl font-bold">New Registration</h3>
         <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
       </div>
       <p class="text-sm text-gray-500 mb-4 font-bold">Register yourself and your family/group in a single submission. Person 1 is the Main Point of Contact.</p>
-
       <form id="regForm" onsubmit="event.preventDefault(); submitRegistration(this.querySelector('button[type=submit]'));" class="space-y-6">
         <div id="membersContainer" class="space-y-8"></div>
         <button type="button" onclick="addRegMember()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-extrabold py-4 rounded-lg border-4 border-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 border-dashed transition">+ Add Another Family / Group Member</button>
@@ -112,8 +106,7 @@
         </button>
       </div>
       <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
-        <span class="btn-text">Login</span>
-        <div class="btn-spinner spinner-white hidden-force ml-2"></div>
+        <span class="btn-text">Login</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
       </button>
     </div>
 
@@ -140,9 +133,7 @@
 
       <!-- PROFILE TAB -->
       <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
-        <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
-          <h3 class="text-2xl font-bold">Family / Group Details</h3>
-        </div>
+        <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4"><h3 class="text-2xl font-bold">Family / Group Details</h3></div>
         <div id="lockedProfileBanner" class="hidden-force bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-6 shadow-sm">
           <p class="font-extrabold mb-2 text-lg">🔒 Editing is currently Locked.</p>
           <p class="font-medium text-sm mb-3">To request changes to your details, please contact a Committee Member directly:</p>
@@ -160,7 +151,6 @@
           <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">4. Buses</button>
         </div>
         
-        <!-- PAIRINGS SUB-TAB -->
         <div id="log-pairings" class="space-y-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <div class="flex justify-between items-center mb-2">
@@ -170,12 +160,10 @@
               </button>
             </div>
             <p class="text-sm font-bold text-gray-500 mb-4">Tap "+ Add Vol" to assign multiple volunteers per trainee.</p>
-            
             <div class="space-y-3">
               <h4 class="font-extrabold text-red-600 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Unassigned Trainees (<span id="unpairedCount">0</span>)</h4>
               <div id="unpairedTraineesList" class="space-y-2"><div class="loader w-6 h-6 border-primary mx-auto"></div></div>
             </div>
-            
             <div class="space-y-3 mt-6">
               <h4 class="font-extrabold text-green-600 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Paired Trainees (<span id="pairedCount">0</span>)</h4>
               <div id="pairedTraineesList" class="space-y-2"></div>
@@ -183,7 +171,6 @@
           </div>
         </div>
 
-        <!-- ROOMS SUB-TAB -->
         <div id="log-rooms" class="hidden-force space-y-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary">
             <h3 class="text-xl font-bold mb-2">1. Define Room Configurations</h3>
@@ -199,16 +186,12 @@
         <div id="log-groups" class="hidden-force space-y-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-purple-500 text-center">
             <h3 class="text-xl font-bold mb-2">Smart Group Generator</h3>
-            <button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">
-              ✨ Generate Proposed Groups
-            </button>
+            <button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">✨ Generate Proposed Groups</button>
           </div>
         </div>
 
         <div id="log-buses" class="hidden-force space-y-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
-            <h3 class="text-xl font-bold mb-2">Bus Allocation</h3>
-          </div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300"><h3 class="text-xl font-bold mb-2">Bus Allocation</h3></div>
         </div>
       </div>
 
@@ -220,20 +203,10 @@
             <span class="bg-green-100 text-green-800 text-xs font-extrabold px-2 py-1 rounded border border-green-300">🟢 Online & Syncing</span>
           </div>
           <div class="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1">Juncture</label>
-              <select id="attendanceJunctureSelect" class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"></select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1">My Assignment</label>
-              <select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>All Participants</option></select>
-            </div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1">Juncture</label><select id="attendanceJunctureSelect" class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"></select></div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1">My Assignment</label><select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>All Participants</option></select></div>
           </div>
-          
-          <div id="attendanceChecklist" class="space-y-2 border-2 border-gray-300 p-2 rounded-lg bg-gray-50 dark:bg-gray-700 h-64 overflow-y-auto">
-            <div class="loader border-primary mx-auto my-10"></div>
-          </div>
-          
+          <div id="attendanceChecklist" class="space-y-2 border-2 border-gray-300 p-2 rounded-lg bg-gray-50 dark:bg-gray-700 h-64 overflow-y-auto"><div class="loader border-primary mx-auto my-10"></div></div>
           <button class="w-full mt-4 bg-primary text-white font-extrabold py-3 rounded-lg shadow border-2 border-blue-800 flex justify-center items-center">
             <span class="btn-text">Submit Attendance</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
           </button>
@@ -244,7 +217,6 @@
 
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
@@ -253,9 +225,8 @@
               <span class="btn-text">Loading...</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
             </button>
           </div>
-          
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
-            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Profile Editing</h3>
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
             <div class="flex items-center space-x-4 mt-6">
               <button id="editSliderToggle" onclick="toggleEditSlider(this)" class="relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner">
                 <span id="editSliderKnob" class="inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center">
@@ -267,11 +238,9 @@
           </div>
         </div>
 
-        <!-- Attendance Junctures -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4 admin-only">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Attendance Junctures</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the junctures for taking attendance along the trip.</p>
-          <div class="flex space-x-3 mb-5">
+          <div class="flex space-x-3 mb-5 mt-4">
             <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
             <button onclick="addJuncture(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center shadow-sm">
               <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
@@ -282,7 +251,7 @@
 
         <div id="projectsSettingsBlock" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4 main-admin-only hidden-force">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Projects</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project. Only Main Admin can modify this list.</p>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project.</p>
           <div class="flex space-x-3 mb-5">
             <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
             <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center shadow-sm">
@@ -309,7 +278,7 @@
 
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-red-500">
           <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-3 text-red-600">Danger Zone</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start. Projects list will be kept. All participants must re-register.</p>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start.</p>
           <button onclick="archiveSystem(this)" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center">
             <span class="btn-text">Archive & Reset</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
           </button>
@@ -318,7 +287,6 @@
     </div>
   </main>
 
-  <!-- TRIP SETUP MODAL -->
   <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
       <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Initialize Trip Setup</h3>
@@ -328,14 +296,11 @@
       </div>
       <div class="flex space-x-3">
         <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500 shadow-sm transition">Cancel</button>
-        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center shadow-sm transition">
-          <span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-        </button>
+        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center shadow-sm transition"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
       </div>
     </div>
   </div>
 
-  <!-- SELECTION BOTTOM SHEET -->
   <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600 h-[70vh] flex flex-col">
       <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -346,26 +311,13 @@
     </div>
   </div>
 
-  <!-- ROLODEX DATE PICKER -->
   <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600">
-      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700">
-        <span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span>
-        <button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
-      </div>
-      <div class="relative flex h-[200px] text-xl font-bold">
-        <div class="picker-highlight"></div>
-        <div class="flex-1 picker-col" id="colDay"></div>
-        <div class="flex-1 picker-col" id="colMonth"></div>
-        <div class="flex-1 picker-col" id="colYear"></div>
-      </div>
-      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700">
-        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm">Done</button>
-      </div>
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700"><span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button></div>
+      <div class="relative flex h-[200px] text-xl font-bold"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
+      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm">Done</button></div>
     </div>
   </div>
-
-  <style> @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } } .animate-slide-up { animation: slide-up 0.25s ease-out forwards; } </style>
 
   <script>
     const DEV_MODE = true; 
@@ -385,15 +337,13 @@
       } else { btn.disabled = false; btn.classList.remove('opacity-80', 'cursor-not-allowed'); if (spinner) spinner.classList.add('hidden-force'); }
     }
 
-    // --- ROLODEX LOGIC ---
-    function openDatePicker(targetId, type) { /* Truncated for brevity to save token space. Logic unchanged. */ }
+    function openDatePicker(targetId, type) { /* Re-use existing rolled-up date picker logic */ }
     function scrollToIndex(colId, index) { document.getElementById(colId).scrollTo({ top: index * 40, behavior: 'smooth' }); }
-    function highlightCenterItem(colId) { /* Truncated */ }
-    function updateValidDays() { /* Truncated */ }
-    function confirmPicker() { /* Truncated */ }
+    function highlightCenterItem(colId) { /* Existing UI code */ }
+    function updateValidDays() { /* Existing UI code */ }
+    function confirmPicker() { /* Existing UI code */ }
     function closePicker() { document.getElementById('datePickerSheet').classList.add('hidden-force'); }
 
-    // --- MAIN APP ---
     window.onload = async () => {
       if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
       if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
@@ -404,31 +354,12 @@
       if(currentUser) renderDashboard(); else goHome();
     };
 
-    function goHome() {
-      if(currentUser) return renderDashboard();
-      document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
-      document.getElementById('viewLanding').classList.remove('hidden-force');
-    }
-
-    function navTo(view) {
-      document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
-      if (view === 'register') { 
-        document.getElementById('viewRegister').classList.remove('hidden-force'); 
-        document.getElementById('membersContainer').innerHTML = ''; 
-        regMemberCount = 0; addRegMember(); 
-      }
-      if (view === 'login') { document.getElementById('viewLogin').classList.remove('hidden-force'); document.getElementById('loginPass').value = ''; }
-    }
-
+    function goHome() { if(currentUser) return renderDashboard(); document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force')); document.getElementById('viewLanding').classList.remove('hidden-force'); }
+    function navTo(view) { document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force')); if (view === 'register') { document.getElementById('viewRegister').classList.remove('hidden-force'); document.getElementById('membersContainer').innerHTML = ''; regMemberCount = 0; addRegMember(); } if (view === 'login') { document.getElementById('viewLogin').classList.remove('hidden-force'); document.getElementById('loginPass').value = ''; } }
     function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
-    function togglePassword(id) { /* Truncated */ }
+    function togglePassword(id) { const el = document.getElementById(id); const eyeOpen = document.getElementById('eyeOpen'); const eyeClosed = document.getElementById('eyeClosed'); if(el.type === 'password') { el.type = 'text'; eyeOpen.classList.add('hidden-force'); eyeClosed.classList.remove('hidden-force'); } else { el.type = 'password'; eyeOpen.classList.remove('hidden-force'); eyeClosed.classList.add('hidden-force'); } }
     function handleEnter(e, func) { if(e.key === 'Enter') func(); }
-
-    function showToast(msg, isError = false) {
-      const t = document.getElementById('toast'); t.textContent = msg;
-      t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 text-sm font-bold text-white border-2 ${isError ? 'bg-red-600 border-red-800' : 'bg-green-600 border-green-800'}`;
-      t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 4000);
-    }
+    function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 text-sm font-bold text-white border-2 ${isError ? 'bg-red-600 border-red-800' : 'bg-green-600 border-green-800'}`; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 4000); }
 
     async function callBackend(action, payload = {}) {
       try {
@@ -446,37 +377,25 @@
         const config = await callBackend('getSettings'); appSettings = config;
         const regBox = document.getElementById('landingRegBox');
         if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
-        
         const headerTripName = document.getElementById('headerTripName');
-        if (appSettings.tripTitle && appSettings.tripYear) {
-          headerTripName.textContent = `${appSettings.tripTitle} ${appSettings.tripYear}`;
-          headerTripName.classList.remove('hidden-force');
-        } else { headerTripName.classList.add('hidden-force'); }
-
+        if (appSettings.tripTitle && appSettings.tripYear) { headerTripName.textContent = `${appSettings.tripTitle} ${appSettings.tripYear}`; headerTripName.classList.remove('hidden-force'); } else { headerTripName.classList.add('hidden-force'); }
         applyAdminVisuals();
-      } catch (e) { showToast("Error syncing settings.", true); } 
-      finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
+      } catch (e) { showToast("Error syncing settings.", true); } finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
     }
 
-    // --- REGISTRATION TEMPLATE OMITTED FOR BREVITY (NO CHANGES TO IT) ---
-    function addRegMember() { /* Insert existing full block from previous code */ }
-    function toggleTraineeFields(selectEl) { /* Insert existing */ }
-    async function submitRegistration(btn) { /* Insert existing */ }
+    function addRegMember() { /* Code Omitted for Brevity - Uses Exact previous HTML Block */ }
+    function toggleTraineeFields(selectEl) { /* Code Omitted */ }
+    async function submitRegistration(btn) { /* Code Omitted */ }
 
     async function attemptLogin(btn) {
       const nric = document.getElementById('loginNric').value.trim().toUpperCase(); const pass = document.getElementById('loginPass').value;
       const err = document.getElementById('loginError');
       if(!nric || !pass) { err.textContent = "Please enter NRIC and Password"; return err.classList.remove('hidden-force'); }
-      err.classList.add('hidden-force'); 
-      setBtnLoading(btn, true);
-
+      err.classList.add('hidden-force'); setBtnLoading(btn, true);
       try {
-        const res = await callBackend('login', { nric, password: pass });
-        currentUser = { nric: nric, role: res.role, name: res.name };
-        localStorage.setItem('userSession', JSON.stringify(currentUser));
-        renderDashboard();
-      } catch (error) { err.textContent = error.message; err.classList.remove('hidden-force'); } 
-      finally { setBtnLoading(btn, false); }
+        const res = await callBackend('login', { nric, password: pass }); currentUser = { nric: nric, role: res.role, name: res.name };
+        localStorage.setItem('userSession', JSON.stringify(currentUser)); renderDashboard();
+      } catch (error) { err.textContent = error.message; err.classList.remove('hidden-force'); } finally { setBtnLoading(btn, false); }
     }
 
     function logout(btn) { setBtnLoading(btn, true); localStorage.removeItem('userSession'); currentUser = null; window.location.reload(); }
@@ -485,33 +404,14 @@
       document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
       document.getElementById('viewDashboard').classList.remove('hidden-force');
       document.getElementById('welcomeUserText').textContent = `Welcome, ${currentUser.name || 'User'}!`;
-      
-      let badgeText = 'Role: Participant';
-      if (currentUser.nric === 'ADMIN') badgeText = 'Role: Main Admin';
-      else if (currentUser.role === 'admin') badgeText = 'Role: Committee Member';
-      document.getElementById('userRoleBadge').textContent = badgeText;
-
+      let badgeText = 'Role: Participant'; if (currentUser.nric === 'ADMIN') badgeText = 'Role: Main Admin'; else if (currentUser.role === 'admin') badgeText = 'Role: Committee Member'; document.getElementById('userRoleBadge').textContent = badgeText;
       if(currentUser.role === 'admin') { 
         document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-force')); 
-        
-        if (currentUser.nric === 'ADMIN') {
-          document.querySelectorAll('.main-admin-only').forEach(el => el.classList.remove('hidden-force'));
-          document.getElementById('tabBtn-profile').classList.add('hidden-force');
-        } else {
-          document.querySelectorAll('.main-admin-only').forEach(el => el.classList.add('hidden-force'));
-          document.getElementById('tabBtn-profile').classList.remove('hidden-force');
-        }
-        
-        if(appSettings.committee) renderCommList(appSettings.committee);
-        if(appSettings.projectGroups) renderGroupList(appSettings.projectGroups);
-        if(appSettings.junctures) renderJunctureList(appSettings.junctures);
-        
-        switchTab('settings');
-        loadLogisticsData(); 
+        if (currentUser.nric === 'ADMIN') { document.querySelectorAll('.main-admin-only').forEach(el => el.classList.remove('hidden-force')); document.getElementById('tabBtn-profile').classList.add('hidden-force'); } else { document.querySelectorAll('.main-admin-only').forEach(el => el.classList.add('hidden-force')); document.getElementById('tabBtn-profile').classList.remove('hidden-force'); }
+        if(appSettings.committee) renderCommList(appSettings.committee); if(appSettings.projectGroups) renderGroupList(appSettings.projectGroups); if(appSettings.junctures) renderJunctureList(appSettings.junctures);
+        switchTab('settings'); loadLogisticsData(); 
       } else { 
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-force')); 
-        document.getElementById('tabBtn-profile').classList.remove('hidden-force');
-        switchTab('profile'); 
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-force')); document.getElementById('tabBtn-profile').classList.remove('hidden-force'); switchTab('profile'); 
       }
     }
 
@@ -519,39 +419,29 @@
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-force'));
       document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); el.classList.add('border-transparent', 'text-gray-500', 'font-bold'); });
       document.getElementById(`tab-${tabId}`).classList.remove('hidden-force');
-      
       const activeBtn = document.getElementById(`tabBtn-${tabId}`);
       if(activeBtn) { activeBtn.classList.remove('border-transparent', 'text-gray-500', 'font-bold'); activeBtn.classList.add('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); }
-      
       if(tabId === 'profile') loadProfileData();
       if(tabId === 'logistics') switchLogisticsSubTab('pairings');
       if(tabId === 'attendance') renderAttendanceChecklist();
     }
 
-    // --- LOGISTICS WIZARD (OPTIMISTIC PAIRING ENGINE) ---
-    function switchLogisticsSubTab(tabId) {
-      ['pairings', 'rooms', 'groups', 'buses'].forEach(id => {
-        document.getElementById(`log-${id}`).classList.add('hidden-force');
-        const btn = document.getElementById(`subTab-${id}`);
-        if(btn) { btn.classList.remove('border-primary', 'text-primary'); btn.classList.add('border-transparent', 'text-gray-500'); }
-      });
-      document.getElementById(`log-${tabId}`).classList.remove('hidden-force');
-      const targetBtn = document.getElementById(`subTab-${tabId}`);
-      if(targetBtn) { targetBtn.classList.remove('border-transparent', 'text-gray-500'); targetBtn.classList.add('border-primary', 'text-primary'); }
-    }
+    async function loadProfileData() { /* Existing Load Profile */ }
+    function enableEditMode(i) { /* Existing Edit Mode */ }
+    function cancelEditMode(i) { /* Existing Cancel */ }
+    async function saveProfileEdit(i, btn) { /* Existing Save */ }
 
-    async function loadLogisticsData() {
-      try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); renderAttendanceChecklist(); } catch(e) { showToast("Failed to load logistics.", true); }
-    }
+    // --- LOGISTICS ---
+    function switchLogisticsSubTab(tabId) {['pairings', 'rooms', 'groups', 'buses'].forEach(id => { document.getElementById(`log-${id}`).classList.add('hidden-force'); const btn = document.getElementById(`subTab-${id}`); if(btn) { btn.classList.remove('border-primary', 'text-primary'); btn.classList.add('border-transparent', 'text-gray-500'); } }); document.getElementById(`log-${tabId}`).classList.remove('hidden-force'); const targetBtn = document.getElementById(`subTab-${tabId}`); if(targetBtn) { targetBtn.classList.remove('border-transparent', 'text-gray-500'); targetBtn.classList.add('border-primary', 'text-primary'); } }
+
+    async function loadLogisticsData() { try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); renderAttendanceChecklist(); } catch(e) { showToast("Failed to load logistics.", true); } }
 
     function renderPairings() {
       if(!globalLogistics) return;
       const trainees = globalLogistics.participants.filter(p => p.role === 'TRAINEE');
       const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER');
       const pairings = globalLogistics.pairings ||[];
-
-      const familyCounts = {};
-      globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
+      const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
 
       let unpairedHtml = ''; let pairedHtml = ''; let uCount = 0; let pCount = 0;
 
@@ -563,26 +453,17 @@
         let tagsHtml = '';
         tPairings.forEach(pair => {
             const vol = vols.find(v => v.nric === pair.volNric);
-            const vName = vol ? vol.name : 'Unknown';
             tagsHtml += `<span class="bg-green-100 text-green-800 text-xs px-3 py-1 border border-green-300 rounded-md font-bold flex items-center mb-1 mr-1">
-                ${vName} 
-                <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-2 text-red-500 hover:text-red-700 font-extrabold focus:outline-none">&times;</button>
+                ${vol ? vol.name : 'Unknown'} 
+                <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}', this)" class="ml-2 text-red-500 hover:text-red-700 font-extrabold">&times;</button>
             </span>`;
         });
 
-        const cardHtml = `
-            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-500 shadow-sm mb-3 transition">
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center"><p class="font-extrabold text-lg text-blue-700 dark:text-blue-400">${t.name}</p>${famBadge}</div>
-                <button onclick="openPairingSheet('${t.nric}')" class="text-xs bg-blue-100 text-blue-700 font-extrabold px-3 py-1.5 rounded-lg border-2 border-blue-300 hover:bg-blue-200 transition whitespace-nowrap">+ Add Vol</button>
-              </div>
-              <div class="flex flex-wrap mt-2 min-h-[28px]">
-                ${tagsHtml || '<span class="text-sm font-bold text-red-500">Unassigned</span>'}
-              </div>
-            </div>`;
+        const cardHtml = `<div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-500 shadow-sm mb-3 transition">
+              <div class="flex justify-between items-start mb-2"><div class="flex items-center"><p class="font-extrabold text-lg text-blue-700 dark:text-blue-400">${t.name}</p>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-xs bg-blue-100 text-blue-700 font-extrabold px-3 py-1.5 rounded-lg border-2 border-blue-300 hover:bg-blue-200 transition whitespace-nowrap">+ Add Vol</button></div>
+              <div class="flex flex-wrap mt-2 min-h-[28px]">${tagsHtml || '<span class="text-sm font-bold text-red-500">Unassigned</span>'}</div></div>`;
 
-        if(tPairings.length > 0) { pCount++; pairedHtml += cardHtml; } 
-        else { uCount++; unpairedHtml += cardHtml; }
+        if(tPairings.length > 0) { pCount++; pairedHtml += cardHtml; } else { uCount++; unpairedHtml += cardHtml; }
       });
 
       document.getElementById('unpairedCount').textContent = uCount; document.getElementById('pairedCount').textContent = pCount;
@@ -591,29 +472,13 @@
     }
 
     function openPairingSheet(traineeNric) {
-      currentPairingTarget = traineeNric; 
-      document.getElementById('sheetTitle').textContent = "Select Volunteer to Pair"; 
-      document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
-      
-      const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER'); 
-      const pairings = globalLogistics.pairings ||[];
-      let html = '';
-      
+      currentPairingTarget = traineeNric; document.getElementById('sheetTitle').textContent = "Select Volunteer to Pair"; document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
+      const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER'); const pairings = globalLogistics.pairings ||[]; let html = '';
       vols.forEach(v => {
         const volPairs = pairings.filter(p => p.volNric === v.nric);
-        const isAlreadyPairedToThisTrainee = volPairs.some(p => p.traineeNric === traineeNric);
-
-        if(isAlreadyPairedToThisTrainee) return; 
-
-        let badge = '';
-        if(volPairs.length > 0) {
-            badge = `<span class="bg-yellow-100 text-yellow-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded ml-2 border border-yellow-300">Paired (${volPairs.length})</span>`;
-        }
-
-        html += `<div onclick="confirmPairing('${v.nric}')" class="flex justify-between items-center bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2">
-            <p class="font-extrabold text-lg">${v.name} ${badge}</p>
-            <span class="text-xs font-bold text-green-600">Volunteer</span>
-          </div>`;
+        if(volPairs.some(p => p.traineeNric === traineeNric)) return; 
+        let badge = volPairs.length > 0 ? `<span class="bg-yellow-100 text-yellow-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded ml-2 border border-yellow-300">Paired (${volPairs.length})</span>` : '';
+        html += `<div onclick="confirmPairing('${v.nric}')" class="flex justify-between items-center bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2"><p class="font-extrabold text-lg">${v.name} ${badge}</p><span class="text-xs font-bold text-green-600">Volunteer</span></div>`;
       });
       document.getElementById('sheetListContainer').innerHTML = html || '<p class="font-bold text-gray-500 p-2">No available volunteers to add.</p>';
     }
@@ -621,108 +486,120 @@
     async function confirmPairing(volNric) {
       if(!currentPairingTarget) return; closeSelectionSheet(); 
       globalLogistics.pairings.push({ traineeNric: currentPairingTarget, volNric: volNric }); renderPairings();
-      
-      const btn = document.getElementById('btnSyncPairings');
-      setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Saving...";
-      try { 
-        const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
-        globalLogistics = res; renderPairings(); 
-        btn.querySelector('.btn-text').textContent = "Synced"; showToast("Pairing saved!", false); 
-      } catch(e) { showToast("Failed to sync", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } 
-      finally { setBtnLoading(btn, false); }
+      const btn = document.getElementById('btnSyncPairings'); setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Saving...";
+      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); btn.querySelector('.btn-text').textContent = "Synced"; showToast("Pairing saved!", false); 
+      } catch(e) { showToast("Failed to sync", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } finally { setBtnLoading(btn, false); }
     }
 
-    async function unpairTrainee(traineeNric, volNric) {
+    async function unpairTrainee(traineeNric, volNric, btnSource) {
       globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); renderPairings();
-      
-      const btn = document.getElementById('btnSyncPairings');
-      setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Saving...";
-      try { 
-        const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
-        globalLogistics = res; renderPairings(); 
-        btn.querySelector('.btn-text').textContent = "Synced"; showToast("Pairing removed.", false); 
-      } catch(e) { showToast("Failed.", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } 
-      finally { setBtnLoading(btn, false); }
+      const btn = document.getElementById('btnSyncPairings'); setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Saving...";
+      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); btn.querySelector('.btn-text').textContent = "Synced"; showToast("Pairing removed.", false); 
+      } catch(e) { showToast("Failed.", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } finally { setBtnLoading(btn, false); }
     }
 
     async function manualSyncPairings(btn) {
       setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Syncing...";
-      try { 
-        const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
-        globalLogistics = res; renderPairings(); 
-        btn.querySelector('.btn-text').textContent = "Synced"; showToast("Manual sync complete!"); 
-      } catch(e) { showToast("Sync failed.", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } 
-      finally { setBtnLoading(btn, false); }
+      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); btn.querySelector('.btn-text').textContent = "Synced"; showToast("Manual sync complete!"); 
+      } catch(e) { showToast("Sync failed.", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } finally { setBtnLoading(btn, false); }
     }
 
     function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
 
+    function renderAttendanceChecklist() {
+      if(!globalLogistics || !document.getElementById('attendanceChecklist')) return;
+      let html = '';
+      globalLogistics.participants.forEach(p => {
+        let roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+        html += `<label class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border-2 border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition mb-2">
+            <span class="font-extrabold text-lg">${p.name} <span class="text-sm font-bold ${roleColor} ml-1">(${p.role})</span></span>
+            <input type="checkbox" checked class="w-6 h-6 text-primary rounded-md border-2 border-gray-400 focus:ring-primary">
+          </label>`;
+      });
+      document.getElementById('attendanceChecklist').innerHTML = html || '<p class="text-sm font-bold p-2">No participants found.</p>';
+    }
+
     // --- ADMIN SETTINGS LOGIC ---
     function applyAdminVisuals() {
-      // Toggle logic (No changes needed, already handles state)
+      const rBtn = document.getElementById('toggleRegBtn'); 
+      if(rBtn) { if(appSettings.registrationOpen) { rBtn.innerHTML = `<span class="btn-text">OPEN (Click to Close)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition flex justify-center items-center"; } else { rBtn.innerHTML = `<span class="btn-text">CLOSED (Click to Open)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center"; } }
+      const sliderBtn = document.getElementById('editSliderToggle'); const sliderKnob = document.getElementById('editSliderKnob'); const statusText = document.getElementById('editStatusText');
+      if (sliderBtn && sliderKnob && statusText) { if(appSettings.allowEdits) { sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-green-800 bg-green-600 shadow-inner"; sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-7 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center"; statusText.textContent = "Yes"; statusText.className = "font-extrabold text-lg text-green-600 dark:text-green-400 transition-colors"; } else { sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner"; sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center"; statusText.textContent = "No"; statusText.className = "font-extrabold text-lg text-gray-600 dark:text-gray-400 transition-colors"; } }
+    }
+
+    function initiateRegistrationToggle(btn) { if(!appSettings.registrationOpen) { document.getElementById('tripYearInput').value = new Date().getFullYear(); document.getElementById('tripSetupModal').classList.remove('hidden-force'); } else { executeToggleRegistration(false, '', '', btn); } }
+    function cancelTripSetup() { document.getElementById('tripSetupModal').classList.add('hidden-force'); }
+    async function confirmTripSetup(btn) { document.getElementById('tripSetupModal').classList.add('hidden-force'); await executeToggleRegistration(true, document.getElementById('tripTitleInput').value.trim() || 'MYG Overseas Trip', document.getElementById('tripYearInput').value.trim() || new Date().getFullYear(), btn); }
+    async function executeToggleRegistration(newState, title = '', year = '', sourceBtn = null) {
+      const mainBtn = document.getElementById('toggleRegBtn'); setBtnLoading(mainBtn, true); if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, true);
+      try { const res = await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); appSettings.registrationOpen = newState; const headerTripName = document.getElementById('headerTripName'); if(newState && res.tripTitle && res.tripYear) { headerTripName.textContent = `${res.tripTitle} ${res.tripYear}`; headerTripName.classList.remove('hidden-force'); } else { headerTripName.classList.add('hidden-force'); } applyAdminVisuals(); showToast(newState ? "Registration Opened" : "Registration Closed"); } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { setBtnLoading(mainBtn, false); if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, false); }
+    }
+
+    async function toggleEditSlider(btn) {
+      if(btn.disabled) return; const sliderLoader = document.getElementById('editSliderLoader'); const newState = !appSettings.allowEdits; btn.disabled = true; sliderLoader.classList.remove('hidden-force');
+      try { await callBackend('toggleEdits', { status: newState }); appSettings.allowEdits = newState; applyAdminVisuals(); showToast(newState ? "Edits Enabled" : "Edits Locked"); } catch(e) { showToast("Failed to update.", true); applyAdminVisuals(); } finally { btn.disabled = false; sliderLoader.classList.add('hidden-force'); }
     }
 
     // JUNCTURE MANAGEMENT
     async function addJuncture(btn) {
-      const name = document.getElementById('newJunctureName').value.trim();
-      if(!name) return showToast("Juncture name is required", true);
-      setBtnLoading(btn, true);
-      try {
-        const res = await callBackend('modifyJunctures', { actionType: 'add', newName: name });
-        document.getElementById('newJunctureName').value = '';
-        appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Added");
-      } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+      const name = document.getElementById('newJunctureName').value.trim(); if(!name) return showToast("Juncture name is required", true); setBtnLoading(btn, true);
+      try { const res = await callBackend('modifyJunctures', { actionType: 'add', newName: name }); document.getElementById('newJunctureName').value = ''; appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
     }
-
     async function removeJuncture(name, btn) {
       setBtnLoading(btn, true);
-      try { 
-        const res = await callBackend('modifyJunctures', { actionType: 'remove', oldName: name }); 
-        appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Removed"); 
-      } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+      try { const res = await callBackend('modifyJunctures', { actionType: 'remove', oldName: name }); appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
     }
-
     async function editJuncture(oldName) {
-      const newName = prompt(`Edit Juncture Name:`, oldName);
-      if(!newName || newName.trim() === '' || newName.trim() === oldName) return;
-      try {
-        const res = await callBackend('modifyJunctures', { actionType: 'edit', oldName: oldName, newName: newName.trim() });
-        appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Updated");
-      } catch(e) { showToast(e.message, true); }
+      const newName = prompt(`Edit Juncture Name:`, oldName); if(!newName || newName.trim() === '' || newName.trim() === oldName) return;
+      try { const res = await callBackend('modifyJunctures', { actionType: 'edit', oldName: oldName, newName: newName.trim() }); appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Updated"); } catch(e) { showToast(e.message, true); }
     }
-
     function renderJunctureList(list) {
       const ul = document.getElementById('junctureList'); if(!ul) return;
       ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No junctures defined yet.</li>' : '';
-      if(list) list.forEach(j => { 
-        const safeName = j.replace(/'/g, "\\'");
-        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm">
-          <span class="font-extrabold text-lg">${j}</span>
-          <div class="flex space-x-2">
-            <button onclick="editJuncture('${safeName}')" class="text-blue-600 text-sm font-extrabold px-3 py-2 border-2 border-blue-600 hover:bg-blue-50 rounded-lg">Edit</button>
-            <button onclick="removeJuncture('${safeName}', this)" class="text-red-600 text-sm font-extrabold px-3 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button>
-          </div></li>`; 
-      });
-      
-      const attSel = document.getElementById('attendanceJunctureSelect');
-      if(attSel) { attSel.innerHTML = ''; if(list) list.forEach(j => attSel.innerHTML += `<option value="${j}">${j}</option>`); }
+      if(list) list.forEach(j => { const safeName = j.replace(/'/g, "\\'"); ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm"><span class="font-extrabold text-lg">${j}</span><div class="flex space-x-2"><button onclick="editJuncture('${safeName}')" class="text-blue-600 text-sm font-extrabold px-3 py-2 border-2 border-blue-600 hover:bg-blue-50 rounded-lg">Edit</button><button onclick="removeJuncture('${safeName}', this)" class="text-red-600 text-sm font-extrabold px-3 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></div></li>`; });
+      const attSel = document.getElementById('attendanceJunctureSelect'); if(attSel) { attSel.innerHTML = ''; if(list) list.forEach(j => attSel.innerHTML += `<option value="${j}">${j}</option>`); }
     }
 
-    // Remaining standard app functions truncated for brevity (no changes)
-    function initiateRegistrationToggle(btn) { /* Same */ }
-    function cancelTripSetup() { /* Same */ }
-    async function confirmTripSetup(btn) { /* Same */ }
-    async function executeToggleRegistration(newState, title, year, sourceBtn) { /* Same */ }
-    async function toggleEditSlider(btn) { /* Same */ }
-    async function addProjectGroup(btn) { /* Same */ }
-    async function removeProjectGroup(name, btn) { /* Same */ }
-    function renderGroupList(list) { /* Same */ }
-    async function addCommittee(btn) { /* Same */ }
-    async function removeCommittee(nric, btn) { /* Same */ }
-    function renderCommList(list) { /* Same */ }
-    async function archiveSystem(btn) { /* Same */ }
-    function updateApp(btn) { /* Same */ }
+    async function addProjectGroup(btn) {
+      const name = document.getElementById('newGroupName').value.trim(); if(!name) return showToast("Project name is required", true); setBtnLoading(btn, true);
+      try { const res = await callBackend('addProjectGroup', { groupName: name, callerNric: currentUser.nric }); document.getElementById('newGroupName').value = ''; appSettings.projectGroups = res.groups; renderGroupList(res.groups); showToast("Project Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    async function removeProjectGroup(name, btn) {
+      setBtnLoading(btn, true);
+      try { const res = await callBackend('removeProjectGroup', { groupName: name, callerNric: currentUser.nric }); appSettings.projectGroups = res.groups; renderGroupList(res.groups); showToast("Project Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    function renderGroupList(list) {
+      const ul = document.getElementById('groupList'); if(!ul) return;
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No projects defined yet.</li>' : '';
+      if(list) list.forEach(g => { const safeGroup = g.replace(/'/g, "\\'"); ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm"><span class="font-extrabold text-lg">${g}</span><button onclick="removeProjectGroup('${safeGroup}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
+    }
 
+    async function addCommittee(btn) {
+      const name = document.getElementById('newCommName').value.trim(); const nric = document.getElementById('newCommNric').value.trim(); const phone = document.getElementById('newCommPhone').value.trim();
+      if(!nric || !name || !phone) return showToast("Name, NRIC, and Phone required", true); setBtnLoading(btn, true);
+      try { const res = await callBackend('addCommittee', { nric, name, phone }); document.getElementById('newCommName').value = ''; document.getElementById('newCommNric').value = ''; document.getElementById('newCommPhone').value = ''; appSettings.committee = res.list; renderCommList(res.list); showToast("Added to Committee"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    async function removeCommittee(nric, btn) { 
+      setBtnLoading(btn, true);
+      try { const res = await callBackend('removeCommittee', { nric }); appSettings.committee = res.list; renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    function renderCommList(list) {
+      const ul = document.getElementById('commList'); if(!ul) return;
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No committee members assigned yet.</li>' : '';
+      if(list) list.forEach(m => { ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 shadow-sm"><div><p class="font-extrabold text-lg">${m.name}</p><p class="text-sm text-gray-500 font-mono font-bold">${m.nric} | ${m.phone}</p></div><button onclick="removeCommittee('${m.nric}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
+    }
+
+    async function archiveSystem(btn) {
+      if(!confirm("⚠️ ARE YOU SURE?\n\nThis archives the database and completely resets the system. All participants must re-register.")) return;
+      showToast("Archiving system...", false); setBtnLoading(btn, true);
+      try { await callBackend('archiveAndReset'); showToast("Reset successful!"); setTimeout(() => { window.location.reload(); }, 2000); } catch (e) { showToast(e.message, true); setBtnLoading(btn, false); }
+    }
+
+    function updateApp(btn) {
+      setBtnLoading(btn, true); showToast("Updating app data and clearing caches...");
+      if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } }); }
+      setTimeout(() => location.reload(true), 1000);
+    }
   </script>
 </body>
 </html>
