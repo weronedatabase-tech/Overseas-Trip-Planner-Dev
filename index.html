@@ -34,17 +34,30 @@
 
   <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force">DEV MODE</div>
 
-  <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-2 flex justify-between items-center z-10 sticky top-0">
-    <div class="cursor-pointer" onclick="goHome()">
-      <div class="font-bold text-lg text-primary leading-tight">MYG Overseas Trip</div>
-      <div id="headerTripName" class="text-xs font-bold text-gray-500 hidden-force"></div>
-      <div id="headerLegend" class="flex gap-1 mt-1 overflow-x-auto scrollbar-hide max-w-[50vw] hidden-force pb-1"></div>
-    </div>
-    <div class="flex items-center space-x-3 shrink-0">
-      <button onclick="updateApp(this)" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition font-bold flex justify-center items-center">
-        <span class="btn-text">Update App</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
-      </button>
-      <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
+  <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-2 z-10 sticky top-0">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+      <div class="flex items-center justify-between md:justify-start w-full md:w-auto mb-2 md:mb-0">
+        <div class="cursor-pointer flex flex-col justify-center mr-4" onclick="goHome()">
+          <div class="font-bold text-lg text-primary leading-tight whitespace-nowrap">MYG Overseas Trip</div>
+          <div id="headerTripName" class="text-xs font-bold text-gray-500 hidden-force whitespace-nowrap"></div>
+        </div>
+        <div class="flex items-center space-x-3 md:hidden">
+          <button onclick="updateApp(this)" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition font-bold flex justify-center items-center">
+            <span class="btn-text">Update App</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
+          </button>
+          <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
+        </div>
+      </div>
+      
+      <!-- Project Legend -->
+      <div id="headerLegend" class="flex flex-wrap gap-1 md:gap-2 items-center"></div>
+      
+      <div class="hidden md:flex items-center space-x-3">
+        <button onclick="updateApp(this)" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition font-bold flex justify-center items-center">
+          <span class="btn-text">Update App</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
+        </button>
+        <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
+      </div>
     </div>
   </header>
 
@@ -107,6 +120,7 @@
     </div>
 
     <div id="viewDashboard" class="hidden-force max-w-4xl mx-auto space-y-6">
+      
       <div class="bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow-sm border-2 border-l-8 border-gray-300 dark:border-gray-600 border-l-primary flex justify-between items-center mt-2">
         <div>
           <h3 class="text-lg font-extrabold leading-tight" id="welcomeUserText">Welcome!</h3>
@@ -118,13 +132,14 @@
       </div>
 
       <div class="flex space-x-2 overflow-x-auto pb-0 border-b-4 border-gray-300 dark:border-gray-600 scrollbar-hide mt-4" id="navTabs">
-        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors">My Profile</button>
-        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Logistics</button>
-        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Attendance</button>
-        <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Finance</button>
-        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Settings</button>
+        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors">My Profile</button>
+        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Logistics</button>
+        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Attendance</button>
+        <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Finance</button>
+        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Settings</button>
       </div>
 
+      <!-- PROFILE TAB -->
       <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
         <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4"><h3 class="text-2xl font-bold">Family / Group Details</h3></div>
         <div id="lockedProfileBanner" class="hidden-force bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-6 shadow-sm">
@@ -135,6 +150,7 @@
         <div id="profileCardsContainer" class="space-y-6"><div class="loader w-8 h-8 border-primary mx-auto my-10"></div></div>
       </div>
 
+      <!-- LOGISTICS TAB -->
       <div id="tab-logistics" class="tab-content hidden-force mt-4 space-y-6">
         <div class="flex overflow-x-auto border-b-2 border-gray-300 dark:border-gray-600 scrollbar-hide pb-2">
           <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-4 py-2 font-extrabold border-b-4 border-primary text-primary whitespace-nowrap mb-[-10px] transition">1. Pairings</button>
@@ -142,24 +158,27 @@
           <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">3. Groups</button>
           <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">4. Buses</button>
         </div>
+        
         <div id="log-pairings" class="space-y-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <div class="flex justify-between items-center mb-2">
               <h3 class="text-xl font-bold">Volunteer - Trainee Pairings</h3>
-              <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs bg-green-100 text-green-800 border-2 border-green-400 dark:bg-green-900 dark:text-green-300 dark:border-green-700 px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center shadow-sm">
+              <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs bg-green-100 text-green-700 border-2 border-green-400 px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center shadow-sm">
                 <span class="btn-text">Saved</span><div class="btn-spinner spinner-primary hidden-force ml-2 !w-3 !h-3 border-2"></div>
               </button>
             </div>
             <p class="text-sm font-bold text-gray-500 mb-4">Tap "+ Add Vol" to assign multiple volunteers per trainee.</p>
-            <div class="space-y-3"><h4 class="font-extrabold text-gray-600 dark:text-gray-300 border-b-2 border-gray-200 dark:border-gray-600 pb-1">Unassigned Trainees (<span id="unpairedCount">0</span>)</h4><div id="unpairedTraineesList" class="space-y-2"><div class="loader w-6 h-6 border-primary mx-auto"></div></div></div>
-            <div class="space-y-3 mt-6"><h4 class="font-extrabold text-gray-600 dark:text-gray-300 border-b-2 border-gray-200 dark:border-gray-600 pb-1">Paired Trainees (<span id="pairedCount">0</span>)</h4><div id="pairedTraineesList" class="space-y-2"></div></div>
+            <div class="space-y-3"><h4 class="font-extrabold text-gray-800 dark:text-gray-200 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Unassigned Trainees (<span id="unpairedCount">0</span>)</h4><div id="unpairedTraineesList" class="space-y-2"></div></div>
+            <div class="space-y-3 mt-6"><h4 class="font-extrabold text-gray-800 dark:text-gray-200 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Paired Trainees (<span id="pairedCount">0</span>)</h4><div id="pairedTraineesList" class="space-y-2"></div></div>
           </div>
         </div>
+        
         <div id="log-rooms" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary"><h3 class="text-xl font-bold mb-2">1. Define Room Configurations</h3><p>In Development...</p></div></div>
         <div id="log-groups" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-purple-500 text-center"><h3 class="text-xl font-bold mb-2">Smart Group Generator</h3><button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">✨ Generate Proposed Groups</button></div></div>
         <div id="log-buses" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300"><h3 class="text-xl font-bold mb-2">Bus Allocation</h3></div></div>
       </div>
 
+      <!-- ATTENDANCE TAB -->
       <div id="tab-attendance" class="tab-content hidden-force mt-4 space-y-6">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary admin-only">
           <div class="flex justify-between items-center mb-4 border-b-2 border-gray-200 pb-2"><h3 class="text-xl font-extrabold">Take Attendance</h3><span class="bg-green-100 text-green-800 text-xs font-extrabold px-2 py-1 rounded border border-green-300">🟢 Online & Syncing</span></div>
@@ -174,13 +193,13 @@
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
-            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Registration Form</h3>
-            <p class="text-sm font-bold text-gray-500 mb-4">Allow new participants to sign up.</p>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Allow new participants to sign up using the public form.</p>
             <button id="toggleRegBtn" onclick="initiateRegistrationToggle(this)" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 flex justify-center items-center"><span class="btn-text">Loading...</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
           </div>
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
-            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Can participants edit details?</h3>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants edit details?</h3>
             <div class="flex items-center space-x-4 mt-6">
               <button id="editSliderToggle" onclick="toggleEditSlider(this)" class="relative inline-flex items-center h-8 w-14 rounded-full border-2 border-gray-400 bg-gray-300 shadow-inner">
                 <span id="editSliderKnob" class="inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full shadow-md items-center justify-center"><div id="editSliderLoader" class="loader hidden-force" style="width: 14px; height: 14px; border-width: 2px; border-top-color: #2563eb;"></div></span>
@@ -190,40 +209,41 @@
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 admin-only">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Attendance Junctures</h3>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 admin-only">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Attendance Junctures</h3>
           <div class="flex space-x-3 mb-5 mt-4">
-            <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-3 border-2 border-gray-400 rounded-lg font-bold">
+            <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
             <button onclick="addJuncture(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold border-2 border-blue-800 flex items-center"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
           </div>
-          <ul id="junctureList" class="space-y-3 border-2 border-gray-300 rounded-lg p-5 bg-gray-50"></ul>
+          <ul id="junctureList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
         </div>
 
-        <div id="projectsSettingsBlock" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 main-admin-only hidden-force">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Projects</h3>
+        <div id="projectsSettingsBlock" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 main-admin-only hidden-force">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Projects</h3>
           <div class="flex space-x-3 mb-5 mt-4">
-            <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 rounded-lg font-bold">
+            <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
+            <button onclick="openColorPickerForNewProject()" class="w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105" id="newGroupColorBtn" style="background-color:#fff" title="Pick a color"></button>
             <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold border-2 border-blue-800 flex items-center"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
           </div>
-          <ul id="groupList" class="space-y-3 border-2 border-gray-300 rounded-lg p-5 bg-gray-50"></ul>
+          <ul id="groupList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Committee Members</h3>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Committee Members</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
-            <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold">
-            <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-3 border-2 border-gray-400 rounded-lg uppercase font-bold">
+            <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
+            <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-bold">
             <div class="flex space-x-2">
-              <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold">
+              <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
               <button onclick="addCommittee(this)" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold border-2 border-blue-800 flex items-center"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
             </div>
           </div>
-          <ul id="commList" class="space-y-3 border-2 border-gray-300 rounded-lg p-5 bg-gray-50"></ul>
+          <ul id="commList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-red-500">
-          <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 pb-3 text-red-600">Danger Zone</h3>
-          <p class="text-sm font-bold text-gray-600 mb-5">Archive current trip to Google Drive and wipe system for a fresh start. Projects list will be kept.</p>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-red-500">
+          <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-3 text-red-600">Danger Zone</h3>
+          <p class="text-sm font-bold text-gray-600 mb-5">Archive current trip to Google Drive and wipe system for a fresh start.</p>
           <button onclick="archiveSystem(this)" class="w-full sm:w-auto bg-red-600 text-white font-extrabold py-3 px-6 rounded-lg border-2 border-red-800 flex items-center justify-center"><span class="btn-text">Archive & Reset</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
         </div>
       </div>
@@ -232,33 +252,44 @@
 
   <!-- MODALS -->
   <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm">
-    <div class="bg-white rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
-      <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 pb-2">Initialize Trip Setup</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
+      <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Initialize Trip Setup</h3>
       <div class="space-y-5 mb-6 mt-4">
-        <div><label class="block text-sm font-extrabold mb-1">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold"></div>
-        <div><label class="block text-sm font-extrabold mb-1">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold"></div>
+        <div><label class="block text-sm font-extrabold mb-1">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
+        <div><label class="block text-sm font-extrabold mb-1">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
       </div>
       <div class="flex space-x-3">
-        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-extrabold border-2 border-gray-400">Cancel</button>
+        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500">Cancel</button>
         <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
       </div>
     </div>
   </div>
 
   <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end">
-    <div class="bg-white rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 h-[70vh] flex flex-col">
-      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 bg-gray-50">
-        <span id="sheetTitle" class="font-extrabold text-xl text-gray-800">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
+    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600 h-[70vh] flex flex-col">
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <span id="sheetTitle" class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
       </div>
-      <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100" id="sheetListContainer"></div>
+      <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100 dark:bg-gray-800" id="sheetListContainer"></div>
+    </div>
+  </div>
+
+  <!-- COLOR PICKER MODAL -->
+  <div id="colorPickerModal" class="fixed inset-0 bg-black/60 z-[96] hidden-force flex justify-center items-center p-4 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-gray-400 dark:border-gray-600">
+      <div class="flex justify-between items-center mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">
+        <h3 class="text-xl font-extrabold">Select Color</h3>
+        <button type="button" onclick="closeColorPicker()" class="text-gray-500 hover:text-gray-800 text-2xl font-extrabold px-2">&times;</button>
+      </div>
+      <div class="grid grid-cols-6 gap-3 mb-6" id="colorPaletteGrid"></div>
     </div>
   </div>
 
   <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end">
-    <div class="bg-white rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400">
-      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300"><span class="font-extrabold text-xl text-gray-800">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button></div>
+    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600">
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700"><span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button></div>
       <div class="relative flex h-[200px] text-xl font-bold"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
-      <div class="p-5 bg-gray-50 border-t-2 border-gray-300"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800">Done</button></div>
+      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm">Done</button></div>
     </div>
   </div>
   <script>
@@ -270,55 +301,133 @@
     const API_URL = DEV_MODE ? URLS.DEV : URLS.PROD;
 
     let currentUser = null; 
-    let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[], junctures:[], tripTitle:'', tripYear:'', activeProjects:[] };
+    let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[], projectColors:{}, activeProjects:[], junctures:[], tripTitle:'', tripYear:'' };
     let globalLogistics = null; let currentPairingTarget = null; let regMemberCount = 0; let loadedFamily =[];
     let pairingSyncTimeout = null;
+    let pendingColorGroupTarget = null;
+    let newProjectSelectedColor = null;
 
+    // 18 Safe, non-red colors
     const projectColorPalette =[
+      'bg-slate-100 border-slate-400 text-slate-900 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100',
+      'bg-gray-100 border-gray-400 text-gray-900 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100',
+      'bg-zinc-100 border-zinc-400 text-zinc-900 dark:bg-zinc-900 dark:border-zinc-600 dark:text-zinc-100',
+      'bg-neutral-100 border-neutral-400 text-neutral-900 dark:bg-neutral-900 dark:border-neutral-600 dark:text-neutral-100',
+      'bg-stone-100 border-stone-400 text-stone-900 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-100',
+      'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900 dark:border-amber-600 dark:text-amber-100',
+      'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-100',
+      'bg-lime-100 border-lime-400 text-lime-900 dark:bg-lime-900 dark:border-lime-600 dark:text-lime-100',
+      'bg-green-100 border-green-400 text-green-900 dark:bg-green-900 dark:border-green-600 dark:text-green-100',
       'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900 dark:border-emerald-600 dark:text-emerald-100',
+      'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900 dark:border-teal-600 dark:text-teal-100',
+      'bg-cyan-100 border-cyan-400 text-cyan-900 dark:bg-cyan-900 dark:border-cyan-600 dark:text-cyan-100',
+      'bg-sky-100 border-sky-400 text-sky-900 dark:bg-sky-900 dark:border-sky-600 dark:text-sky-100',
       'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-100',
       'bg-indigo-100 border-indigo-400 text-indigo-900 dark:bg-indigo-900 dark:border-indigo-600 dark:text-indigo-100',
-      'bg-cyan-100 border-cyan-400 text-cyan-900 dark:bg-cyan-900 dark:border-cyan-600 dark:text-cyan-100',
-      'bg-fuchsia-100 border-fuchsia-400 text-fuchsia-900 dark:bg-fuchsia-900 dark:border-fuchsia-600 dark:text-fuchsia-100',
-      'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900 dark:border-teal-600 dark:text-teal-100',
-      'bg-lime-100 border-lime-400 text-lime-900 dark:bg-lime-900 dark:border-lime-600 dark:text-lime-100',
-      'bg-sky-100 border-sky-400 text-sky-900 dark:bg-sky-900 dark:border-sky-600 dark:text-sky-100',
       'bg-violet-100 border-violet-400 text-violet-900 dark:bg-violet-900 dark:border-violet-600 dark:text-violet-100',
-      'bg-stone-100 border-stone-400 text-stone-900 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-100',
-      'bg-green-100 border-green-400 text-green-900 dark:bg-green-900 dark:border-green-600 dark:text-green-100',
-      'bg-slate-100 border-slate-400 text-slate-900 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100'
+      'bg-purple-100 border-purple-400 text-purple-900 dark:bg-purple-900 dark:border-purple-600 dark:text-purple-100',
+      'bg-fuchsia-100 border-fuchsia-400 text-fuchsia-900 dark:bg-fuchsia-900 dark:border-fuchsia-600 dark:text-fuchsia-100'
     ];
 
     function getProjectColor(groupName) {
       if (!groupName || groupName === 'None') return 'bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100'; 
-      let idx = appSettings.projectGroups.indexOf(groupName);
-      if (idx === -1) { let hash = 0; for(let i=0; i<groupName.length; i++) hash = groupName.charCodeAt(i) + ((hash<<5)-hash); idx = Math.abs(hash) % projectColorPalette.length; } 
-      else { idx = idx % projectColorPalette.length; }
-      return projectColorPalette[idx];
+      if (appSettings.projectColors && appSettings.projectColors[groupName]) return appSettings.projectColors[groupName];
+      return 'bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100'; 
     }
 
-    function getProjectShortForm(name) {
-      if (!name) return '';
-      const match = name.match(/\(([^)]+)\)/);
-      if (match && match[1]) return match[1].substring(0, 4).toUpperCase();
-      const words = name.replace(/[^a-zA-Z0-9 ]/g, "").split(' ').filter(w => w.length > 0);
-      if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
-      if (words.length === 1) return words[0].substring(0, 3).toUpperCase();
-      return name.substring(0, 3).toUpperCase();
+    function getProjectAbbreviation(name) {
+      const match = name.match(/\((.*?)\)/);
+      if (match && match[1]) return match[1].substring(0,3).toUpperCase();
+      const words = name.split(' ').filter(w => w.length > 0);
+      if (words.length > 1) return words.slice(0,3).map(w => w[0]).join('').toUpperCase();
+      return name.substring(0,3).toUpperCase();
     }
 
-    function renderLegend() {
+    function renderHeaderLegend() {
       const container = document.getElementById('headerLegend');
-      if (!appSettings.activeProjects || appSettings.activeProjects.length === 0 || !currentUser) { container.classList.add('hidden-force'); return; }
-      container.innerHTML = '';
+      if (!appSettings.activeProjects || appSettings.activeProjects.length === 0) { container.innerHTML = ''; return; }
+      let html = '';
       appSettings.activeProjects.forEach(proj => {
-         if(proj && proj !== 'None' && proj !== 'Not Applicable') {
-           const colorClass = getProjectColor(proj); const short = getProjectShortForm(proj);
-           container.innerHTML += `<span class="text-[10px] px-1.5 py-0.5 rounded-md border-2 whitespace-nowrap inline-block ${colorClass}" title="${proj}">${short}</span>`;
-         }
+        if(!proj) return;
+        const colorCls = getProjectColor(proj); const shortName = getProjectAbbreviation(proj);
+        html += `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold border-2 cursor-help ${colorCls}" title="${proj}">${shortName}</span>`;
       });
-      if(container.innerHTML !== '') container.classList.remove('hidden-force');
+      container.innerHTML = html;
     }
+
+    function getUnusedColor() {
+      const used = Object.values(appSettings.projectColors || {});
+      const unused = projectColorPalette.filter(c => !used.includes(c));
+      return unused.length > 0 ? unused[0] : projectColorPalette[0];
+    }
+
+    // --- COLOR PICKER UI ---
+    function openColorPickerForNewProject() {
+      pendingColorGroupTarget = 'NEW';
+      if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor();
+      renderColorPickerGrid();
+      document.getElementById('colorPickerModal').classList.remove('hidden-force');
+    }
+
+    function openColorPicker(groupName) {
+      pendingColorGroupTarget = groupName;
+      renderColorPickerGrid();
+      document.getElementById('colorPickerModal').classList.remove('hidden-force');
+    }
+
+    function closeColorPicker() {
+      document.getElementById('colorPickerModal').classList.add('hidden-force');
+    }
+
+    function renderColorPickerGrid() {
+      const grid = document.getElementById('colorPaletteGrid');
+      const usedColors = Object.values(appSettings.projectColors || {});
+      let html = '';
+      
+      projectColorPalette.forEach(colorCls => {
+        let isUsed = usedColors.includes(colorCls);
+        let isCurrent = false;
+
+        if (pendingColorGroupTarget === 'NEW') {
+          isCurrent = (colorCls === newProjectSelectedColor);
+        } else {
+          isCurrent = (colorCls === appSettings.projectColors[pendingColorGroupTarget]);
+          if(isCurrent) isUsed = false; // Allow selecting its own color
+        }
+
+        const opacity = isUsed ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer hover:scale-110';
+        const ring = isCurrent ? 'ring-4 ring-primary ring-offset-2' : '';
+        const onclick = isUsed ? '' : `onclick="selectColor('${colorCls}')"`;
+        
+        // Extract bg color class to show dot
+        const bgMatch = colorCls.match(/bg-[a-z]+-[0-9]+/);
+        const bgClass = bgMatch ? bgMatch[0] : 'bg-gray-200';
+
+        html += `<div ${onclick} class="w-10 h-10 rounded-full border-2 border-gray-400 shadow-sm transition-all ${bgClass} ${opacity} ${ring}"></div>`;
+      });
+      grid.innerHTML = html;
+    }
+
+    async function selectColor(colorClass) {
+      closeColorPicker();
+      if (pendingColorGroupTarget === 'NEW') {
+        newProjectSelectedColor = colorClass;
+        // Update the visual dot next to the Add button
+        const bgMatch = colorClass.match(/bg-[a-z]+-[0-9]+/);
+        const dot = document.getElementById('newGroupColorBtn');
+        dot.className = `w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105 ${bgMatch ? bgMatch[0] : 'bg-gray-200'}`;
+      } else {
+        // Calling backend to update existing group color
+        showToast("Updating color...", false);
+        try {
+          const res = await callBackend('addProjectGroup', { groupName: pendingColorGroupTarget, callerNric: currentUser.nric, colorClass: colorClass });
+          appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors;
+          renderGroupList(res.groups); renderHeaderLegend();
+          showToast("Color Updated!");
+        } catch(e) { showToast(e.message, true); }
+      }
+    }
+
 
     function setBtnLoading(btn, isLoading) {
       if (!btn) return; const spinner = btn.querySelector('.btn-spinner');
@@ -329,13 +438,14 @@
     function setSyncButtonState(state) {
       const btn = document.getElementById('btnSyncPairings'); if(!btn) return;
       const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
-      btn.className = "text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2"; 
+      btn.className = "text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2 shadow-sm"; 
       spinner.className = "btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"; 
       if(state === 'saving') { btn.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-400', 'dark:bg-yellow-900', 'dark:text-yellow-300', 'dark:border-yellow-700'); textSpan.textContent = "Saving..."; spinner.classList.remove('hidden-force'); spinner.classList.add('spinner-yellow'); btn.disabled = true; } 
       else if (state === 'saved') { btn.classList.add('bg-green-100', 'text-green-800', 'border-green-400', 'dark:bg-green-900', 'dark:text-green-300', 'dark:border-green-700'); textSpan.textContent = "Saved"; btn.disabled = false; } 
       else if (state === 'error') { btn.classList.add('bg-red-100', 'text-red-800', 'border-red-400', 'dark:bg-red-900', 'dark:text-red-300', 'dark:border-red-700'); textSpan.textContent = "Save Failed"; btn.disabled = false; }
     }
 
+    // --- ROLODEX LOGIC ---
     let currentPickerTarget = null; const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     function openDatePicker(targetId, type) {
       currentPickerTarget = targetId; document.getElementById('datePickerSheet').classList.remove('hidden-force');
@@ -414,9 +524,12 @@
         const config = await callBackend('getSettings'); appSettings = config;
         const regBox = document.getElementById('landingRegBox');
         if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
+        
         const headerTripName = document.getElementById('headerTripName');
         if (appSettings.tripTitle && appSettings.tripYear) { headerTripName.textContent = `${appSettings.tripTitle} ${appSettings.tripYear}`; headerTripName.classList.remove('hidden-force'); } else { headerTripName.classList.add('hidden-force'); }
-        applyAdminVisuals(); renderLegend();
+        
+        renderHeaderLegend();
+        applyAdminVisuals();
       } catch (e) { showToast("Error syncing settings.", true); } finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
     }
 
@@ -455,13 +568,12 @@
           </div>
           <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Remarks</h4>
           <div class="space-y-5">
-            <div><label class="block text-sm font-bold mb-1">Sleeping Arrangement Request</label><p class="text-xs text-gray-500 mb-2 font-bold leading-tight">We will try our best to accommodate. Approval is subjected to room availability and may incur additional charges.</p><textarea class="reg-f-sleep w-full p-3 border-2 border-gray-400 rounded-lg" rows="2" placeholder="e.g. Prefer Standard Room, Need Family Room..."></textarea></div>
-            <div><label class="block text-sm font-bold mb-1">Other Points to Note</label><textarea class="reg-f-other w-full p-3 border-2 border-gray-400 rounded-lg" rows="2" placeholder="Any other remarks..."></textarea></div>
+            <div><label class="block text-sm font-bold mb-1">Sleeping Arrangement Request</label><textarea class="reg-f-sleep w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
+            <div><label class="block text-sm font-bold mb-1">Other Points to Note</label><textarea class="reg-f-other w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
           </div>
         </div>`;
       document.getElementById('membersContainer').insertAdjacentHTML('beforeend', html);
     }
-
     function toggleTraineeFields(selectEl) { const div = selectEl.closest('.member-block').querySelector('.trainee-div'); if(selectEl.value === 'CAREGIVER') div.classList.remove('hidden-force'); else div.classList.add('hidden-force'); }
 
     async function submitRegistration(btn) {
@@ -523,14 +635,14 @@
         appSettings.committee.forEach(c => { if(c.phone) cList.innerHTML += `<a href="https://wa.me/65${c.phone}" target="_blank" class="bg-green-500 text-white font-bold px-3 py-1 rounded shadow text-sm hover:bg-green-600 border border-green-700">Chat with ${c.name}</a>`; });
       } else { banner.classList.add('hidden-force'); }
       try {
-        const res = await callBackend('getProfile', {nric: currentUser.nric}); loadedFamily = res.family; appSettings.activeProjects = res.activeProjects; renderLegend(); container.innerHTML = '';
+        const res = await callBackend('getProfile', {nric: currentUser.nric}); loadedFamily = res.family; container.innerHTML = '';
         loadedFamily.forEach((m, i) => {
           let groupOpts = `<option value="">Select...</option>`;
           if(appSettings.projectGroups) { appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; }); }
           if(m.group && (!appSettings.projectGroups || !appSettings.projectGroups.includes(m.group))) { groupOpts += `<option value="${m.group}" selected>${m.group} (Archived)</option>`; }
           const dynColor = getProjectColor(m.group);
           container.innerHTML += `<div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border-2 border-gray-300 dark:border-gray-500 shadow-md relative" id="profCard_${i}">
-              <div class="flex justify-between items-start border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4"><div class="flex items-center flex-wrap gap-2"><span class="font-extrabold text-xl px-2 py-1 rounded-md border-2 ${dynColor}">${m.fullName}</span> <span class="text-sm font-bold text-gray-500 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded-lg">${m.role}</span></div>${appSettings.allowEdits ? `<button onclick="enableEditMode(${i})" class="bg-primary text-white px-5 py-2 rounded-lg font-bold border-2 border-blue-800 hover:bg-blue-700 transition">Edit</button>` : ''}</div>
+              <div class="flex justify-between items-start border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4"><div class="flex items-center flex-wrap gap-2"><span class="font-extrabold text-xl px-3 py-1 rounded-md border-2 ${dynColor}">${m.fullName}</span> <span class="text-sm font-bold text-gray-500 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded-lg ml-2">${m.role}</span></div>${appSettings.allowEdits ? `<button onclick="enableEditMode(${i})" class="bg-primary text-white px-5 py-2 rounded-lg font-bold border-2 border-blue-800 hover:bg-blue-700 transition">Edit</button>` : ''}</div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                 <div><p class="font-bold text-gray-500 text-xs">NRIC / FIN</p><p class="font-extrabold uppercase">${m.nric}</p></div><div><p class="font-bold text-gray-500 text-xs">Date of Birth</p><p class="font-extrabold">${m.dob}</p></div>
                 <div><p class="font-bold text-gray-500 text-xs">Gender & Nat.</p><p class="font-extrabold">${m.gender} | ${m.nationality}</p></div><div><p class="font-bold text-gray-500 text-xs">Contact & Email</p><p class="font-extrabold">${m.contact} | ${m.email || 'N/A'}</p></div>
@@ -579,13 +691,14 @@
     // --- LOGISTICS WIZARD (OPTIMISTIC PAIRING ENGINE) ---
     function switchLogisticsSubTab(tabId) {['pairings', 'rooms', 'groups', 'buses'].forEach(id => { document.getElementById(`log-${id}`).classList.add('hidden-force'); const btn = document.getElementById(`subTab-${id}`); if(btn) { btn.classList.remove('border-primary', 'text-primary'); btn.classList.add('border-transparent', 'text-gray-500'); } }); document.getElementById(`log-${tabId}`).classList.remove('hidden-force'); const targetBtn = document.getElementById(`subTab-${tabId}`); if(targetBtn) { targetBtn.classList.remove('border-transparent', 'text-gray-500'); targetBtn.classList.add('border-primary', 'text-primary'); } }
 
-    async function loadLogisticsData() { try { const res = await callBackend('fetchLogistics'); globalLogistics = res; appSettings.activeProjects = res.activeProjects; renderLegend(); renderPairings(); renderAttendanceChecklist(); } catch(e) { showToast("Failed to load logistics.", true); } }
+    async function loadLogisticsData() { try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); renderAttendanceChecklist(); } catch(e) { showToast("Failed to load logistics.", true); } }
 
     function triggerPairingSync() {
       setSyncButtonState('saving');
       if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
       pairingSyncTimeout = setTimeout(async () => {
-        try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); } catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); }
+        try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); } 
+        catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); }
       }, 800); 
     }
 
@@ -608,14 +721,14 @@
         tPairings.forEach(pair => {
             const vol = vols.find(v => v.nric === pair.volNric);
             const vDynColor = vol ? getProjectColor(vol.group) : '';
-            tagsHtml += `<span class="text-xs px-2 py-1 border-2 rounded-md font-bold flex items-center mb-1 mr-1 shadow-sm ${vDynColor}">
-                ${vol ? vol.name : 'Unknown'} 
-                <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-2 text-gray-500 hover:text-red-600 font-extrabold focus:outline-none">&times;</button>
+            tagsHtml += `<span class="bg-gray-100 dark:bg-gray-800 text-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md font-bold flex items-center mb-1 mr-1 shadow-sm">
+                <span class="${vDynColor} px-2 rounded border-2 border-gray-300 dark:border-gray-600">${vol ? vol.name : 'Unknown'}</span>
+                <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-2 text-red-500 hover:text-red-700 font-extrabold focus:outline-none">&times;</button>
             </span>`;
         });
 
-        const cardHtml = `<div class="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm mb-3 transition">
-              <div class="flex justify-between items-start mb-2"><div class="flex items-center flex-wrap gap-2"><span class="font-extrabold text-lg px-2 py-1 rounded-md border-2 ${dynColor}">${t.name}</span>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-xs bg-blue-100 text-blue-700 font-extrabold px-3 py-1.5 rounded-lg border-2 border-blue-300 hover:bg-blue-200 transition whitespace-nowrap">+ Add Vol</button></div>
+        const cardHtml = `<div class="bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-500 shadow-sm mb-3 transition">
+              <div class="flex justify-between items-start mb-2"><div class="flex items-center"><span class="font-extrabold text-lg px-2 py-1 rounded-md border-2 ${dynColor}">${t.name}</span>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-xs bg-blue-100 text-blue-700 font-extrabold px-3 py-1.5 rounded-lg border-2 border-blue-300 hover:bg-blue-200 transition whitespace-nowrap">+ Add Vol</button></div>
               <div class="flex flex-wrap mt-2 min-h-[28px]">${tagsHtml || '<span class="text-sm font-bold text-red-500">Unassigned</span>'}</div></div>`;
 
         if(tPairings.length > 0) { pCount++; pairedHtml += cardHtml; } else { uCount++; unpairedHtml += cardHtml; }
@@ -642,7 +755,7 @@
                 if(t) {
                     const isFam = familyCounts[t.poc] > 1; const famBadge = isFam ? `<span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-bold tracking-wider px-1 py-0 rounded border border-purple-300 ml-1 inline-block align-middle">Fam</span>` : '';
                     const dynColor = getProjectColor(t.group);
-                    return `<span class="inline-block px-2 py-0.5 border-2 rounded-md text-xs font-bold mr-1 mb-1 ${dynColor}">${t.name}${famBadge}</span>`;
+                    return `<span class="inline-block px-2 py-0.5 border border-gray-300 dark:border-gray-500 rounded-md text-xs font-bold mr-1 mb-1 ${dynColor}">${t.name}${famBadge}</span>`;
                 }
                 return '';
             }).join('');
@@ -650,8 +763,8 @@
         }
 
         const vDynColor = getProjectColor(v.group);
-        html += `<div onclick="confirmPairing('${v.nric}')" class="flex flex-col bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700 transition mb-2">
-            <div class="flex justify-between items-center w-full"><span class="font-extrabold text-lg px-2 py-1 rounded-md border-2 ${vDynColor}">${v.name}</span><span class="text-xs font-bold text-gray-500 border-2 border-gray-300 dark:border-gray-600 px-2 py-0.5 rounded-md">Volunteer</span></div>
+        html += `<div onclick="confirmPairing('${v.nric}')" class="flex flex-col bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2">
+            <div class="flex justify-between items-center w-full"><span class="font-extrabold text-lg px-2 py-1 rounded-md border-2 ${vDynColor}">${v.name}</span><span class="text-xs font-bold text-green-600 border border-green-600 px-2 py-0.5 rounded-full">Volunteer</span></div>
             ${pairedTraineesHtml}
           </div>`;
       });
@@ -660,16 +773,18 @@
 
     function confirmPairing(volNric) {
       if(!currentPairingTarget) return; closeSelectionSheet(); 
-      globalLogistics.pairings.push({ traineeNric: currentPairingTarget, volNric: volNric }); renderPairings(); triggerPairingSync();
+      globalLogistics.pairings.push({ traineeNric: currentPairingTarget, volNric: volNric }); 
+      renderPairings(); triggerPairingSync();
     }
 
     function unpairTrainee(traineeNric, volNric) {
-      globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); renderPairings(); triggerPairingSync();
+      globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); 
+      renderPairings(); triggerPairingSync();
     }
 
     async function manualSyncPairings(btn) {
       setSyncButtonState('saving');
-      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); setSyncButtonState('saved'); showToast("Manual save complete!"); } 
+      try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); showToast("Manual save complete!"); } 
       catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
     }
 
@@ -710,18 +825,80 @@
       try { await callBackend('toggleEdits', { status: newState }); appSettings.allowEdits = newState; applyAdminVisuals(); showToast(newState ? "Edits Enabled" : "Edits Locked"); } catch(e) { showToast("Failed to update.", true); applyAdminVisuals(); } finally { btn.disabled = false; sliderLoader.classList.add('hidden-force'); }
     }
 
+    // PROJECT GROUPS & COLOR MANAGEMENT
+    function getUnusedColor() {
+      const used = Object.values(appSettings.projectColors || {});
+      const unused = projectColorPalette.filter(c => !used.includes(c));
+      return unused.length > 0 ? unused[0] : projectColorPalette[0];
+    }
+
+    function openColorPickerForNewProject() {
+      pendingColorGroupTarget = 'NEW';
+      if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor();
+      renderColorPickerGrid(); document.getElementById('colorPickerModal').classList.remove('hidden-force');
+    }
+    function openColorPicker(groupName) {
+      pendingColorGroupTarget = groupName; renderColorPickerGrid(); document.getElementById('colorPickerModal').classList.remove('hidden-force');
+    }
+    function closeColorPicker() { document.getElementById('colorPickerModal').classList.add('hidden-force'); }
+
+    function renderColorPickerGrid() {
+      const grid = document.getElementById('colorPaletteGrid');
+      const usedColors = Object.values(appSettings.projectColors || {});
+      let html = '';
+      projectColorPalette.forEach(colorCls => {
+        let isUsed = usedColors.includes(colorCls);
+        let isCurrent = false;
+        if (pendingColorGroupTarget === 'NEW') { isCurrent = (colorCls === newProjectSelectedColor); } 
+        else { isCurrent = (colorCls === appSettings.projectColors[pendingColorGroupTarget]); if(isCurrent) isUsed = false; }
+        
+        const opacity = isUsed ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer hover:scale-110';
+        const ring = isCurrent ? 'ring-4 ring-primary ring-offset-2' : '';
+        const onclick = isUsed ? '' : `onclick="selectColor('${colorCls}')"`;
+        const bgMatch = colorCls.match(/bg-[a-z]+-[0-9]+/); const bgClass = bgMatch ? bgMatch[0] : 'bg-gray-200';
+        
+        html += `<div ${onclick} class="w-10 h-10 rounded-full border-2 border-gray-400 shadow-sm transition-all ${bgClass} ${opacity} ${ring}"></div>`;
+      });
+      grid.innerHTML = html;
+    }
+
+    async function selectColor(colorClass) {
+      closeColorPicker();
+      if (pendingColorGroupTarget === 'NEW') {
+        newProjectSelectedColor = colorClass;
+        const bgMatch = colorClass.match(/bg-[a-z]+-[0-9]+/);
+        document.getElementById('newGroupColorBtn').className = `w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105 ${bgMatch ? bgMatch[0] : 'bg-gray-200'}`;
+      } else {
+        showToast("Updating color...", false);
+        try {
+          const res = await callBackend('addProjectGroup', { groupName: pendingColorGroupTarget, callerNric: currentUser.nric, colorClass: colorClass });
+          appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors;
+          renderGroupList(res.groups); renderHeaderLegend(); showToast("Color Updated!");
+        } catch(e) { showToast(e.message, true); }
+      }
+    }
+
     async function addProjectGroup(btn) {
       const name = document.getElementById('newGroupName').value.trim(); if(!name) return showToast("Project name is required", true); setBtnLoading(btn, true);
-      try { const res = await callBackend('addProjectGroup', { groupName: name, callerNric: currentUser.nric }); document.getElementById('newGroupName').value = ''; appSettings.projectGroups = res.groups; renderGroupList(res.groups); showToast("Project Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+      try { 
+        if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor();
+        const res = await callBackend('addProjectGroup', { groupName: name, callerNric: currentUser.nric, colorClass: newProjectSelectedColor }); 
+        document.getElementById('newGroupName').value = ''; newProjectSelectedColor = null; document.getElementById('newGroupColorBtn').className = "w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105 bg-white";
+        appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors;
+        renderGroupList(res.groups); renderHeaderLegend(); showToast("Project Added"); 
+      } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
     }
+    
     async function removeProjectGroup(name, btn) {
       setBtnLoading(btn, true);
-      try { const res = await callBackend('removeProjectGroup', { groupName: name, callerNric: currentUser.nric }); appSettings.projectGroups = res.groups; renderGroupList(res.groups); showToast("Project Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+      try { const res = await callBackend('removeProjectGroup', { groupName: name, callerNric: currentUser.nric }); appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors; renderGroupList(res.groups); renderHeaderLegend(); showToast("Project Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
     }
     function renderGroupList(list) {
       const ul = document.getElementById('groupList'); if(!ul) return;
       ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No projects defined yet.</li>' : '';
-      if(list) list.forEach(g => { const safeGroup = g.replace(/'/g, "\\'"); const dynColor = getProjectColor(g); const short = getProjectShortForm(g); ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm"><div class="flex items-center space-x-2"><span class="font-extrabold text-lg px-3 py-1 rounded-md border-2 inline-block ${dynColor}">${g}</span><span class="text-xs font-bold text-gray-500">(${short})</span></div><button onclick="removeProjectGroup('${safeGroup}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 dark:hover:bg-gray-700 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
+      if(list) list.forEach(g => { 
+        const safeGroup = g.replace(/'/g, "\\'"); const dynColor = getProjectColor(g); 
+        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm"><div class="flex items-center space-x-3"><button onclick="openColorPicker('${safeGroup}')" class="w-8 h-8 rounded-full border-2 cursor-pointer shadow-sm ${dynColor}" title="Change Color"></button><span class="font-extrabold text-lg">${g}</span></div><button onclick="removeProjectGroup('${safeGroup}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 dark:hover:bg-gray-700 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
     }
 
     async function addJuncture(btn) {
