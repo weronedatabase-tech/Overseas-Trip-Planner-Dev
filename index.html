@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>MYG Overseas Trip Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#2563eb' } } } }
-  </script>
+  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#2563eb' } } } }</script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.3s, color 0.3s; }
     .dark body { background-color: #1a202c; color: #e2e8f0; }
@@ -18,7 +16,6 @@
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
-    .picker-col::-webkit-scrollbar { display: none; }
     .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
     .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 2px solid rgba(37, 99, 235, 0.6); border-bottom: 2px solid rgba(37, 99, 235, 0.6); pointer-events: none; z-index: 10; }
     .btn-spinner { width: 18px; height: 18px; border: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -49,42 +46,31 @@
 
   <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
     <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-bold z-[100]"></div>
+    <div id="viewLoading" class="flex justify-center items-center h-full"><div class="loader w-10 h-10"></div></div>
 
-    <div id="viewLoading" class="flex justify-center items-center h-full">
-      <div class="loader w-10 h-10"></div>
-    </div>
-
-    <!-- VIEW 1: LANDING -->
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
       <div class="text-center">
         <h1 class="text-3xl font-extrabold mb-2">MYG Overseas Trip Planner</h1>
         <p class="text-gray-600 dark:text-gray-400 font-medium">Welcome! Please select an option below.</p>
       </div>
-      
       <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-green-500 hidden-force">
         <h3 class="text-2xl font-bold mb-2">Join the Trip</h3>
-        <p class="text-sm font-medium mb-4">Registration is currently open.</p>
-        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded font-extrabold text-lg hover:bg-green-700 shadow-md transition">Register Now</button>
+        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded font-extrabold text-lg hover:bg-green-700 shadow-md transition mt-4">Register Now</button>
       </div>
-
       <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-primary">
         <h3 class="text-2xl font-bold mb-2">Participant Portal</h3>
-        <p class="text-sm font-medium mb-4">Already registered? Log in to view details.</p>
-        <button onclick="navTo('login')" class="w-full bg-primary text-white py-3 rounded font-extrabold text-lg hover:bg-blue-700 shadow-md transition">Log In</button>
+        <button onclick="navTo('login')" class="w-full bg-primary text-white py-3 rounded font-extrabold text-lg hover:bg-blue-700 shadow-md transition mt-4">Log In</button>
       </div>
     </div>
 
-    <!-- VIEW 2: REGISTRATION FORM -->
     <div id="viewRegister" class="hidden-force max-w-4xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600 space-y-4 pb-20">
       <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
         <h3 class="text-2xl font-bold">New Registration</h3>
-        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
+        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 transition shadow-sm">Cancel</button>
       </div>
-      <p class="text-sm text-gray-500 mb-4 font-bold">Register yourself and your family/group in a single submission. Person 1 is the Main Point of Contact.</p>
-
       <form id="regForm" onsubmit="event.preventDefault(); submitRegistration(this.querySelector('button[type=submit]'));" class="space-y-6">
         <div id="membersContainer" class="space-y-8"></div>
-        <button type="button" onclick="addRegMember()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-extrabold py-4 rounded-lg border-4 border-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 border-dashed transition">+ Add Another Family / Group Member</button>
+        <button type="button" onclick="addRegMember()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-extrabold py-4 rounded-lg border-4 border-gray-400 hover:bg-gray-300 border-dashed transition">+ Add Another Family / Group Member</button>
         <div class="pt-6 border-t-2 border-gray-300 dark:border-gray-600">
           <button type="submit" class="w-full bg-green-600 text-white font-extrabold text-lg py-4 rounded-lg hover:bg-green-700 flex justify-center items-center shadow-lg border-2 border-green-700 transition">
             <span class="btn-text">Submit</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
@@ -93,11 +79,10 @@
       </form>
     </div>
 
-    <!-- VIEW 3: LOGIN -->
     <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600">
       <div class="flex justify-between items-center mb-6 border-b-2 border-gray-300 dark:border-gray-600 pb-2">
         <h2 class="text-2xl font-bold">Secure Login</h2>
-        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
+        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 hover:bg-gray-300 transition shadow-sm">Cancel</button>
       </div>
       <div id="loginError" class="text-red-500 text-sm mb-3 font-bold hidden-force"></div>
       <div class="mb-5">
@@ -113,14 +98,11 @@
         </button>
       </div>
       <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
-        <span class="btn-text">Login</span>
-        <div class="btn-spinner spinner-white hidden-force ml-2"></div>
+        <span class="btn-text">Login</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
       </button>
     </div>
 
-    <!-- VIEW 4: DASHBOARD -->
     <div id="viewDashboard" class="hidden-force max-w-4xl mx-auto space-y-6">
-      
       <div class="bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow-sm border-2 border-l-8 border-gray-300 dark:border-gray-600 border-l-primary flex justify-between items-center mt-2">
         <div>
           <h3 class="text-lg font-extrabold leading-tight" id="welcomeUserText">Welcome!</h3>
@@ -132,18 +114,15 @@
       </div>
 
       <div class="flex space-x-2 overflow-x-auto pb-0 border-b-4 border-gray-300 dark:border-gray-600 scrollbar-hide mt-4" id="navTabs">
-        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors">My Profile</button>
-        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Logistics</button>
-        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Attendance</button>
-        <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Finance</button>
-        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Settings</button>
+        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors">My Profile</button>
+        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Logistics</button>
+        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Attendance</button>
+        <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Finance</button>
+        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 hover:bg-gray-100 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Settings</button>
       </div>
 
-      <!-- PROFILE TAB -->
-      <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
-        <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
-          <h3 class="text-2xl font-bold">Family / Group Details</h3>
-        </div>
+      <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 mt-4">
+        <div class="flex justify-between items-center border-b-2 border-gray-300 pb-2 mb-4"><h3 class="text-2xl font-bold">Family / Group Details</h3></div>
         <div id="lockedProfileBanner" class="hidden-force bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-6 shadow-sm">
           <p class="font-extrabold mb-2 text-lg">🔒 Editing is currently Locked.</p>
           <p class="font-medium text-sm mb-3">To request changes to your details, please contact a Committee Member directly:</p>
@@ -152,221 +131,131 @@
         <div id="profileCardsContainer" class="space-y-6"><div class="loader w-8 h-8 border-primary mx-auto my-10"></div></div>
       </div>
 
-      <!-- LOGISTICS TAB -->
       <div id="tab-logistics" class="tab-content hidden-force mt-4 space-y-6">
-        <div class="flex overflow-x-auto border-b-2 border-gray-300 dark:border-gray-600 scrollbar-hide pb-2">
+        <div class="flex overflow-x-auto border-b-2 border-gray-300 scrollbar-hide pb-2">
           <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-4 py-2 font-extrabold border-b-4 border-primary text-primary whitespace-nowrap mb-[-10px] transition">1. Pairings</button>
           <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">2. Rooms</button>
           <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">3. Groups</button>
           <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">4. Buses</button>
         </div>
-        
-        <!-- PAIRINGS SUB-TAB -->
         <div id="log-pairings" class="space-y-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
             <div class="flex justify-between items-center mb-2">
               <h3 class="text-xl font-bold">Volunteer - Trainee Pairings</h3>
-              <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs bg-green-100 text-green-700 border-2 border-green-400 dark:bg-green-900 dark:text-green-300 dark:border-green-700 px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center shadow-sm">
-                <span class="btn-text">Saved</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
+              <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs bg-green-100 text-green-700 border-2 border-green-400 px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center shadow-sm">
+                <span class="btn-text">Saved</span><div class="btn-spinner spinner-primary hidden-force ml-2 !w-3 !h-3 border-2"></div>
               </button>
             </div>
             <p class="text-sm font-bold text-gray-500 mb-4">Tap "+ Add Vol" to assign multiple volunteers per trainee.</p>
-            
-            <div class="space-y-3">
-              <h4 class="font-extrabold text-red-600 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Unassigned Trainees (<span id="unpairedCount">0</span>)</h4>
-              <div id="unpairedTraineesList" class="space-y-2"><div class="loader w-6 h-6 border-primary mx-auto"></div></div>
-            </div>
-            
-            <div class="space-y-3 mt-6">
-              <h4 class="font-extrabold text-green-600 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Paired Trainees (<span id="pairedCount">0</span>)</h4>
-              <div id="pairedTraineesList" class="space-y-2"></div>
-            </div>
+            <div class="space-y-3"><h4 class="font-extrabold text-red-600 border-b-2 border-gray-200 pb-1">Unassigned Trainees (<span id="unpairedCount">0</span>)</h4><div id="unpairedTraineesList" class="space-y-2"></div></div>
+            <div class="space-y-3 mt-6"><h4 class="font-extrabold text-green-600 border-b-2 border-gray-200 pb-1">Paired Trainees (<span id="pairedCount">0</span>)</h4><div id="pairedTraineesList" class="space-y-2"></div></div>
           </div>
         </div>
-
-        <!-- ROOMS SUB-TAB -->
-        <div id="log-rooms" class="hidden-force space-y-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary">
-            <h3 class="text-xl font-bold mb-2">1. Define Room Configurations</h3>
-            <div class="flex space-x-2 mb-4">
-              <input type="text" placeholder="e.g. Standard Room" class="w-1/2 p-3 border-2 border-gray-400 rounded-lg font-bold text-sm">
-              <input type="number" placeholder="Pax" class="w-1/4 p-3 border-2 border-gray-400 rounded-lg font-bold text-sm">
-              <input type="number" placeholder="Qty" class="w-1/4 p-3 border-2 border-gray-400 rounded-lg font-bold text-sm">
-              <button class="bg-primary text-white px-4 py-3 rounded-lg font-extrabold border-2 border-blue-800">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="log-groups" class="hidden-force space-y-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-purple-500 text-center">
-            <h3 class="text-xl font-bold mb-2">Smart Group Generator</h3>
-            <button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">
-              ✨ Generate Proposed Groups
-            </button>
-          </div>
-        </div>
-
-        <div id="log-buses" class="hidden-force space-y-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
-            <h3 class="text-xl font-bold mb-2">Bus Allocation</h3>
-          </div>
-        </div>
+        <div id="log-rooms" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary"><h3 class="text-xl font-bold mb-2">1. Define Room Configurations</h3><p>In Development...</p></div></div>
+        <div id="log-groups" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-purple-500 text-center"><h3 class="text-xl font-bold mb-2">Smart Group Generator</h3><button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">✨ Generate Proposed Groups</button></div></div>
+        <div id="log-buses" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300"><h3 class="text-xl font-bold mb-2">Bus Allocation</h3></div></div>
       </div>
 
-      <!-- ATTENDANCE TAB -->
       <div id="tab-attendance" class="tab-content hidden-force mt-4 space-y-6">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary admin-only">
-          <div class="flex justify-between items-center mb-4 border-b-2 border-gray-200 pb-2">
-            <h3 class="text-xl font-extrabold">Take Attendance</h3>
-            <span class="bg-green-100 text-green-800 text-xs font-extrabold px-2 py-1 rounded border border-green-300">🟢 Online & Syncing</span>
-          </div>
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1">Juncture</label>
-              <select id="attendanceJunctureSelect" class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"></select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1">My Assignment</label>
-              <select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>All Participants</option></select>
-            </div>
-          </div>
-          
-          <div id="attendanceChecklist" class="space-y-2 border-2 border-gray-300 p-2 rounded-lg bg-gray-50 dark:bg-gray-700 h-64 overflow-y-auto">
-            <div class="loader border-primary mx-auto my-10"></div>
-          </div>
-          
-          <button class="w-full mt-4 bg-primary text-white font-extrabold py-3 rounded-lg shadow border-2 border-blue-800 flex justify-center items-center">
-            <span class="btn-text">Submit Attendance</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-          </button>
+          <div class="flex justify-between items-center mb-4 border-b-2 border-gray-200 pb-2"><h3 class="text-xl font-extrabold">Take Attendance</h3><span class="bg-green-100 text-green-800 text-xs font-extrabold px-2 py-1 rounded border border-green-300">🟢 Online & Syncing</span></div>
+          <div class="grid grid-cols-2 gap-4 mb-6"><div><label class="block text-xs font-bold text-gray-500 mb-1">Juncture</label><select id="attendanceJunctureSelect" class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"></select></div><div><label class="block text-xs font-bold text-gray-500 mb-1">My Assignment</label><select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>All Participants</option></select></div></div>
+          <div id="attendanceChecklist" class="space-y-2 border-2 border-gray-300 p-2 rounded-lg bg-gray-50 dark:bg-gray-700 h-64 overflow-y-auto"><div class="loader border-primary mx-auto my-10"></div></div>
+          <button class="w-full mt-4 bg-primary text-white font-extrabold py-3 rounded-lg shadow border-2 border-blue-800 flex justify-center items-center"><span class="btn-text">Submit Attendance</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
         </div>
       </div>
 
-      <div id="tab-finance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4"><p class="font-bold">Finance Overview & CSV Upload coming soon...</p></div>
+      <div id="tab-finance" class="tab-content hidden-force bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 mt-4"><p class="font-bold">Finance Overview coming soon...</p></div>
 
-      <!-- SETTINGS TAB -->
       <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
-            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
-            <p class="text-sm font-bold text-gray-500 mb-4">Allow new participants to sign up using the public form.</p>
-            <button id="toggleRegBtn" onclick="initiateRegistrationToggle(this)" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition flex justify-center items-center">
-              <span class="btn-text">Loading...</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-            </button>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Registration Form</h3>
+            <p class="text-sm font-bold text-gray-500 mb-4">Allow new participants to sign up.</p>
+            <button id="toggleRegBtn" onclick="initiateRegistrationToggle(this)" class="w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 flex justify-center items-center"><span class="btn-text">Loading...</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
           </div>
-          
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
-            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
+            <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Can participants edit details?</h3>
             <div class="flex items-center space-x-4 mt-6">
-              <button id="editSliderToggle" onclick="toggleEditSlider(this)" class="relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner">
-                <span id="editSliderKnob" class="inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center">
-                  <div id="editSliderLoader" class="loader hidden-force" style="width: 14px; height: 14px; border-width: 2px; border-color: #e5e7eb; border-top-color: #2563eb;"></div>
-                </span>
+              <button id="editSliderToggle" onclick="toggleEditSlider(this)" class="relative inline-flex items-center h-8 w-14 rounded-full border-2 border-gray-400 bg-gray-300 shadow-inner">
+                <span id="editSliderKnob" class="inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full shadow-md items-center justify-center"><div id="editSliderLoader" class="loader hidden-force" style="width: 14px; height: 14px; border-width: 2px; border-top-color: #2563eb;"></div></span>
               </button>
-              <span id="editStatusText" class="font-extrabold text-lg text-gray-600 dark:text-gray-400 transition-colors">No</span>
+              <span id="editStatusText" class="font-extrabold text-lg text-gray-600">No</span>
             </div>
           </div>
         </div>
 
-        <!-- Attendance Junctures -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4 admin-only">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Attendance Junctures</h3>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 admin-only">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Attendance Junctures</h3>
           <div class="flex space-x-3 mb-5 mt-4">
-            <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-            <button onclick="addJuncture(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center shadow-sm">
-              <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-            </button>
+            <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-3 border-2 border-gray-400 rounded-lg font-bold">
+            <button onclick="addJuncture(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold border-2 border-blue-800 flex items-center"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
           </div>
-          <ul id="junctureList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
+          <ul id="junctureList" class="space-y-3 border-2 border-gray-300 rounded-lg p-5 bg-gray-50"></ul>
         </div>
 
-        <div id="projectsSettingsBlock" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4 main-admin-only hidden-force">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Projects</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project. Only Main Admin can modify this list.</p>
-          <div class="flex space-x-3 mb-5">
-            <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-            <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center shadow-sm">
-              <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-            </button>
+        <div id="projectsSettingsBlock" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 main-admin-only hidden-force">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Projects</h3>
+          <div class="flex space-x-3 mb-5 mt-4">
+            <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 rounded-lg font-bold">
+            <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold border-2 border-blue-800 flex items-center"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
           </div>
-          <ul id="groupList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
+          <ul id="groupList" class="space-y-3 border-2 border-gray-300 rounded-lg p-5 bg-gray-50"></ul>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
-          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Committee Members</h3>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
+          <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 pb-3">Committee Members</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
-            <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-            <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg uppercase font-bold">
+            <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold">
+            <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-3 border-2 border-gray-400 rounded-lg uppercase font-bold">
             <div class="flex space-x-2">
-              <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
-              <button onclick="addCommittee(this)" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold hover:bg-blue-700 border-2 border-blue-800 flex justify-center items-center shadow-sm">
-                <span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-              </button>
+              <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold">
+              <button onclick="addCommittee(this)" class="bg-primary text-white px-5 py-3 rounded-lg font-extrabold border-2 border-blue-800 flex items-center"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
             </div>
           </div>
-          <ul id="commList" class="space-y-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-5 bg-gray-50 dark:bg-gray-700"></ul>
+          <ul id="commList" class="space-y-3 border-2 border-gray-300 rounded-lg p-5 bg-gray-50"></ul>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-red-500">
-          <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-3 text-red-600">Danger Zone</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start. Projects list will be kept. All participants must re-register.</p>
-          <button onclick="archiveSystem(this)" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center">
-            <span class="btn-text">Archive & Reset</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-          </button>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-red-500">
+          <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 pb-3 text-red-600">Danger Zone</h3>
+          <p class="text-sm font-bold text-gray-600 mb-5">Archive current trip to Google Drive and wipe system for a fresh start.</p>
+          <button onclick="archiveSystem(this)" class="w-full sm:w-auto bg-red-600 text-white font-extrabold py-3 px-6 rounded-lg border-2 border-red-800 flex items-center justify-center"><span class="btn-text">Archive & Reset</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- TRIP SETUP MODAL -->
-  <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
-    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
-      <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Initialize Trip Setup</h3>
+  <!-- MODALS -->
+  <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
+      <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 pb-2">Initialize Trip Setup</h3>
       <div class="space-y-5 mb-6 mt-4">
-        <div><label class="block text-sm font-extrabold mb-1">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
-        <div><label class="block text-sm font-extrabold mb-1">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold"></div>
+        <div><label class="block text-sm font-extrabold mb-1">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold"></div>
+        <div><label class="block text-sm font-extrabold mb-1">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-3 border-2 border-gray-400 rounded-lg font-bold"></div>
       </div>
       <div class="flex space-x-3">
-        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500 shadow-sm transition">Cancel</button>
-        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center shadow-sm transition">
-          <span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-        </button>
+        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-extrabold border-2 border-gray-400">Cancel</button>
+        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
       </div>
     </div>
   </div>
 
-  <!-- SELECTION BOTTOM SHEET -->
-  <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end transition-opacity">
-    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600 h-[70vh] flex flex-col">
-      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-        <span id="sheetTitle" class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select</span>
-        <button type="button" onclick="closeSelectionSheet()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
+  <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end">
+    <div class="bg-white rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 h-[70vh] flex flex-col">
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 bg-gray-50">
+        <span id="sheetTitle" class="font-extrabold text-xl text-gray-800">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
       </div>
-      <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100 dark:bg-gray-800" id="sheetListContainer"></div>
+      <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100" id="sheetListContainer"></div>
     </div>
   </div>
 
-  <!-- ROLODEX DATE PICKER -->
-  <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end transition-opacity">
-    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600">
-      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700">
-        <span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span>
-        <button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
-      </div>
-      <div class="relative flex h-[200px] text-xl font-bold">
-        <div class="picker-highlight"></div>
-        <div class="flex-1 picker-col" id="colDay"></div>
-        <div class="flex-1 picker-col" id="colMonth"></div>
-        <div class="flex-1 picker-col" id="colYear"></div>
-      </div>
-      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700">
-        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm">Done</button>
-      </div>
+  <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end">
+    <div class="bg-white rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400">
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300"><span class="font-extrabold text-xl text-gray-800">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button></div>
+      <div class="relative flex h-[200px] text-xl font-bold"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
+      <div class="p-5 bg-gray-50 border-t-2 border-gray-300"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800">Done</button></div>
     </div>
   </div>
-
-  <style> @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } } .animate-slide-up { animation: slide-up 0.25s ease-out forwards; } </style>
-
   <script>
     const DEV_MODE = true; 
     const URLS = {
@@ -379,38 +268,81 @@
     let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[], junctures:[], tripTitle:'', tripYear:'' };
     let globalLogistics = null; let currentPairingTarget = null; let regMemberCount = 0; let loadedFamily =[];
 
-    // DYNAMIC PROJECT COLOR GENERATOR
     function getProjectColor(groupName) {
-      if (!groupName) return 'text-gray-800 dark:text-gray-100'; // Default unassigned color
-      const colors =['text-red-600 dark:text-red-400', 'text-orange-600 dark:text-orange-400', 'text-emerald-600 dark:text-emerald-400', 'text-cyan-600 dark:text-cyan-400', 'text-indigo-600 dark:text-indigo-400', 'text-fuchsia-600 dark:text-fuchsia-400', 'text-amber-600 dark:text-amber-400', 'text-lime-600 dark:text-lime-400'];
+      if (!groupName) return 'text-gray-800 dark:text-gray-100'; 
+      const colors =['text-red-600', 'text-orange-600', 'text-emerald-600', 'text-cyan-600', 'text-indigo-600', 'text-fuchsia-600', 'text-amber-600', 'text-lime-600'];
       let idx = appSettings.projectGroups.indexOf(groupName);
       if (idx === -1) { let hash = 0; for(let i=0; i<groupName.length; i++) hash = groupName.charCodeAt(i) + ((hash<<5)-hash); idx = Math.abs(hash); }
       return colors[idx % colors.length];
     }
 
     function setBtnLoading(btn, isLoading) {
-      if (!btn) return; const spinner = btn.querySelector('.btn-spinner'); const textSpan = btn.querySelector('.btn-text');
+      if (!btn) return; const spinner = btn.querySelector('.btn-spinner');
       if (isLoading) { btn.disabled = true; btn.classList.add('opacity-80', 'cursor-not-allowed'); if (spinner) spinner.classList.remove('hidden-force'); } 
       else { btn.disabled = false; btn.classList.remove('opacity-80', 'cursor-not-allowed'); if (spinner) spinner.classList.add('hidden-force'); }
     }
 
-    // --- ROLODEX LOGIC ---
-    function openDatePicker(targetId, type) { /* Truncated for brevity to save token space. Logic unchanged. */ }
+    function setSyncButtonState(state) {
+      const btn = document.getElementById('btnSyncPairings'); if(!btn) return;
+      const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
+      btn.className = "text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2"; 
+      spinner.className = "btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"; 
+      if(state === 'saving') { btn.classList.add('bg-yellow-100', 'text-yellow-700', 'border-yellow-400'); textSpan.textContent = "Saving..."; spinner.classList.remove('hidden-force'); spinner.classList.add('spinner-yellow'); btn.disabled = true; } 
+      else if (state === 'saved') { btn.classList.add('bg-green-100', 'text-green-700', 'border-green-400'); textSpan.textContent = "Saved"; btn.disabled = false; } 
+      else if (state === 'error') { btn.classList.add('bg-red-100', 'text-red-700', 'border-red-400'); textSpan.textContent = "Save Failed"; btn.disabled = false; }
+    }
+
+    let currentPickerTarget = null; const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function openDatePicker(targetId, type) {
+      currentPickerTarget = targetId; document.getElementById('datePickerSheet').classList.remove('hidden-force');
+      const colD = document.getElementById('colDay'); const colM = document.getElementById('colMonth'); const colY = document.getElementById('colYear');
+      const spacer = '<div style="height: 80px;"></div>'; let dHtml = spacer; for(let i=1; i<=31; i++) { let val = String(i).padStart(2,'0'); dHtml += `<div class="picker-item text-gray-400" data-val="${val}" onclick="scrollToIndex('colDay', ${i-1})">${val}</div>`; } dHtml += spacer;
+      let mHtml = spacer; monthsArr.forEach((m, i) => { mHtml += `<div class="picker-item text-gray-400" data-val="${m}" onclick="scrollToIndex('colMonth', ${i})">${m}</div>`; }); mHtml += spacer;
+      let yHtml = spacer; const curYear = new Date().getFullYear(); let startYear, endYear, step;
+      if(type === 'dob') { startYear = curYear; endYear = 1920; step = -1; } else { startYear = curYear; endYear = curYear + 20; step = 1; }
+      let idx = 0; for(let i = startYear; type === 'dob' ? i >= endYear : i <= endYear; i += step) { yHtml += `<div class="picker-item text-gray-400" data-val="${i}" onclick="scrollToIndex('colYear', ${idx})">${i}</div>`; idx++; } yHtml += spacer;
+      colD.innerHTML = dHtml; colM.innerHTML = mHtml; colY.innerHTML = yHtml;
+      colD.onscroll = () => highlightCenterItem('colDay'); colM.onscroll = () => highlightCenterItem('colMonth'); colY.onscroll = () => highlightCenterItem('colYear');
+      const curVal = document.getElementById(targetId).value;
+      setTimeout(() => {
+        if(curVal) { const parts = curVal.split(' '); if(parts.length === 3) {
+            const dIdx = Array.from(colD.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[0]); const mIdx = Array.from(colM.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[1]); const yIdx = Array.from(colY.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[2]);
+            if(dIdx > -1) colD.scrollTop = dIdx * 40; if(mIdx > -1) colM.scrollTop = mIdx * 40; if(yIdx > -1) colY.scrollTop = yIdx * 40;
+          } } else { colD.scrollTop = 0; colM.scrollTop = 0; colY.scrollTop = 0; }
+        highlightCenterItem('colMonth'); highlightCenterItem('colYear'); highlightCenterItem('colDay');
+      }, 10);
+    }
     function scrollToIndex(colId, index) { document.getElementById(colId).scrollTo({ top: index * 40, behavior: 'smooth' }); }
-    function highlightCenterItem(colId) { /* Existing UI code */ }
-    function updateValidDays() { /* Existing UI code */ }
-    function confirmPicker() { /* Existing UI code */ }
+    function highlightCenterItem(colId) {
+      const col = document.getElementById(colId); const visibleItems = Array.from(col.querySelectorAll('.picker-item')).filter(i => !i.classList.contains('hidden-force'));
+      if(!visibleItems.length) return; let index = Math.round(col.scrollTop / 40); if (index >= visibleItems.length) index = visibleItems.length - 1; 
+      visibleItems.forEach((item, i) => {
+        if(i === index) { item.classList.remove('text-gray-400'); item.classList.add('text-primary', 'font-extrabold', 'text-3xl'); item.dataset.selected = "true"; } 
+        else { item.classList.add('text-gray-400'); item.classList.remove('text-primary', 'font-extrabold', 'text-3xl'); item.dataset.selected = "false"; }
+      });
+      if(colId === 'colMonth' || colId === 'colYear') updateValidDays();
+    }
+    function updateValidDays() {
+      const mItem = document.querySelector('#colMonth .picker-item[data-selected="true"]'); const yItem = document.querySelector('#colYear .picker-item[data-selected="true"]'); if(!mItem || !yItem) return;
+      const maxDays = new Date(parseInt(yItem.dataset.val), monthsArr.indexOf(mItem.dataset.val) + 1, 0).getDate(); const colD = document.getElementById('colDay');
+      colD.querySelectorAll('.picker-item').forEach((item) => {
+        const shouldHide = parseInt(item.dataset.val) > maxDays;
+        if(shouldHide && !item.classList.contains('hidden-force')) item.classList.add('hidden-force'); if(!shouldHide && item.classList.contains('hidden-force')) item.classList.remove('hidden-force');
+      });
+      if (colD.scrollTop > (maxDays - 1) * 40) scrollToIndex('colDay', maxDays - 1);
+    }
+    function confirmPicker() {
+      const d = document.querySelector('#colDay .picker-item[data-selected="true"]'); const m = document.querySelector('#colMonth .picker-item[data-selected="true"]'); const y = document.querySelector('#colYear .picker-item[data-selected="true"]');
+      if(d && m && y && currentPickerTarget) document.getElementById(currentPickerTarget).value = `${d.dataset.val} ${m.dataset.val} ${y.dataset.val}`; closePicker();
+    }
     function closePicker() { document.getElementById('datePickerSheet').classList.add('hidden-force'); }
 
-    // --- MAIN APP ---
     window.onload = async () => {
       if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
       if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
       const savedSession = localStorage.getItem('userSession');
       if(savedSession) currentUser = JSON.parse(savedSession);
-      
-      await fetchConfig();
-      if(currentUser) renderDashboard(); else goHome();
+      await fetchConfig(); if(currentUser) renderDashboard(); else goHome();
     };
 
     function goHome() { if(currentUser) return renderDashboard(); document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force')); document.getElementById('viewLanding').classList.remove('hidden-force'); }
@@ -442,15 +374,68 @@
       } catch (e) { showToast("Error syncing settings.", true); } finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
     }
 
-    function addRegMember() { /* Omitted for brevity */ }
-    function toggleTraineeFields(selectEl) { /* Omitted */ }
-    async function submitRegistration(btn) { /* Omitted */ }
+    function addRegMember() {
+      const idx = regMemberCount++; let groupOpts = `<option value="">Select...</option>`;
+      if(appSettings.projectGroups) appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}">${g}</option>`; });
+      const html = `<div class="member-block bg-white p-6 rounded-xl border-2 border-gray-400 shadow-md relative" data-idx="${idx}">
+          ${idx > 0 ? `<button type="button" onclick="this.closest('.member-block').remove()" class="absolute top-4 right-4 text-red-600 font-extrabold border-2 border-red-600 px-3 py-1 rounded-lg hover:bg-red-50">Remove</button>` : `<div class="absolute top-4 right-4 bg-primary text-white font-extrabold px-3 py-1 text-sm rounded border-2 border-blue-800">MAIN POC</div>`}
+          <h4 class="font-extrabold text-2xl mb-4 border-b-2 border-gray-300 pb-2">Person ${idx + 1}</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            <div><label class="block text-sm font-bold mb-1">Full Name</label><input required type="text" class="reg-f-name w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Email</label><input ${idx===0?'required':''} type="email" class="reg-f-email w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Role</label><select class="reg-f-role w-full p-3 border-2 border-gray-400 rounded-lg font-bold" onchange="toggleTraineeFields(this)"><option value="TRAINEE">Trainee</option><option value="CAREGIVER">Caregiver</option><option value="VOLUNTEER">Volunteer</option></select></div>
+            <div><label class="block text-sm font-bold mb-1">Gender</label><select class="reg-f-gender w-full p-3 border-2 border-gray-400 rounded-lg font-bold"><option>Male</option><option>Female</option></select></div>
+            <div><label class="block text-sm font-bold mb-1">Contact Number (8-digit)</label><input ${idx===0?'required':''} type="tel" pattern="[0-9]{8}" class="reg-f-contact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Date of Birth</label><input required type="text" id="dob_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('dob_${idx}', 'dob')" class="reg-f-dob w-full p-3 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer bg-white"></div>
+            <div><label class="block text-sm font-bold mb-1">Project</label><select class="reg-f-group w-full p-3 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
+            <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Home Address</label><textarea required class="reg-f-address w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
+          </div>
+          <div class="trainee-div hidden-force bg-blue-50 p-5 rounded-lg mb-6 border-2 border-blue-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div><label class="block text-sm font-bold mb-1">Related Trainee's Name</label><input type="text" class="reg-f-related w-full p-3 border-2 border-gray-400 rounded-lg"></div><div><label class="block text-sm font-bold mb-1">Relationship to Trainee</label><input type="text" class="reg-f-relation w-full p-3 border-2 border-gray-400 rounded-lg"></div></div>
+          </div>
+          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 pb-2">Identification</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            <div><label class="block text-sm font-bold mb-1">Full NRIC / FIN</label><input required type="text" class="reg-f-nric w-full p-3 border-2 border-gray-400 rounded-lg uppercase"></div>
+            <div><label class="block text-sm font-bold mb-1">Nationality</label><input required type="text" class="reg-f-nat w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Passport No.</label><input required type="text" class="reg-f-pass w-full p-3 border-2 border-gray-400 rounded-lg uppercase"></div>
+            <div><label class="block text-sm font-bold mb-1">Passport Expiry</label><input required type="text" id="exp_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('exp_${idx}', 'exp')" class="reg-f-exp w-full p-3 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer bg-white"></div>
+          </div>
+          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 pb-2">Medical & Emergency</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Dietary Restrictions</label><input type="text" class="reg-f-diet w-full p-3 border-2 border-gray-400 rounded-lg" placeholder="Nil if none"></div>
+            <div><label class="block text-sm font-bold mb-1">Emergency Contact Name</label><input required type="text" class="reg-f-emname w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Emergency Contact Number (8-digit)</label><input required type="tel" pattern="[0-9]{8}" class="reg-f-emcontact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+            <div><label class="block text-sm font-bold mb-1">Relationship to Emerg. Contact</label><input required type="text" class="reg-f-emrelation w-full p-3 border-2 border-gray-400 rounded-lg"></div>
+          </div>
+          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 pb-2">Remarks</h4>
+          <div class="space-y-5">
+            <div><label class="block text-sm font-bold mb-1">Sleeping Arrangement Request</label><textarea class="reg-f-sleep w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
+            <div><label class="block text-sm font-bold mb-1">Other Points to Note</label><textarea class="reg-f-other w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
+          </div>
+        </div>`;
+      document.getElementById('membersContainer').insertAdjacentHTML('beforeend', html);
+    }
+
+    function toggleTraineeFields(selectEl) { const div = selectEl.closest('.member-block').querySelector('.trainee-div'); if(selectEl.value === 'CAREGIVER') div.classList.remove('hidden-force'); else div.classList.add('hidden-force'); }
+
+    async function submitRegistration(btn) {
+      const blocks = document.querySelectorAll('.member-block'); const payloadArray =[];
+      blocks.forEach(b => {
+        payloadArray.push({
+          fullName: b.querySelector('.reg-f-name').value, email: b.querySelector('.reg-f-email').value, role: b.querySelector('.reg-f-role').value, gender: b.querySelector('.reg-f-gender').value,
+          contact: b.querySelector('.reg-f-contact').value, dob: b.querySelector('.reg-f-dob').value, group: b.querySelector('.reg-f-group').value, address: b.querySelector('.reg-f-address').value,
+          relatedTrainee: b.querySelector('.reg-f-related').value, relationship: b.querySelector('.reg-f-relation').value, nric: b.querySelector('.reg-f-nric').value.toUpperCase(), nationality: b.querySelector('.reg-f-nat').value,
+          passportNo: b.querySelector('.reg-f-pass').value.toUpperCase(), passportExpiry: b.querySelector('.reg-f-exp').value, diet: b.querySelector('.reg-f-diet').value, emergencyName: b.querySelector('.reg-f-emname').value,
+          emergencyContact: b.querySelector('.reg-f-emcontact').value, emergencyRelation: b.querySelector('.reg-f-emrelation').value, sleeping: b.querySelector('.reg-f-sleep').value, otherPoints: b.querySelector('.reg-f-other').value
+        });
+      });
+      setBtnLoading(btn, true);
+      try { await callBackend('submitRegistration', { payload: payloadArray }); showToast("Registration Successful! Please login."); setTimeout(() => navTo('login'), 1500); } catch (e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
 
     async function attemptLogin(btn) {
-      const nric = document.getElementById('loginNric').value.trim().toUpperCase(); const pass = document.getElementById('loginPass').value;
-      const err = document.getElementById('loginError');
-      if(!nric || !pass) { err.textContent = "Please enter NRIC and Password"; return err.classList.remove('hidden-force'); }
-      err.classList.add('hidden-force'); setBtnLoading(btn, true);
+      const nric = document.getElementById('loginNric').value.trim().toUpperCase(); const pass = document.getElementById('loginPass').value; const err = document.getElementById('loginError');
+      if(!nric || !pass) { err.textContent = "Please enter NRIC and Password"; return err.classList.remove('hidden-force'); } err.classList.add('hidden-force'); setBtnLoading(btn, true);
       try {
         const res = await callBackend('login', { nric, password: pass }); currentUser = { nric: nric, role: res.role, name: res.name };
         localStorage.setItem('userSession', JSON.stringify(currentUser)); renderDashboard();
@@ -477,85 +462,84 @@
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-force'));
-      document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); el.classList.add('border-transparent', 'text-gray-500', 'font-bold'); });
+      document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary', 'bg-blue-50', 'font-extrabold'); el.classList.add('border-transparent', 'text-gray-500', 'font-bold'); });
       document.getElementById(`tab-${tabId}`).classList.remove('hidden-force');
       const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-      if(activeBtn) { activeBtn.classList.remove('border-transparent', 'text-gray-500', 'font-bold'); activeBtn.classList.add('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); }
+      if(activeBtn) { activeBtn.classList.remove('border-transparent', 'text-gray-500', 'font-bold'); activeBtn.classList.add('border-primary', 'text-primary', 'bg-blue-50', 'font-extrabold'); }
       if(tabId === 'profile') loadProfileData();
       if(tabId === 'logistics') switchLogisticsSubTab('pairings');
       if(tabId === 'attendance') renderAttendanceChecklist();
     }
 
     async function loadProfileData() {
-      const container = document.getElementById('profileCardsContainer');
-      const banner = document.getElementById('lockedProfileBanner');
-      container.innerHTML = '<div class="loader w-8 h-8 border-primary mx-auto my-10"></div>';
-      
+      const container = document.getElementById('profileCardsContainer'); const banner = document.getElementById('lockedProfileBanner'); container.innerHTML = '<div class="loader w-8 h-8 border-primary mx-auto my-10"></div>';
       if(!appSettings.allowEdits) {
-        banner.classList.remove('hidden-force');
-        const cList = document.getElementById('commContactList'); cList.innerHTML = '';
-        appSettings.committee.forEach(c => {
-          if(c.phone) cList.innerHTML += `<a href="https://wa.me/65${c.phone}" target="_blank" class="bg-green-500 text-white font-bold px-3 py-1 rounded shadow text-sm hover:bg-green-600 border border-green-700">Chat with ${c.name}</a>`;
-        });
+        banner.classList.remove('hidden-force'); const cList = document.getElementById('commContactList'); cList.innerHTML = '';
+        appSettings.committee.forEach(c => { if(c.phone) cList.innerHTML += `<a href="https://wa.me/65${c.phone}" target="_blank" class="bg-green-500 text-white font-bold px-3 py-1 rounded shadow text-sm hover:bg-green-600 border border-green-700">Chat with ${c.name}</a>`; });
       } else { banner.classList.add('hidden-force'); }
-
       try {
-        const res = await callBackend('getProfile', {nric: currentUser.nric});
-        loadedFamily = res.family; container.innerHTML = '';
-        
+        const res = await callBackend('getProfile', {nric: currentUser.nric}); loadedFamily = res.family; container.innerHTML = '';
         loadedFamily.forEach((m, i) => {
           let groupOpts = `<option value="">Select...</option>`;
           if(appSettings.projectGroups) { appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; }); }
           if(m.group && (!appSettings.projectGroups || !appSettings.projectGroups.includes(m.group))) { groupOpts += `<option value="${m.group}" selected>${m.group} (Archived)</option>`; }
-
-          // COLOR APPILIED TO NAME
           const dynamicColor = getProjectColor(m.group);
-
-          container.innerHTML += `
-            <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border-2 border-gray-300 dark:border-gray-500 shadow-md relative" id="profCard_${i}">
-              <div class="flex justify-between items-start border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
-                <h4 class="font-extrabold text-2xl ${dynamicColor}">${m.fullName} <span class="text-sm font-bold text-gray-500 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded-lg ml-2">${m.role}</span></h4>
-                ${appSettings.allowEdits ? `<button onclick="enableEditMode(${i})" class="bg-primary text-white px-5 py-2 rounded-lg font-bold border-2 border-blue-800 hover:bg-blue-700 transition">Edit</button>` : ''}
-              </div>
+          container.innerHTML += `<div class="bg-gray-50 p-6 rounded-xl border-2 border-gray-300 shadow-md relative" id="profCard_${i}">
+              <div class="flex justify-between items-start border-b-2 border-gray-300 pb-3 mb-4"><h4 class="font-extrabold text-2xl ${dynamicColor}">${m.fullName} <span class="text-sm font-bold text-gray-500 bg-gray-200 px-2 py-1 rounded-lg ml-2">${m.role}</span></h4>${appSettings.allowEdits ? `<button onclick="enableEditMode(${i})" class="bg-primary text-white px-5 py-2 rounded-lg font-bold border-2 border-blue-800 hover:bg-blue-700 transition">Edit</button>` : ''}</div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                <div><p class="font-bold text-gray-500 text-xs">NRIC / FIN</p><p class="font-extrabold uppercase">${m.nric}</p></div>
-                <div><p class="font-bold text-gray-500 text-xs">Date of Birth</p><p class="font-extrabold">${m.dob}</p></div>
-                <div><p class="font-bold text-gray-500 text-xs">Gender & Nat.</p><p class="font-extrabold">${m.gender} | ${m.nationality}</p></div>
-                <div><p class="font-bold text-gray-500 text-xs">Contact & Email</p><p class="font-extrabold">${m.contact} | ${m.email || 'N/A'}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Project</p><p class="font-extrabold ${dynamicColor}">${m.group || 'None'}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Home Address</p><p class="font-bold">${m.address}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport No.</p><p class="font-extrabold uppercase">${m.passportNo}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport Expiry</p><p class="font-extrabold">${m.passportExpiry}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Emerg. Contact</p><p class="font-bold">${m.emergencyName} (${m.emergencyRelation}) - ${m.emergencyContact}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Dietary Needs</p><p class="font-bold text-red-600">${m.diet || 'None'}</p></div>
-                <div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Sleeping Arrangement</p><p class="font-bold text-blue-600 dark:text-blue-400">${m.sleeping || 'No special request'}</p></div>
-                <div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Other Points to Note</p><p class="font-bold">${m.otherPoints || 'None'}</p></div>
-                ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Caregiver For</p><p class="font-extrabold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''}
+                <div><p class="font-bold text-gray-500 text-xs">NRIC / FIN</p><p class="font-extrabold uppercase">${m.nric}</p></div><div><p class="font-bold text-gray-500 text-xs">Date of Birth</p><p class="font-extrabold">${m.dob}</p></div>
+                <div><p class="font-bold text-gray-500 text-xs">Gender & Nat.</p><p class="font-extrabold">${m.gender} | ${m.nationality}</p></div><div><p class="font-bold text-gray-500 text-xs">Contact & Email</p><p class="font-extrabold">${m.contact} | ${m.email || 'N/A'}</p></div>
+                <div class="border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Project</p><p class="font-extrabold ${dynamicColor}">${m.group || 'None'}</p></div><div class="border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Home Address</p><p class="font-bold">${m.address}</p></div>
+                <div class="border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport No.</p><p class="font-extrabold uppercase">${m.passportNo}</p></div><div class="border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport Expiry</p><p class="font-extrabold">${m.passportExpiry}</p></div>
+                <div class="border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Emerg. Contact</p><p class="font-bold">${m.emergencyName} (${m.emergencyRelation}) - ${m.emergencyContact}</p></div><div class="border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Dietary Needs</p><p class="font-bold text-red-600">${m.diet || 'None'}</p></div>
+                <div class="md:col-span-2 border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Sleeping Arrangement</p><p class="font-bold text-blue-600">${m.sleeping || 'No special request'}</p></div><div class="md:col-span-2 border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Other Points to Note</p><p class="font-bold">${m.otherPoints || 'None'}</p></div>
+                ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t-2 border-gray-200 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Caregiver For</p><p class="font-extrabold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''}
+              </div></div>
+            <form id="profEdit_${i}" onsubmit="event.preventDefault(); saveProfileEdit(${i}, this.querySelector('button[type=submit]'));" class="hidden-force bg-blue-50 p-6 rounded-xl border-2 border-primary space-y-5 shadow-lg">
+              <h4 class="font-extrabold text-2xl mb-4 border-b-2 border-blue-200 pb-2">Edit Details</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label class="text-xs font-bold mb-1 block">Full Name</label><input type="text" id="edName_${i}" value="${m.fullName}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Email</label><input type="text" id="edEmail_${i}" value="${m.email}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+                <div><label class="text-xs font-bold mb-1 block">Contact</label><input type="tel" pattern="[0-9]{8}" id="edContact_${i}" value="${m.contact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Gender</label><select id="edGender_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.gender==='Male'?'selected':''}>Male</option><option ${m.gender==='Female'?'selected':''}>Female</option></select></div>
+                <div><label class="text-xs font-bold mb-1 block">Role</label><select id="edRole_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div><div><label class="text-xs font-bold mb-1 block">Project</label><select id="edGroup_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
+                <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Address</label><textarea id="edAddress_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.address}</textarea></div>
+                <div><label class="text-xs font-bold mb-1 block">Nationality</label><input type="text" id="edNat_${i}" value="${m.nationality}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Date of Birth</label><input type="text" id="edDob_${i}" value="${m.dob}" readonly onclick="openDatePicker('edDob_${i}', 'dob')" class="w-full p-2 border-2 border-gray-400 rounded-lg text-center font-bold cursor-pointer bg-white"></div>
+                <div><label class="text-xs font-bold mb-1 block">Passport No.</label><input type="text" id="edPass_${i}" value="${m.passportNo}" class="w-full p-2 border-2 border-gray-400 rounded-lg uppercase"></div><div><label class="text-xs font-bold mb-1 block">Passport Expiry</label><input type="text" id="edExp_${i}" value="${m.passportExpiry}" readonly onclick="openDatePicker('edExp_${i}', 'exp')" class="w-full p-2 border-2 border-gray-400 rounded-lg text-center font-bold cursor-pointer bg-white"></div>
+                <div><label class="text-xs font-bold mb-1 block">Emergency Contact Name</label><input type="text" id="edEmName_${i}" value="${m.emergencyName}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Emergency Contact No.</label><input type="text" id="edEmCont_${i}" value="${m.emergencyContact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+                <div><label class="text-xs font-bold mb-1 block">Emergency Relation</label><input type="text" id="edEmRel_${i}" value="${m.emergencyRelation}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Dietary Needs</label><input type="text" id="edDiet_${i}" value="${m.diet}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
+                <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Sleeping Arrangement Request</label><textarea id="edSleep_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.sleeping}</textarea></div><div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Other Points to Note</label><textarea id="edOther_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.otherPoints}</textarea></div>
               </div>
-            </div>
-            <form id="profEdit_${i}" onsubmit="event.preventDefault(); saveProfileEdit(${i}, this.querySelector('button[type=submit]'));" class="hidden-force bg-blue-50 dark:bg-gray-800 p-6 rounded-xl border-2 border-primary space-y-5 shadow-lg">
-              <!-- Edit fields truncated for brevity... logic unchanged -->
-            </form>
-          `;
+              <div class="flex space-x-3 pt-4 border-t-2 border-blue-200">
+                <button type="button" onclick="cancelEditMode(${i})" class="flex-1 bg-gray-200 text-gray-800 font-extrabold py-3 rounded-lg border-2 border-gray-400 hover:bg-gray-300 transition">Cancel</button>
+                <button type="submit" class="flex-1 bg-primary text-white font-extrabold py-3 rounded-lg border-2 border-blue-800 hover:bg-blue-700 shadow transition flex justify-center items-center"><span class="btn-text">Save Changes</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
+              </div>
+            </form>`;
         });
       } catch (e) { container.innerHTML = '<p class="text-red-500 font-bold">Error loading profiles.</p>'; }
     }
+    function enableEditMode(i) { document.getElementById(`profCard_${i}`).classList.add('hidden-force'); document.getElementById(`profEdit_${i}`).classList.remove('hidden-force'); }
+    function cancelEditMode(i) { document.getElementById(`profEdit_${i}`).classList.add('hidden-force'); document.getElementById(`profCard_${i}`).classList.remove('hidden-force'); }
 
-    function enableEditMode(i) { /* Existing */ }
-    function cancelEditMode(i) { /* Existing */ }
-    async function saveProfileEdit(i, btn) { /* Existing */ }
+    async function saveProfileEdit(i, btn) {
+      setBtnLoading(btn, true);
+      const updated = {
+        nric: loadedFamily[i].nric, fullName: document.getElementById(`edName_${i}`).value, email: document.getElementById(`edEmail_${i}`).value, role: document.getElementById(`edRole_${i}`).value, gender: document.getElementById(`edGender_${i}`).value,
+        contact: document.getElementById(`edContact_${i}`).value, dob: document.getElementById(`edDob_${i}`).value, group: document.getElementById(`edGroup_${i}`).value, address: document.getElementById(`edAddress_${i}`).value,
+        nationality: document.getElementById(`edNat_${i}`).value, passportNo: document.getElementById(`edPass_${i}`).value.toUpperCase(), passportExpiry: document.getElementById(`edExp_${i}`).value, diet: document.getElementById(`edDiet_${i}`).value,
+        emergencyName: document.getElementById(`edEmName_${i}`).value, emergencyContact: document.getElementById(`edEmCont_${i}`).value, emergencyRelation: document.getElementById(`edEmRel_${i}`).value, sleeping: document.getElementById(`edSleep_${i}`).value,
+        otherPoints: document.getElementById(`edOther_${i}`).value, relatedTrainee: loadedFamily[i].relatedTrainee, relationship: loadedFamily[i].relationship
+      };
+      try { await callBackend('updateProfile', {member: updated}); showToast("Profile Updated!"); loadProfileData(); } catch (e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
 
-    // --- LOGISTICS ---
-    function switchLogisticsSubTab(tabId) {['pairings', 'rooms', 'groups', 'buses'].forEach(id => { document.getElementById(`log-${id}`).classList.add('hidden-force'); const btn = document.getElementById(`subTab-${id}`); if(btn) { btn.classList.remove('border-primary', 'text-primary'); btn.classList.add('border-transparent', 'text-gray-500'); } }); document.getElementById(`log-${tabId}`).classList.remove('hidden-force'); const targetBtn = document.getElementById(`subTab-${tabId}`); if(targetBtn) { targetBtn.classList.remove('border-transparent', 'text-gray-500'); targetBtn.classList.add('border-primary', 'text-primary'); } }
-
-    function setSyncButtonState(state) {
-      const btn = document.getElementById('btnSyncPairings'); if(!btn) return;
-      const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
-      btn.className = "text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2"; 
-      spinner.className = "btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"; 
-      if(state === 'saving') { btn.classList.add('bg-yellow-100', 'text-yellow-700', 'border-yellow-400', 'dark:bg-yellow-900', 'dark:text-yellow-300', 'dark:border-yellow-700'); textSpan.textContent = "Saving..."; spinner.classList.remove('hidden-force'); spinner.classList.add('spinner-yellow'); btn.disabled = true; } 
-      else if (state === 'saved') { btn.classList.add('bg-green-100', 'text-green-700', 'border-green-400', 'dark:bg-green-900', 'dark:text-green-300', 'dark:border-green-700'); textSpan.textContent = "Saved"; btn.disabled = false; } 
-      else if (state === 'error') { btn.classList.add('bg-red-100', 'text-red-700', 'border-red-400', 'dark:bg-red-900', 'dark:text-red-300', 'dark:border-red-700'); textSpan.textContent = "Save Failed"; btn.disabled = false; }
+    // --- LOGISTICS WIZARD (UI & OPTIMISTIC LOGIC) ---
+    function switchLogisticsSubTab(tabId) {['pairings', 'rooms', 'groups', 'buses'].forEach(id => {
+        document.getElementById(`log-${id}`).classList.add('hidden-force');
+        const btn = document.getElementById(`subTab-${id}`);
+        if(btn) { btn.classList.remove('border-primary', 'text-primary'); btn.classList.add('border-transparent', 'text-gray-500'); }
+      });
+      document.getElementById(`log-${tabId}`).classList.remove('hidden-force');
+      const targetBtn = document.getElementById(`subTab-${tabId}`);
+      if(targetBtn) { targetBtn.classList.remove('border-transparent', 'text-gray-500'); targetBtn.classList.add('border-primary', 'text-primary'); }
     }
 
     async function loadLogisticsData() { try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); renderAttendanceChecklist(); } catch(e) { showToast("Failed to load logistics.", true); } }
@@ -579,13 +563,13 @@
         tPairings.forEach(pair => {
             const vol = vols.find(v => v.nric === pair.volNric);
             const vDynColor = vol ? getProjectColor(vol.group) : '';
-            tagsHtml += `<span class="bg-gray-100 dark:bg-gray-800 text-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md font-bold flex items-center mb-1 mr-1 shadow-sm">
+            tagsHtml += `<span class="bg-gray-100 text-xs px-3 py-1 border border-gray-300 rounded-md font-bold flex items-center mb-1 mr-1 shadow-sm">
                 <span class="${vDynColor}">${vol ? vol.name : 'Unknown'}</span>
                 <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-2 text-red-500 hover:text-red-700 font-extrabold focus:outline-none">&times;</button>
             </span>`;
         });
 
-        const cardHtml = `<div class="bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-500 shadow-sm mb-3 transition">
+        const cardHtml = `<div class="bg-white p-4 rounded-lg border-2 border-gray-300 shadow-sm mb-3 transition">
               <div class="flex justify-between items-start mb-2"><div class="flex items-center"><p class="font-extrabold text-lg ${dynColor}">${t.name}</p>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-xs bg-blue-100 text-blue-700 font-extrabold px-3 py-1.5 rounded-lg border-2 border-blue-300 hover:bg-blue-200 transition whitespace-nowrap">+ Add Vol</button></div>
               <div class="flex flex-wrap mt-2 min-h-[28px]">${tagsHtml || '<span class="text-sm font-bold text-red-500">Unassigned</span>'}</div></div>`;
 
@@ -611,18 +595,17 @@
             let tNames = volPairs.map(vp => {
                 const t = globalLogistics.participants.find(p => p.nric === vp.traineeNric);
                 if(t) {
-                    const isFam = familyCounts[t.poc] > 1;
-                    const famBadge = isFam ? `<span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-bold tracking-wider px-1 py-0 rounded border border-purple-300 ml-1 inline-block align-middle">Fam</span>` : '';
+                    const isFam = familyCounts[t.poc] > 1; const famBadge = isFam ? `<span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-bold tracking-wider px-1 py-0 rounded border border-purple-300 ml-1 inline-block align-middle">Fam</span>` : '';
                     const dynColor = getProjectColor(t.group);
-                    return `<span class="inline-block bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded text-xs font-bold mr-1 mb-1 text-gray-800 dark:text-gray-200"><span class="${dynColor}">${t.name}</span>${famBadge}</span>`;
+                    return `<span class="inline-block bg-gray-200 px-2 py-0.5 rounded text-xs font-bold mr-1 mb-1 text-gray-800"><span class="${dynColor}">${t.name}</span>${famBadge}</span>`;
                 }
                 return '';
             }).join('');
-            pairedTraineesHtml = `<div class="mt-2 text-xs text-gray-500 font-medium border-t-2 border-gray-200 dark:border-gray-600 pt-2 w-full">Already paired with: <br>${tNames}</div>`;
+            pairedTraineesHtml = `<div class="mt-2 text-xs text-gray-500 font-medium border-t-2 border-gray-200 pt-2 w-full">Already paired with: <br>${tNames}</div>`;
         }
 
         const vDynColor = getProjectColor(v.group);
-        html += `<div onclick="confirmPairing('${v.nric}')" class="flex flex-col bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2">
+        html += `<div onclick="confirmPairing('${v.nric}')" class="flex flex-col bg-white p-4 rounded-lg border-2 border-gray-300 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2">
             <div class="flex justify-between items-center w-full"><p class="font-extrabold text-lg ${vDynColor}">${v.name}</p><span class="text-xs font-bold text-green-600 border border-green-600 px-2 py-0.5 rounded-full">Volunteer</span></div>
             ${pairedTraineesHtml}
           </div>`;
@@ -632,23 +615,21 @@
 
     async function confirmPairing(volNric) {
       if(!currentPairingTarget) return; closeSelectionSheet(); 
-      globalLogistics.pairings.push({ traineeNric: currentPairingTarget, volNric: volNric }); renderPairings();
-      setSyncButtonState('saving');
+      globalLogistics.pairings.push({ traineeNric: currentPairingTarget, volNric: volNric }); renderPairings(); setSyncButtonState('saving');
       try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); setSyncButtonState('saved'); showToast("Pairing saved!", false); 
       } catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); } 
     }
 
     async function unpairTrainee(traineeNric, volNric) {
-      globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); renderPairings();
-      setSyncButtonState('saving');
+      globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); renderPairings(); setSyncButtonState('saving');
       try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); setSyncButtonState('saved'); showToast("Pairing removed.", false); 
       } catch(e) { showToast("Failed.", true); setSyncButtonState('error'); } 
     }
 
     async function manualSyncPairings(btn) {
       setSyncButtonState('saving');
-      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); setSyncButtonState('saved'); showToast("Manual sync complete!"); 
-      } catch(e) { showToast("Sync failed.", true); setSyncButtonState('error'); } 
+      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); setSyncButtonState('saved'); showToast("Manual save complete!"); 
+      } catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
     }
 
     function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
@@ -657,9 +638,9 @@
       if(!globalLogistics || !document.getElementById('attendanceChecklist')) return;
       let html = '';
       globalLogistics.participants.forEach(p => {
-        let roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+        let roleColor = p.role === 'TRAINEE' ? 'text-blue-600' : (p.role === 'CAREGIVER' ? 'text-purple-600' : 'text-green-600');
         const dynColor = getProjectColor(p.group);
-        html += `<label class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border-2 border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition mb-2">
+        html += `<label class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm border-2 border-gray-300 cursor-pointer hover:bg-gray-50 transition mb-2">
             <span class="font-extrabold text-lg ${dynColor}">${p.name} <span class="text-sm font-bold ${roleColor} ml-1">(${p.role})</span></span>
             <input type="checkbox" checked class="w-6 h-6 text-primary rounded-md border-2 border-gray-400 focus:ring-primary">
           </label>`;
@@ -668,25 +649,85 @@
     }
 
     // --- ADMIN SETTINGS LOGIC ---
-    function applyAdminVisuals() { /* Existing Code */ }
-    function initiateRegistrationToggle(btn) { /* Existing Code */ }
-    function cancelTripSetup() { /* Existing Code */ }
-    async function confirmTripSetup(btn) { /* Existing Code */ }
-    async function executeToggleRegistration(newState, title, year, btn) { /* Existing Code */ }
-    async function toggleEditSlider(btn) { /* Existing Code */ }
-    async function addProjectGroup(btn) { /* Existing Code */ }
-    async function removeProjectGroup(name, btn) { /* Existing Code */ }
-    function renderGroupList(list) { /* Existing Code */ }
-    async function addJuncture(btn) { /* Existing Code */ }
-    async function removeJuncture(name, btn) { /* Existing Code */ }
-    async function editJuncture(oldName) { /* Existing Code */ }
-    function renderJunctureList(list) { /* Existing Code */ }
-    async function addCommittee(btn) { /* Existing Code */ }
-    async function removeCommittee(nric, btn) { /* Existing Code */ }
-    function renderCommList(list) { /* Existing Code */ }
-    async function archiveSystem(btn) { /* Existing Code */ }
-    function updateApp(btn) { /* Existing Code */ }
+    function applyAdminVisuals() {
+      const rBtn = document.getElementById('toggleRegBtn'); 
+      if(rBtn) { if(appSettings.registrationOpen) { rBtn.innerHTML = `<span class="btn-text">OPEN (Click to Close)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition flex justify-center items-center"; } else { rBtn.innerHTML = `<span class="btn-text">CLOSED (Click to Open)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center"; } }
+      const sliderBtn = document.getElementById('editSliderToggle'); const sliderKnob = document.getElementById('editSliderKnob'); const statusText = document.getElementById('editStatusText');
+      if (sliderBtn && sliderKnob && statusText) { if(appSettings.allowEdits) { sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-green-800 bg-green-600 shadow-inner"; sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-7 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center"; statusText.textContent = "Yes"; statusText.className = "font-extrabold text-lg text-green-600 transition-colors"; } else { sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 bg-gray-300 shadow-inner"; sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center"; statusText.textContent = "No"; statusText.className = "font-extrabold text-lg text-gray-600 transition-colors"; } }
+    }
 
+    function initiateRegistrationToggle(btn) { if(!appSettings.registrationOpen) { document.getElementById('tripYearInput').value = new Date().getFullYear(); document.getElementById('tripSetupModal').classList.remove('hidden-force'); } else { executeToggleRegistration(false, '', '', btn); } }
+    function cancelTripSetup() { document.getElementById('tripSetupModal').classList.add('hidden-force'); }
+    async function confirmTripSetup(btn) { document.getElementById('tripSetupModal').classList.add('hidden-force'); await executeToggleRegistration(true, document.getElementById('tripTitleInput').value.trim() || 'MYG Overseas Trip', document.getElementById('tripYearInput').value.trim() || new Date().getFullYear(), btn); }
+    async function executeToggleRegistration(newState, title = '', year = '', sourceBtn = null) {
+      const mainBtn = document.getElementById('toggleRegBtn'); setBtnLoading(mainBtn, true); if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, true);
+      try { const res = await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); appSettings.registrationOpen = newState; const headerTripName = document.getElementById('headerTripName'); if(newState && res.tripTitle && res.tripYear) { headerTripName.textContent = `${res.tripTitle} ${res.tripYear}`; headerTripName.classList.remove('hidden-force'); } else { headerTripName.classList.add('hidden-force'); } applyAdminVisuals(); showToast(newState ? "Registration Opened" : "Registration Closed"); } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { setBtnLoading(mainBtn, false); if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, false); }
+    }
+
+    async function toggleEditSlider(btn) {
+      if(btn.disabled) return; const sliderLoader = document.getElementById('editSliderLoader'); const newState = !appSettings.allowEdits; btn.disabled = true; sliderLoader.classList.remove('hidden-force');
+      try { await callBackend('toggleEdits', { status: newState }); appSettings.allowEdits = newState; applyAdminVisuals(); showToast(newState ? "Edits Enabled" : "Edits Locked"); } catch(e) { showToast("Failed to update.", true); applyAdminVisuals(); } finally { btn.disabled = false; sliderLoader.classList.add('hidden-force'); }
+    }
+
+    async function addProjectGroup(btn) {
+      const name = document.getElementById('newGroupName').value.trim(); if(!name) return showToast("Project name is required", true); setBtnLoading(btn, true);
+      try { const res = await callBackend('addProjectGroup', { groupName: name, callerNric: currentUser.nric }); document.getElementById('newGroupName').value = ''; appSettings.projectGroups = res.groups; renderGroupList(res.groups); showToast("Project Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    async function removeProjectGroup(name, btn) {
+      setBtnLoading(btn, true);
+      try { const res = await callBackend('removeProjectGroup', { groupName: name, callerNric: currentUser.nric }); appSettings.projectGroups = res.groups; renderGroupList(res.groups); showToast("Project Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    function renderGroupList(list) {
+      const ul = document.getElementById('groupList'); if(!ul) return;
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No projects defined yet.</li>' : '';
+      if(list) list.forEach(g => { const safeGroup = g.replace(/'/g, "\\'"); ul.innerHTML += `<li class="flex justify-between items-center bg-white p-4 rounded-lg border-2 border-gray-300 shadow-sm"><span class="font-extrabold text-lg">${g}</span><button onclick="removeProjectGroup('${safeGroup}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
+    }
+
+    async function addJuncture(btn) {
+      const name = document.getElementById('newJunctureName').value.trim(); if(!name) return showToast("Juncture name is required", true); setBtnLoading(btn, true);
+      try { const res = await callBackend('modifyJunctures', { actionType: 'add', newName: name }); document.getElementById('newJunctureName').value = ''; appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    async function removeJuncture(name, btn) {
+      setBtnLoading(btn, true);
+      try { const res = await callBackend('modifyJunctures', { actionType: 'remove', oldName: name }); appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    async function editJuncture(oldName) {
+      const newName = prompt(`Edit Juncture Name:`, oldName); if(!newName || newName.trim() === '' || newName.trim() === oldName) return;
+      try { const res = await callBackend('modifyJunctures', { actionType: 'edit', oldName: oldName, newName: newName.trim() }); appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Updated"); } catch(e) { showToast(e.message, true); }
+    }
+    function renderJunctureList(list) {
+      const ul = document.getElementById('junctureList'); if(!ul) return;
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No junctures defined yet.</li>' : '';
+      if(list) list.forEach(j => { const safeName = j.replace(/'/g, "\\'"); ul.innerHTML += `<li class="flex justify-between items-center bg-white p-4 rounded-lg border-2 border-gray-300 shadow-sm"><span class="font-extrabold text-lg">${j}</span><div class="flex space-x-2"><button onclick="editJuncture('${safeName}')" class="text-blue-600 text-sm font-extrabold px-3 py-2 border-2 border-blue-600 hover:bg-blue-50 rounded-lg">Edit</button><button onclick="removeJuncture('${safeName}', this)" class="text-red-600 text-sm font-extrabold px-3 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></div></li>`; });
+      const attSel = document.getElementById('attendanceJunctureSelect'); if(attSel) { attSel.innerHTML = ''; if(list) list.forEach(j => attSel.innerHTML += `<option value="${j}">${j}</option>`); }
+    }
+
+    async function addCommittee(btn) {
+      const name = document.getElementById('newCommName').value.trim(); const nric = document.getElementById('newCommNric').value.trim(); const phone = document.getElementById('newCommPhone').value.trim();
+      if(!nric || !name || !phone) return showToast("Name, NRIC, and Phone required", true); setBtnLoading(btn, true);
+      try { const res = await callBackend('addCommittee', { nric, name, phone }); document.getElementById('newCommName').value = ''; document.getElementById('newCommNric').value = ''; document.getElementById('newCommPhone').value = ''; appSettings.committee = res.list; renderCommList(res.list); showToast("Added to Committee"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    async function removeCommittee(nric, btn) { 
+      setBtnLoading(btn, true);
+      try { const res = await callBackend('removeCommittee', { nric }); appSettings.committee = res.list; renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+    }
+    function renderCommList(list) {
+      const ul = document.getElementById('commList'); if(!ul) return;
+      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No committee members assigned yet.</li>' : '';
+      if(list) list.forEach(m => { ul.innerHTML += `<li class="flex justify-between items-center bg-white p-4 rounded-lg border-2 border-gray-300 shadow-sm"><div><p class="font-extrabold text-lg">${m.name}</p><p class="text-sm text-gray-500 font-mono font-bold">${m.nric} | ${m.phone}</p></div><button onclick="removeCommittee('${m.nric}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
+    }
+
+    async function archiveSystem(btn) {
+      if(!confirm("⚠️ ARE YOU SURE?\n\nThis archives the database and completely resets the system. All participants must re-register.")) return;
+      showToast("Archiving system...", false); setBtnLoading(btn, true);
+      try { await callBackend('archiveAndReset'); showToast("Reset successful!"); setTimeout(() => { window.location.reload(); }, 2000); } catch (e) { showToast(e.message, true); setBtnLoading(btn, false); }
+    }
+
+    function updateApp(btn) {
+      setBtnLoading(btn, true); showToast("Updating app data and clearing caches...");
+      if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } }); }
+      setTimeout(() => location.reload(true), 1000);
+    }
   </script>
 </body>
 </html>
