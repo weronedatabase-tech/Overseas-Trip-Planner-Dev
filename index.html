@@ -21,10 +21,14 @@
     .picker-col::-webkit-scrollbar { display: none; }
     .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
     .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 2px solid rgba(37, 99, 235, 0.6); border-bottom: 2px solid rgba(37, 99, 235, 0.6); pointer-events: none; z-index: 10; }
+    
+    /* Inline Button Spinners */
     .btn-spinner { width: 18px; height: 18px; border: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
     .spinner-white { border-color: rgba(255,255,255,0.3); border-top-color: #ffffff; }
     .spinner-red { border-color: rgba(220,38,38,0.3); border-top-color: #dc2626; }
+    .spinner-yellow { border-color: rgba(202,138,4,0.3); border-top-color: #ca8a04; }
     .spinner-primary { border-color: rgba(37,99,235,0.3); border-top-color: #2563eb; }
+    
     @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
     .animate-slide-up { animation: slide-up 0.25s ease-out forwards; }
   </style>
@@ -48,7 +52,10 @@
 
   <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
     <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-bold z-[100]"></div>
-    <div id="viewLoading" class="flex justify-center items-center h-full"><div class="loader w-10 h-10"></div></div>
+
+    <div id="viewLoading" class="flex justify-center items-center h-full">
+      <div class="loader w-10 h-10"></div>
+    </div>
 
     <!-- VIEW 1: LANDING -->
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
@@ -56,11 +63,13 @@
         <h1 class="text-3xl font-extrabold mb-2">MYG Overseas Trip Planner</h1>
         <p class="text-gray-600 dark:text-gray-400 font-medium">Welcome! Please select an option below.</p>
       </div>
+      
       <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-green-500 hidden-force">
         <h3 class="text-2xl font-bold mb-2">Join the Trip</h3>
         <p class="text-sm font-medium mb-4">Registration is currently open.</p>
         <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded font-extrabold text-lg hover:bg-green-700 shadow-md transition">Register Now</button>
       </div>
+
       <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-primary">
         <h3 class="text-2xl font-bold mb-2">Participant Portal</h3>
         <p class="text-sm font-medium mb-4">Already registered? Log in to view details.</p>
@@ -68,13 +77,15 @@
       </div>
     </div>
 
-    <!-- VIEW 2: REGISTRATION -->
+    <!-- VIEW 2: DYNAMIC REGISTRATION FORM -->
     <div id="viewRegister" class="hidden-force max-w-4xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-600 space-y-4 pb-20">
       <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4">
         <h3 class="text-2xl font-bold">New Registration</h3>
         <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
       </div>
+      
       <p class="text-sm text-gray-500 mb-4 font-bold">Register yourself and your family/group in a single submission. Person 1 is the Main Point of Contact.</p>
+
       <form id="regForm" onsubmit="event.preventDefault(); submitRegistration(this.querySelector('button[type=submit]'));" class="space-y-6">
         <div id="membersContainer" class="space-y-8"></div>
         <button type="button" onclick="addRegMember()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-extrabold py-4 rounded-lg border-4 border-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 border-dashed transition">+ Add Another Family / Group Member</button>
@@ -106,7 +117,8 @@
         </button>
       </div>
       <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
-        <span class="btn-text">Login</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+        <span class="btn-text">Login</span>
+        <div class="btn-spinner spinner-white hidden-force ml-2"></div>
       </button>
     </div>
 
@@ -133,7 +145,9 @@
 
       <!-- PROFILE TAB -->
       <div id="tab-profile" class="tab-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4">
-        <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4"><h3 class="text-2xl font-bold">Family / Group Details</h3></div>
+        <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
+          <h3 class="text-2xl font-bold">Family / Group Details</h3>
+        </div>
         <div id="lockedProfileBanner" class="hidden-force bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-6 shadow-sm">
           <p class="font-extrabold mb-2 text-lg">🔒 Editing is currently Locked.</p>
           <p class="font-medium text-sm mb-3">To request changes to your details, please contact a Committee Member directly:</p>
@@ -151,19 +165,22 @@
           <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-4 py-2 font-extrabold border-b-4 border-transparent text-gray-500 whitespace-nowrap mb-[-10px] transition">4. Buses</button>
         </div>
         
+        <!-- PAIRINGS SUB-TAB -->
         <div id="log-pairings" class="space-y-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <div class="flex justify-between items-center mb-2">
               <h3 class="text-xl font-bold">Volunteer - Trainee Pairings</h3>
-              <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500 px-3 py-1.5 rounded font-extrabold hover:bg-gray-300 transition flex items-center justify-center text-gray-700 dark:text-gray-200">
-                <span class="btn-text">Synced</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
+              <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs bg-green-100 text-green-700 border-2 border-green-400 dark:bg-green-900 dark:text-green-300 dark:border-green-700 px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center">
+                <span class="btn-text">Saved</span><div class="btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"></div>
               </button>
             </div>
             <p class="text-sm font-bold text-gray-500 mb-4">Tap "+ Add Vol" to assign multiple volunteers per trainee.</p>
+            
             <div class="space-y-3">
               <h4 class="font-extrabold text-red-600 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Unassigned Trainees (<span id="unpairedCount">0</span>)</h4>
               <div id="unpairedTraineesList" class="space-y-2"><div class="loader w-6 h-6 border-primary mx-auto"></div></div>
             </div>
+            
             <div class="space-y-3 mt-6">
               <h4 class="font-extrabold text-green-600 border-b-2 border-gray-200 dark:border-gray-700 pb-1">Paired Trainees (<span id="pairedCount">0</span>)</h4>
               <div id="pairedTraineesList" class="space-y-2"></div>
@@ -171,6 +188,7 @@
           </div>
         </div>
 
+        <!-- ROOMS SUB-TAB -->
         <div id="log-rooms" class="hidden-force space-y-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-primary">
             <h3 class="text-xl font-bold mb-2">1. Define Room Configurations</h3>
@@ -186,12 +204,16 @@
         <div id="log-groups" class="hidden-force space-y-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 border-t-purple-500 text-center">
             <h3 class="text-xl font-bold mb-2">Smart Group Generator</h3>
-            <button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">✨ Generate Proposed Groups</button>
+            <button class="w-full bg-purple-600 text-white font-extrabold py-3 rounded-lg shadow border-2 border-purple-800 hover:bg-purple-700">
+              ✨ Generate Proposed Groups
+            </button>
           </div>
         </div>
 
         <div id="log-buses" class="hidden-force space-y-4">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300"><h3 class="text-xl font-bold mb-2">Bus Allocation</h3></div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300">
+            <h3 class="text-xl font-bold mb-2">Bus Allocation</h3>
+          </div>
         </div>
       </div>
 
@@ -203,10 +225,20 @@
             <span class="bg-green-100 text-green-800 text-xs font-extrabold px-2 py-1 rounded border border-green-300">🟢 Online & Syncing</span>
           </div>
           <div class="grid grid-cols-2 gap-4 mb-6">
-            <div><label class="block text-xs font-bold text-gray-500 mb-1">Juncture</label><select id="attendanceJunctureSelect" class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"></select></div>
-            <div><label class="block text-xs font-bold text-gray-500 mb-1">My Assignment</label><select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>All Participants</option></select></div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Juncture</label>
+              <select id="attendanceJunctureSelect" class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">My Assignment</label>
+              <select class="w-full p-2 border-2 border-gray-400 rounded font-bold text-sm"><option>All Participants</option></select>
+            </div>
           </div>
-          <div id="attendanceChecklist" class="space-y-2 border-2 border-gray-300 p-2 rounded-lg bg-gray-50 dark:bg-gray-700 h-64 overflow-y-auto"><div class="loader border-primary mx-auto my-10"></div></div>
+          
+          <div id="attendanceChecklist" class="space-y-2 border-2 border-gray-300 p-2 rounded-lg bg-gray-50 dark:bg-gray-700 h-64 overflow-y-auto">
+            <div class="loader border-primary mx-auto my-10"></div>
+          </div>
+          
           <button class="w-full mt-4 bg-primary text-white font-extrabold py-3 rounded-lg shadow border-2 border-blue-800 flex justify-center items-center">
             <span class="btn-text">Submit Attendance</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
           </button>
@@ -217,6 +249,7 @@
 
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4">
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Registration Form</h3>
@@ -225,6 +258,7 @@
               <span class="btn-text">Loading...</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
             </button>
           </div>
+          
           <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
             <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Can participants continue to edit their registration details?</h3>
             <div class="flex items-center space-x-4 mt-6">
@@ -238,6 +272,7 @@
           </div>
         </div>
 
+        <!-- Attendance Junctures -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4 admin-only">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Attendance Junctures</h3>
           <div class="flex space-x-3 mb-5 mt-4">
@@ -251,7 +286,7 @@
 
         <div id="projectsSettingsBlock" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 mt-4 main-admin-only hidden-force">
           <h3 class="text-xl font-bold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-3">Projects</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project.</p>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Define the dropdown options participants can select for their Project. Only Main Admin can modify this list.</p>
           <div class="flex space-x-3 mb-5">
             <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-3 border-2 border-gray-400 dark:border-gray-500 rounded-lg font-bold">
             <button onclick="addProjectGroup(this)" class="bg-primary text-white px-6 py-3 rounded-lg font-extrabold hover:bg-blue-700 transition border-2 border-blue-800 flex justify-center items-center shadow-sm">
@@ -278,7 +313,7 @@
 
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-t-8 border-gray-300 dark:border-gray-600 border-t-red-500">
           <h3 class="text-xl font-extrabold mb-3 border-b-2 border-gray-300 dark:border-gray-600 pb-3 text-red-600">Danger Zone</h3>
-          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start.</p>
+          <p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-5">Archive current trip to Google Drive and wipe system for a fresh start. Projects list will be kept. All participants must re-register.</p>
           <button onclick="archiveSystem(this)" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-6 rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center">
             <span class="btn-text">Archive & Reset</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
           </button>
@@ -287,6 +322,7 @@
     </div>
   </main>
 
+  <!-- TRIP SETUP MODAL -->
   <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
       <h3 class="text-2xl font-extrabold mb-2 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Initialize Trip Setup</h3>
@@ -296,11 +332,14 @@
       </div>
       <div class="flex space-x-3">
         <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500 shadow-sm transition">Cancel</button>
-        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center shadow-sm transition"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
+        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center shadow-sm transition">
+          <span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+        </button>
       </div>
     </div>
   </div>
 
+  <!-- SELECTION BOTTOM SHEET -->
   <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600 h-[70vh] flex flex-col">
       <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -311,13 +350,26 @@
     </div>
   </div>
 
+  <!-- ROLODEX DATE PICKER -->
   <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end transition-opacity">
     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-600">
-      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700"><span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button></div>
-      <div class="relative flex h-[200px] text-xl font-bold"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
-      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm">Done</button></div>
+      <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700">
+        <span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span>
+        <button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 text-3xl font-extrabold px-3">&times;</button>
+      </div>
+      <div class="relative flex h-[200px] text-xl font-bold">
+        <div class="picker-highlight"></div>
+        <div class="flex-1 picker-col" id="colDay"></div>
+        <div class="flex-1 picker-col" id="colMonth"></div>
+        <div class="flex-1 picker-col" id="colYear"></div>
+      </div>
+      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700">
+        <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm">Done</button>
+      </div>
     </div>
   </div>
+
+  <style> @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } } .animate-slide-up { animation: slide-up 0.25s ease-out forwards; } </style>
 
   <script>
     const DEV_MODE = true; 
@@ -337,11 +389,39 @@
       } else { btn.disabled = false; btn.classList.remove('opacity-80', 'cursor-not-allowed'); if (spinner) spinner.classList.add('hidden-force'); }
     }
 
-    function openDatePicker(targetId, type) { /* Re-use existing rolled-up date picker logic */ }
+    // --- SYNC BUTTON STATUS HELPER ---
+    function setSyncButtonState(state) {
+      const btn = document.getElementById('btnSyncPairings');
+      if(!btn) return;
+      const textSpan = btn.querySelector('.btn-text');
+      const spinner = btn.querySelector('.btn-spinner');
+      
+      btn.className = "text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2"; 
+      spinner.className = "btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"; 
+      
+      if(state === 'saving') {
+        btn.classList.add('bg-yellow-100', 'text-yellow-700', 'border-yellow-400', 'dark:bg-yellow-900', 'dark:text-yellow-300', 'dark:border-yellow-700');
+        textSpan.textContent = "Saving...";
+        spinner.classList.remove('hidden-force');
+        spinner.classList.add('spinner-yellow');
+        btn.disabled = true;
+      } else if (state === 'saved') {
+        btn.classList.add('bg-green-100', 'text-green-700', 'border-green-400', 'dark:bg-green-900', 'dark:text-green-300', 'dark:border-green-700');
+        textSpan.textContent = "Saved";
+        btn.disabled = false;
+      } else if (state === 'error') {
+        btn.classList.add('bg-red-100', 'text-red-700', 'border-red-400', 'dark:bg-red-900', 'dark:text-red-300', 'dark:border-red-700');
+        textSpan.textContent = "Save Failed";
+        btn.disabled = false;
+      }
+    }
+
+    // --- ROLODEX LOGIC ---
+    function openDatePicker(targetId, type) { /* Truncated for brevity, assuming existing Rolodex code is kept intact */ }
     function scrollToIndex(colId, index) { document.getElementById(colId).scrollTo({ top: index * 40, behavior: 'smooth' }); }
-    function highlightCenterItem(colId) { /* Existing UI code */ }
-    function updateValidDays() { /* Existing UI code */ }
-    function confirmPicker() { /* Existing UI code */ }
+    function highlightCenterItem(colId) { /* Truncated */ }
+    function updateValidDays() { /* Truncated */ }
+    function confirmPicker() { /* Truncated */ }
     function closePicker() { document.getElementById('datePickerSheet').classList.add('hidden-force'); }
 
     window.onload = async () => {
@@ -455,7 +535,7 @@
             const vol = vols.find(v => v.nric === pair.volNric);
             tagsHtml += `<span class="bg-green-100 text-green-800 text-xs px-3 py-1 border border-green-300 rounded-md font-bold flex items-center mb-1 mr-1">
                 ${vol ? vol.name : 'Unknown'} 
-                <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}', this)" class="ml-2 text-red-500 hover:text-red-700 font-extrabold">&times;</button>
+                <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-2 text-red-500 hover:text-red-700 font-extrabold focus:outline-none">&times;</button>
             </span>`;
         });
 
@@ -472,13 +552,42 @@
     }
 
     function openPairingSheet(traineeNric) {
-      currentPairingTarget = traineeNric; document.getElementById('sheetTitle').textContent = "Select Volunteer to Pair"; document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
-      const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER'); const pairings = globalLogistics.pairings ||[]; let html = '';
+      currentPairingTarget = traineeNric; 
+      document.getElementById('sheetTitle').textContent = "Select Volunteer to Pair"; 
+      document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
+      
+      const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER'); 
+      const pairings = globalLogistics.pairings ||[]; 
+      let html = '';
+      
+      const familyCounts = {}; 
+      globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
+
       vols.forEach(v => {
         const volPairs = pairings.filter(p => p.volNric === v.nric);
-        if(volPairs.some(p => p.traineeNric === traineeNric)) return; 
-        let badge = volPairs.length > 0 ? `<span class="bg-yellow-100 text-yellow-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded ml-2 border border-yellow-300">Paired (${volPairs.length})</span>` : '';
-        html += `<div onclick="confirmPairing('${v.nric}')" class="flex justify-between items-center bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2"><p class="font-extrabold text-lg">${v.name} ${badge}</p><span class="text-xs font-bold text-green-600">Volunteer</span></div>`;
+        if(volPairs.some(p => p.traineeNric === traineeNric)) return; // Prevent double pairing the same person
+        
+        let pairedTraineesHtml = '';
+        if(volPairs.length > 0) {
+            let tNames = volPairs.map(vp => {
+                const t = globalLogistics.participants.find(p => p.nric === vp.traineeNric);
+                if(t) {
+                    const isFam = familyCounts[t.poc] > 1;
+                    const famBadge = isFam ? `<span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-bold tracking-wider px-1 py-0 rounded border border-purple-300 ml-1 inline-block align-middle">Fam</span>` : '';
+                    return `<span class="inline-block bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded text-xs font-bold mr-1 mb-1 text-gray-800 dark:text-gray-200">${t.name}${famBadge}</span>`;
+                }
+                return '';
+            }).join('');
+            pairedTraineesHtml = `<div class="mt-2 text-xs text-gray-500 font-medium border-t-2 border-gray-200 dark:border-gray-600 pt-2 w-full">Already paired with: <br>${tNames}</div>`;
+        }
+
+        html += `<div onclick="confirmPairing('${v.nric}')" class="flex flex-col bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2">
+            <div class="flex justify-between items-center w-full">
+              <p class="font-extrabold text-lg">${v.name}</p>
+              <span class="text-xs font-bold text-green-600">Volunteer</span>
+            </div>
+            ${pairedTraineesHtml}
+          </div>`;
       });
       document.getElementById('sheetListContainer').innerHTML = html || '<p class="font-bold text-gray-500 p-2">No available volunteers to add.</p>';
     }
@@ -486,22 +595,33 @@
     async function confirmPairing(volNric) {
       if(!currentPairingTarget) return; closeSelectionSheet(); 
       globalLogistics.pairings.push({ traineeNric: currentPairingTarget, volNric: volNric }); renderPairings();
-      const btn = document.getElementById('btnSyncPairings'); setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Saving...";
-      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); btn.querySelector('.btn-text').textContent = "Synced"; showToast("Pairing saved!", false); 
-      } catch(e) { showToast("Failed to sync", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } finally { setBtnLoading(btn, false); }
+      
+      setSyncButtonState('saving');
+      try { 
+        const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
+        globalLogistics = res; renderPairings(); 
+        setSyncButtonState('saved'); showToast("Pairing saved!", false); 
+      } catch(e) { showToast("Failed to save", true); setSyncButtonState('error'); } 
     }
 
-    async function unpairTrainee(traineeNric, volNric, btnSource) {
+    async function unpairTrainee(traineeNric, volNric) {
       globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); renderPairings();
-      const btn = document.getElementById('btnSyncPairings'); setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Saving...";
-      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); btn.querySelector('.btn-text').textContent = "Synced"; showToast("Pairing removed.", false); 
-      } catch(e) { showToast("Failed.", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } finally { setBtnLoading(btn, false); }
+      
+      setSyncButtonState('saving');
+      try { 
+        const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
+        globalLogistics = res; renderPairings(); 
+        setSyncButtonState('saved'); showToast("Pairing removed.", false); 
+      } catch(e) { showToast("Failed.", true); setSyncButtonState('error'); } 
     }
 
     async function manualSyncPairings(btn) {
-      setBtnLoading(btn, true); btn.querySelector('.btn-text').textContent = "Syncing...";
-      try { const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); globalLogistics = res; renderPairings(); btn.querySelector('.btn-text').textContent = "Synced"; showToast("Manual sync complete!"); 
-      } catch(e) { showToast("Sync failed.", true); btn.querySelector('.btn-text').textContent = "Sync Failed"; } finally { setBtnLoading(btn, false); }
+      setSyncButtonState('saving');
+      try { 
+        const res = await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
+        globalLogistics = res; renderPairings(); 
+        setSyncButtonState('saved'); showToast("Manual save complete!"); 
+      } catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
     }
 
     function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
