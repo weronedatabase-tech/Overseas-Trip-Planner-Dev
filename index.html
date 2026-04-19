@@ -5,1027 +5,146 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>MYG Overseas Trip Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#2563eb' } } } }
-  </script>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.3s, color 0.3s; }
-    .dark body { background-color: #111827; color: #f3f4f6; }
-    .dark input, .dark select, .dark textarea { background-color: #1f2937; color: white; border-color: #374151; }
-    .hidden-force { display: none !important; }
-    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #2563eb; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    /* Elegant Form Inputs */
-    .form-input { @apply w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-white dark:focus:bg-gray-900 transition-all outline-none font-medium; }
-    .form-label { @apply block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide; }
-    .card-style { @apply bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden; }
-    
-    .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
-    .picker-col::-webkit-scrollbar { display: none; }
-    .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
-    .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.05); border-top: 1px solid rgba(37, 99, 235, 0.2); border-bottom: 1px solid rgba(37, 99, 235, 0.2); pointer-events: none; z-index: 10; }
-    
-    .btn-spinner { width: 18px; height: 18px; border: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
-    .spinner-white { border-color: rgba(255,255,255,0.3); border-top-color: #ffffff; }
-    .spinner-red { border-color: rgba(220,38,38,0.3); border-top-color: #dc2626; }
-    .spinner-yellow { border-color: rgba(202,138,4,0.3); border-top-color: #ca8a04; }
-    .spinner-primary { border-color: rgba(37,99,235,0.3); border-top-color: #2563eb; }
-    @keyframes slide-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
-    .animate-slide-up { animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-  </style>
+  <script src="tailwind.config.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-900 h-screen flex flex-col dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
 
-  <div id="devModeBar" class="bg-red-500 text-white text-center py-1 text-xs font-bold tracking-widest hidden-force uppercase">Developer Mode Active</div>
+  <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-semibold hidden-force">DEV MODE ACTIVE</div>
 
-  <!-- HEADER -->
-  <header class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-3 z-20 sticky top-0">
-    <div class="max-w-5xl mx-auto flex flex-col md:flex-row md:justify-between md:items-center">
-      <div class="flex items-center justify-between md:justify-start w-full md:w-auto mb-2 md:mb-0">
-        <div class="cursor-pointer flex flex-col justify-center mr-6" onclick="goHome()">
-          <div class="font-bold text-lg text-gray-900 dark:text-white leading-tight">MYG Overseas Trip</div>
-          <div id="headerTripName" class="text-xs font-medium text-primary hidden-force whitespace-nowrap"></div>
-        </div>
-        <div class="flex items-center space-x-3 md:hidden">
-          <button onclick="updateApp(this)" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition font-semibold flex justify-center items-center">
-            <span class="btn-text">Refresh</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
-          </button>
-          <button onclick="toggleTheme()" class="text-lg p-1" aria-label="Toggle Dark Mode">🌗</button>
-        </div>
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex justify-between items-center z-10 sticky top-0">
+    <div class="flex flex-col md:flex-row md:items-center">
+      <div class="cursor-pointer flex flex-col justify-center mr-4" onclick="goHome()">
+        <div class="font-bold text-xl text-primary leading-tight whitespace-nowrap">MYG Overseas Trip</div>
+        <div id="headerTripName" class="text-xs font-medium text-gray-500 hidden-force whitespace-nowrap mt-0.5"></div>
       </div>
-      
-      <!-- Project Legend -->
-      <div id="headerLegend" class="flex flex-wrap gap-1.5 items-center"></div>
-      
-      <div class="hidden md:flex items-center space-x-4">
-        <button onclick="updateApp(this)" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-4 py-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition font-semibold flex justify-center items-center">
-          <span class="btn-text">Refresh App</span><div class="btn-spinner spinner-primary dark:spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
+      <div class="flex items-center space-x-3 md:hidden mt-2">
+        <button onclick="updateApp(this)" class="text-xs bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-md hover:bg-gray-200 transition font-medium flex justify-center items-center shadow-sm">
+          <span class="btn-text">Update App</span><div class="btn-spinner spinner-primary hidden-force ml-2 !w-3 !h-3"></div>
         </button>
-        <button onclick="toggleTheme()" class="text-lg" aria-label="Toggle Dark Mode">🌗</button>
+        <button onclick="toggleTheme()" class="text-xl" aria-label="Toggle Dark Mode">🌗</button>
       </div>
+    </div>
+    
+    <div id="headerLegend" class="flex flex-wrap gap-1 md:gap-2 items-center mt-2 md:mt-0"></div>
+    
+    <div class="hidden md:flex items-center space-x-3">
+      <button onclick="updateApp(this)" class="text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-1.5 rounded-md hover:bg-gray-200 transition font-medium flex justify-center items-center shadow-sm">
+        <span class="btn-text">Update App</span><div class="btn-spinner spinner-primary hidden-force ml-2 !w-4 !h-4"></div>
+      </button>
+      <button onclick="toggleTheme()" class="text-2xl hover:scale-110 transition-transform" aria-label="Toggle Dark Mode">🌗</button>
     </div>
   </header>
 
-  <main class="flex-grow overflow-y-auto p-4 sm:p-6 relative" id="mainContent">
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-xl z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm font-semibold z-[100] flex items-center space-x-2"></div>
+  <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
+    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-5 py-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium z-[100]"></div>
+    <div id="viewLoading" class="flex justify-center items-center h-full"><div class="loader w-10 h-10"></div></div>
 
-    <div id="viewLoading" class="flex justify-center items-center h-[60vh]"><div class="loader w-8 h-8"></div></div>
-
-    <!-- VIEW 1: LANDING -->
-    <div id="viewLanding" class="hidden-force max-w-sm mx-auto mt-12 space-y-8">
-      <div class="text-center">
-        <div class="w-16 h-16 bg-blue-100 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">✈️</div>
-        <h1 class="text-2xl font-bold mb-2">MYG Overseas Trip</h1>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Welcome to the trip portal. Please select an option to continue.</p>
+    <!-- View: Landing -->
+    <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-12 space-y-6">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold mb-3">Trip Planner</h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Welcome! Please select an option below.</p>
       </div>
-      
-      <div class="space-y-4">
-        <div id="landingRegBox" class="card-style p-1 hidden-force hover:shadow-md transition">
-          <button onclick="navTo('register')" class="w-full bg-white dark:bg-gray-800 flex items-center justify-between p-5 rounded-xl text-left">
-            <div>
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white">Join the Trip</h3>
-              <p class="text-sm text-gray-500">Registration is currently open.</p>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-xl">→</div>
-          </button>
-        </div>
-
-        <div class="card-style p-1 hover:shadow-md transition">
-          <button onclick="navTo('login')" class="w-full bg-white dark:bg-gray-800 flex items-center justify-between p-5 rounded-xl text-left">
-            <div>
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white">Participant Portal</h3>
-              <p class="text-sm text-gray-500">Already registered? Log in here.</p>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl">→</div>
-          </button>
-        </div>
+      <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 text-center hidden-force">
+        <h3 class="text-xl font-bold mb-1">Join the Trip</h3>
+        <p class="text-sm text-gray-500 mb-5">Registration is currently open.</p>
+        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold text-lg hover:bg-green-700 shadow-sm transition">Register Now</button>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+        <h3 class="text-xl font-bold mb-1">Participant Portal</h3>
+        <p class="text-sm text-gray-500 mb-5">Already registered? Log in to view details.</p>
+        <button onclick="navTo('login')" class="w-full bg-primary text-white py-3 rounded-xl font-semibold text-lg hover:bg-blue-700 shadow-sm transition">Log In</button>
       </div>
     </div>
 
-    <!-- VIEW 2: REGISTRATION FORM -->
-    <div id="viewRegister" class="hidden-force max-w-4xl mx-auto space-y-6 pb-20">
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6">
+    <!-- View: Registration (Injected via JS) -->
+    <div id="viewRegister" class="hidden-force max-w-3xl mx-auto mt-2 space-y-4 pb-20">
+      <div class="flex justify-between items-center pb-2">
         <div>
           <h3 class="text-2xl font-bold">New Registration</h3>
-          <p class="text-sm text-gray-500 mt-1">Register your family/group together. Person 1 is the main contact.</p>
+          <p class="text-xs text-gray-500 mt-1">Register yourself and your family/group in a single submission. Person 1 is the Main Point of Contact.</p>
         </div>
-        <button onclick="goHome()" class="mt-4 sm:mt-0 text-sm font-semibold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition">Cancel</button>
+        <button onclick="goHome()" class="text-sm font-medium text-gray-600 bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition">Cancel</button>
       </div>
-
-      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration(this.querySelector('button[type=submit]'));" class="space-y-8">
-        <div id="membersContainer" class="space-y-8"></div>
-        
-        <button type="button" onclick="addRegMember()" class="w-full bg-transparent text-primary font-semibold py-4 rounded-2xl border-2 border-primary/20 hover:bg-primary/5 border-dashed transition flex items-center justify-center space-x-2">
-          <span class="text-xl">+</span> <span>Add Another Member</span>
-        </button>
-
+      <form id="regForm" onsubmit="event.preventDefault(); submitRegistration(this.querySelector('button[type=submit]'));" class="space-y-6">
+        <div id="membersContainer" class="space-y-6"></div>
+        <button type="button" onclick="addRegMember()" class="w-full bg-transparent text-primary font-semibold py-4 rounded-xl border-2 border-primary border-dashed hover:bg-blue-50 dark:hover:bg-gray-800 transition">+ Add Another Family / Group Member</button>
         <div class="pt-4">
-          <button type="submit" class="w-full bg-primary text-white font-bold text-lg py-4 rounded-2xl hover:bg-blue-600 shadow-sm transition flex justify-center items-center">
+          <button type="submit" class="w-full bg-green-600 text-white font-bold text-lg py-4 rounded-xl hover:bg-green-700 flex justify-center items-center shadow-md transition">
             <span class="btn-text">Submit Registration</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
           </button>
         </div>
       </form>
     </div>
 
-    <!-- VIEW 3: LOGIN -->
-    <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-12 card-style p-6 sm:p-8 shadow-md">
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-xl font-bold">Secure Login</h2>
-        <button onclick="goHome()" class="text-sm font-medium text-gray-400 hover:text-gray-800 transition">Cancel</button>
+    <!-- View: Login -->
+    <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-12 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Secure Login</h2>
+        <button onclick="goHome()" class="text-sm font-medium text-gray-500 hover:text-gray-800 transition">Cancel</button>
       </div>
-      <div id="loginError" class="text-red-500 text-sm mb-4 font-medium hidden-force bg-red-50 dark:bg-red-900/30 p-3 rounded-lg"></div>
-      
-      <div class="space-y-5 mb-8">
-        <div>
-          <label class="form-label">Full NRIC / FIN</label>
-          <input type="text" id="loginNric" class="form-input uppercase" placeholder="S1234567A" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
-        </div>
-        <div class="relative">
-          <label class="form-label">Password</label>
-          <input type="password" id="loginPass" class="form-input pr-12" placeholder="••••••••" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
-          <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-[28px] p-2 text-gray-400 hover:text-gray-600 transition">
-            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            <svg id="eyeClosed" class="hidden-force" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-          </button>
-        </div>
+      <div id="loginError" class="text-red-500 text-sm mb-4 font-medium hidden-force"></div>
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Full NRIC / FIN</label>
+        <input type="text" id="loginNric" class="w-full p-3 bg-gray-50 border border-gray-300 dark:bg-gray-900 dark:border-gray-600 rounded-xl uppercase font-medium focus:ring-2 focus:ring-primary focus:outline-none transition" placeholder="S1234567A" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
       </div>
-      <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-blue-600 transition shadow-sm flex justify-center items-center">
-        <span class="btn-text">Continue</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+      <div class="mb-8 relative">
+        <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Password</label>
+        <input type="password" id="loginPass" class="w-full p-3 bg-gray-50 border border-gray-300 dark:bg-gray-900 dark:border-gray-600 rounded-xl pr-12 font-medium focus:ring-2 focus:ring-primary focus:outline-none transition" placeholder="••••••••" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
+        <button type="button" onclick="togglePassword('loginPass')" class="absolute right-4 top-8 text-gray-400 hover:text-gray-600 transition">
+          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          <svg id="eyeClosed" class="hidden-force" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+        </button>
+      </div>
+      <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md">
+        <span class="btn-text">Login</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
       </button>
     </div>
 
-    <!-- VIEW 4: DASHBOARD -->
-    <div id="viewDashboard" class="hidden-force max-w-5xl mx-auto space-y-6 pb-20">
-      
-      <div class="flex justify-between items-end mb-6">
+    <!-- View: Dashboard Main Shell -->
+    <div id="viewDashboard" class="hidden-force max-w-4xl mx-auto space-y-4">
+      <div class="bg-white dark:bg-gray-800 px-5 py-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center mt-2">
         <div>
-          <h2 class="text-2xl font-bold" id="welcomeUserText">Welcome!</h2>
-          <p class="text-sm font-medium text-gray-500 mt-1" id="userRoleBadge">Role: Participant</p>
+          <h3 class="text-xl font-bold leading-tight" id="welcomeUserText">Welcome!</h3>
+          <p class="text-xs font-medium text-primary mt-1" id="userRoleBadge">Role: Participant</p>
         </div>
-        <button onclick="logout(this)" class="text-sm font-semibold text-gray-500 hover:text-gray-800 dark:hover:text-white transition flex items-center">
-          <span class="btn-text">Sign Out</span><div class="btn-spinner spinner-red hidden-force ml-2 !w-3 !h-3 border-2"></div>
+        <button onclick="logout(this)" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium px-4 py-2 rounded-lg transition flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+          <span class="btn-text">Logout</span><div class="btn-spinner hidden-force ml-2 !w-3 !h-3"></div>
         </button>
       </div>
 
-      <!-- Sleek Nav Pills -->
-      <div class="flex space-x-2 overflow-x-auto scrollbar-hide pb-2" id="navTabs">
-        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors whitespace-nowrap">My Profile</button>
-        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors hidden-force admin-only whitespace-nowrap">Logistics</button>
-        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors hidden-force admin-only whitespace-nowrap">Attendance</button>
-        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors hidden-force admin-only whitespace-nowrap">Settings</button>
+      <!-- Modern Segmented Pill Tabs -->
+      <div class="bg-gray-200/50 dark:bg-gray-800/50 p-1 rounded-xl flex space-x-1 overflow-x-auto scrollbar-hide border border-gray-200 dark:border-gray-700" id="navTabs">
+        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">My Profile</button>
+        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all hidden-force admin-only">Logistics</button>
+        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all hidden-force admin-only">Attendance</button>
+        <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all hidden-force admin-only">Finance</button>
+        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all hidden-force admin-only">Settings</button>
       </div>
 
-      <!-- PROFILE TAB -->
-      <div id="tab-profile" class="tab-content hidden-force space-y-6">
-        <div id="lockedProfileBanner" class="hidden-force bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 text-amber-800 dark:text-amber-400 p-4 rounded-xl shadow-sm">
-          <p class="font-bold text-base mb-1 flex items-center">🔒 Editing is Locked</p>
-          <p class="text-sm mb-3 opacity-90">To request changes, please contact a Committee Member directly:</p>
-          <div id="commContactList" class="flex flex-wrap gap-2"></div>
-        </div>
-        <div id="profileCardsContainer" class="space-y-6"><div class="loader w-8 h-8 border-primary mx-auto my-10"></div></div>
-      </div>
-
-      <!-- LOGISTICS TAB -->
-      <div id="tab-logistics" class="tab-content hidden-force space-y-6">
-        <!-- Sub Tabs -->
-        <div class="flex space-x-4 border-b border-gray-200 dark:border-gray-700">
-          <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="pb-3 text-sm font-semibold transition border-b-2 border-primary text-primary">Pairings</button>
-          <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="pb-3 text-sm font-semibold transition border-b-2 border-transparent text-gray-500 hover:text-gray-800">Rooms</button>
-          <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="pb-3 text-sm font-semibold transition border-b-2 border-transparent text-gray-500 hover:text-gray-800">Groups</button>
-        </div>
-        
-        <div id="log-pairings" class="card-style p-6">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h3 class="text-lg font-bold">Pairings</h3>
-              <p class="text-sm text-gray-500 mt-1">Assign multiple volunteers per trainee.</p>
-            </div>
-            <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs px-3 py-1.5 rounded-full font-semibold transition flex items-center border border-transparent">
-              <span class="btn-text">Synced</span><div class="btn-spinner ml-2 !w-3 !h-3 hidden-force"></div>
-            </button>
-          </div>
-          
-          <div class="space-y-8">
-            <div>
-              <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Unassigned (<span id="unpairedCount">0</span>)</h4>
-              <div id="unpairedTraineesList" class="space-y-2"><div class="loader w-5 h-5 mx-auto"></div></div>
-            </div>
-            <div>
-              <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Paired (<span id="pairedCount">0</span>)</h4>
-              <div id="pairedTraineesList" class="space-y-2"></div>
-            </div>
-          </div>
-        </div>
-
-        <div id="log-rooms" class="hidden-force card-style p-6">
-          <h3 class="text-lg font-bold mb-4">Room Configurations</h3>
-          <p class="text-sm text-gray-500">In Development...</p>
-        </div>
-
-        <div id="log-groups" class="hidden-force card-style p-6 text-center py-10">
-          <h3 class="text-xl font-bold mb-2">Smart Group Generator</h3>
-          <p class="text-sm text-gray-500 mb-6 max-w-md mx-auto">Auto-group participants to ensure families and paired volunteers stay together.</p>
-          <button class="bg-primary text-white font-bold py-3 px-6 rounded-xl shadow-sm hover:bg-blue-600 transition">✨ Generate Proposed Groups</button>
-        </div>
-      </div>
-
-      <!-- ATTENDANCE TAB -->
-      <div id="tab-attendance" class="tab-content hidden-force space-y-6">
-        <div class="card-style p-6 admin-only">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold">Take Attendance</h3>
-            <span class="bg-green-50 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-green-200">🟢 Online</span>
-          </div>
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div><label class="form-label">Juncture</label><select id="attendanceJunctureSelect" class="form-input text-sm py-2"></select></div>
-            <div><label class="form-label">Assignment</label><select class="form-input text-sm py-2"><option>All Participants</option></select></div>
-          </div>
-          <div id="attendanceChecklist" class="space-y-1 bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl p-2 h-72 overflow-y-auto"><div class="loader w-6 h-6 border-primary mx-auto my-10"></div></div>
-          <button class="w-full mt-4 bg-primary text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-blue-600 flex justify-center items-center transition">
-            <span class="btn-text">Submit Attendance</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
-          </button>
-        </div>
-      </div>
-
-      <!-- SETTINGS TAB (FLATTENED LISTS) -->
-      <div id="tab-settings" class="tab-content hidden-force space-y-6">
-        
-        <!-- Controls -->
-        <div class="card-style">
-          <div class="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-            <div>
-              <h3 class="text-base font-bold">Registration Form</h3>
-              <p class="text-xs text-gray-500 mt-1">Allow new participants to sign up.</p>
-            </div>
-            <button id="toggleRegBtn" onclick="initiateRegistrationToggle(this)" class="px-5 py-2 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition flex items-center"><span class="btn-text">Loading...</span><div class="btn-spinner spinner-primary hidden-force ml-2"></div></button>
-          </div>
-          
-          <div class="p-5 sm:p-6 flex justify-between items-center">
-            <div>
-              <h3 class="text-base font-bold">Profile Editing</h3>
-              <p class="text-xs text-gray-500 mt-1">Allow participants to edit their details.</p>
-            </div>
-            <div class="flex items-center space-x-3">
-              <span id="editStatusText" class="font-semibold text-sm text-gray-500">No</span>
-              <button id="editSliderToggle" onclick="toggleEditSlider(this)" class="relative inline-flex items-center h-7 w-12 rounded-full transition-colors duration-300 focus:outline-none bg-gray-200 dark:bg-gray-700">
-                <span id="editSliderKnob" class="inline-flex w-5 h-5 transform translate-x-1 bg-white rounded-full shadow-sm items-center justify-center transition-transform duration-300"><div id="editSliderLoader" class="loader hidden-force !w-3 !h-3 border-2 border-t-primary"></div></span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Junctures -->
-        <div class="card-style admin-only">
-          <div class="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="text-base font-bold mb-1">Attendance Junctures</h3>
-            <p class="text-xs text-gray-500 mb-4">Define milestones for attendance taking.</p>
-            <div class="flex space-x-2">
-              <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="form-input text-sm py-2">
-              <button onclick="addJuncture(this)" class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-5 rounded-xl font-semibold hover:bg-gray-200 transition flex items-center"><span class="btn-text">Add</span><div class="btn-spinner hidden-force ml-2"></div></button>
-            </div>
-          </div>
-          <ul id="junctureList" class="divide-y divide-gray-100 dark:divide-gray-700 max-h-64 overflow-y-auto bg-gray-50/30 dark:bg-gray-800/30"></ul>
-        </div>
-
-        <!-- Projects (Main Admin) -->
-        <div id="projectsSettingsBlock" class="card-style main-admin-only hidden-force">
-          <div class="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="text-base font-bold mb-1">Projects</h3>
-            <p class="text-xs text-gray-500 mb-4">Manage project options and their color tags.</p>
-            <div class="flex space-x-2">
-              <button onclick="openColorPickerForNewProject()" id="newGroupColorBtn" class="w-11 h-11 shrink-0 rounded-full border border-gray-200 transition hover:scale-105 bg-white" title="Pick a color"></button>
-              <input type="text" id="newGroupName" placeholder="e.g. Project Alpha" class="form-input text-sm py-2">
-              <button onclick="addProjectGroup(this)" class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-5 rounded-xl font-semibold hover:bg-gray-200 transition flex items-center"><span class="btn-text">Add</span><div class="btn-spinner hidden-force ml-2"></div></button>
-            </div>
-          </div>
-          <ul id="groupList" class="divide-y divide-gray-100 dark:divide-gray-700 max-h-64 overflow-y-auto bg-gray-50/30 dark:bg-gray-800/30"></ul>
-        </div>
-
-        <!-- Committee -->
-        <div class="card-style">
-          <div class="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="text-base font-bold mb-1">Committee Members</h3>
-            <p class="text-xs text-gray-500 mb-4">Grant admin access instantly via NRIC.</p>
-            <div class="flex flex-col sm:flex-row gap-2">
-              <input type="text" id="newCommName" placeholder="Full Name" class="form-input text-sm py-2">
-              <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="form-input uppercase text-sm py-2">
-              <input type="tel" id="newCommPhone" placeholder="8-Digit Phone" pattern="[0-9]{8}" class="form-input text-sm py-2">
-              <button onclick="addCommittee(this)" class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-5 py-2 sm:py-0 rounded-xl font-semibold hover:bg-gray-200 transition flex items-center justify-center shrink-0"><span class="btn-text">Add</span><div class="btn-spinner hidden-force ml-2"></div></button>
-            </div>
-          </div>
-          <ul id="commList" class="divide-y divide-gray-100 dark:divide-gray-700 max-h-64 overflow-y-auto bg-gray-50/30 dark:bg-gray-800/30"></ul>
-        </div>
-
-        <div class="card-style border border-red-200 dark:border-red-900/50 mt-8">
-          <div class="p-5 sm:p-6 bg-red-50/50 dark:bg-red-900/10">
-            <h3 class="text-base font-bold text-red-600 mb-1">Danger Zone</h3>
-            <p class="text-xs text-gray-500 mb-4">Archive the active Google Sheet and completely reset the app for a new trip.</p>
-            <button onclick="archiveSystem(this)" class="bg-red-100 text-red-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-red-200 transition flex items-center text-sm"><span class="btn-text">Archive & Reset System</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button>
-          </div>
-        </div>
-      </div>
+      <!-- Content injections target these containers -->
+      <div id="tab-profile" class="tab-content"></div>
+      <div id="tab-logistics" class="tab-content hidden-force"></div>
+      <div id="tab-attendance" class="tab-content hidden-force"></div>
+      <div id="tab-finance" class="tab-content hidden-force"><div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center text-gray-500">Finance Module Coming Soon</div></div>
+      <div id="tab-settings" class="tab-content hidden-force space-y-4"></div>
     </div>
   </main>
 
-  <!-- MODALS -->
-  <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-      <h3 class="text-xl font-bold mb-1">Initialize Trip Setup</h3>
-      <p class="text-sm text-gray-500 mb-6">Open registration and map a new active database.</p>
-      <div class="space-y-4 mb-8">
-        <div><label class="form-label">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="form-input"></div>
-        <div><label class="form-label">Trip Year</label><input type="number" id="tripYearInput" class="form-input"></div>
-      </div>
-      <div class="flex space-x-3">
-        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-semibold hover:bg-gray-200 transition">Cancel</button>
-        <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-blue-600 flex justify-center items-center"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
-      </div>
-    </div>
-  </div>
+  <!-- Modals (Trip Setup, Selection, Color Picker, Rolodex) injected globally -->
+  <div id="modalContainer"></div>
 
-  <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end">
-    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up h-[75vh] flex flex-col">
-      <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700">
-        <span id="sheetTitle" class="font-bold text-lg">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-400 hover:text-gray-800 text-2xl px-2">&times;</button>
-      </div>
-      <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900" id="sheetListContainer"></div>
-    </div>
-  </div>
-
-  <div id="colorPickerModal" class="fixed inset-0 bg-black/60 z-[96] hidden-force flex justify-center items-center p-4 backdrop-blur-sm">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-bold">Select Project Color</h3>
-        <button type="button" onclick="closeColorPicker()" class="text-gray-400 hover:text-gray-800 text-2xl px-2">&times;</button>
-      </div>
-      <div class="grid grid-cols-6 gap-4 mb-2" id="colorPaletteGrid"></div>
-    </div>
-  </div>
-
-  <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end">
-    <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up">
-      <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700"><span class="font-bold text-lg">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-400 hover:text-gray-800 text-2xl px-2">&times;</button></div>
-      <div class="relative flex h-[200px] text-lg font-semibold"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
-      <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-blue-600 transition">Done</button></div>
-    </div>
-  </div>
-  <script>
-    const DEV_MODE = true; 
-    const URLS = {
-      DEV: "https://script.google.com/macros/s/AKfycby48gbzI_4V0TEJ0Gra4Qb_J3xywBA6A792d2reGx0QWUx-6QFEKRWBTmr8mGG86osg/exec",
-      PROD: "https://script.google.com/macros/s/AKfycbz4OLZtR2lX97MrGZVaNg13Lrzvwgy7mBfQr7PgoQGK617sL8ZCkKvZD2hIZodus-O_/exec"
-    };
-    const API_URL = DEV_MODE ? URLS.DEV : URLS.PROD;
-
-    let currentUser = null; 
-    let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[], projectColors:{}, activeProjects:[], junctures:[], tripTitle:'', tripYear:'' };
-    let globalLogistics = null; let currentPairingTarget = null; let regMemberCount = 0; let loadedFamily =[];
-    let pairingSyncTimeout = null;
-    let pendingColorGroupTarget = null;
-    let newProjectSelectedColor = null;
-
-    // 18 Safe, non-red colors
-    const projectColorPalette =[
-      'bg-slate-100 border-slate-400 text-slate-900 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100',
-      'bg-gray-100 border-gray-400 text-gray-900 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100',
-      'bg-zinc-100 border-zinc-400 text-zinc-900 dark:bg-zinc-900 dark:border-zinc-600 dark:text-zinc-100',
-      'bg-neutral-100 border-neutral-400 text-neutral-900 dark:bg-neutral-900 dark:border-neutral-600 dark:text-neutral-100',
-      'bg-stone-100 border-stone-400 text-stone-900 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-100',
-      'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900 dark:border-amber-600 dark:text-amber-100',
-      'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-100',
-      'bg-lime-100 border-lime-400 text-lime-900 dark:bg-lime-900 dark:border-lime-600 dark:text-lime-100',
-      'bg-green-100 border-green-400 text-green-900 dark:bg-green-900 dark:border-green-600 dark:text-green-100',
-      'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900 dark:border-emerald-600 dark:text-emerald-100',
-      'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900 dark:border-teal-600 dark:text-teal-100',
-      'bg-cyan-100 border-cyan-400 text-cyan-900 dark:bg-cyan-900 dark:border-cyan-600 dark:text-cyan-100',
-      'bg-sky-100 border-sky-400 text-sky-900 dark:bg-sky-900 dark:border-sky-600 dark:text-sky-100',
-      'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-100',
-      'bg-indigo-100 border-indigo-400 text-indigo-900 dark:bg-indigo-900 dark:border-indigo-600 dark:text-indigo-100',
-      'bg-violet-100 border-violet-400 text-violet-900 dark:bg-violet-900 dark:border-violet-600 dark:text-violet-100',
-      'bg-purple-100 border-purple-400 text-purple-900 dark:bg-purple-900 dark:border-purple-600 dark:text-purple-100',
-      'bg-fuchsia-100 border-fuchsia-400 text-fuchsia-900 dark:bg-fuchsia-900 dark:border-fuchsia-600 dark:text-fuchsia-100'
-    ];
-
-    function getProjectColor(groupName) {
-      if (!groupName || groupName === 'None') return 'bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100'; 
-      if (appSettings.projectColors && appSettings.projectColors[groupName]) return appSettings.projectColors[groupName];
-      return 'bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100'; 
-    }
-
-    function getProjectAbbreviation(name) {
-      const match = name.match(/\((.*?)\)/);
-      if (match && match[1]) return match[1].substring(0,3).toUpperCase();
-      const words = name.split(' ').filter(w => w.length > 0);
-      if (words.length > 1) return words.slice(0,3).map(w => w[0]).join('').toUpperCase();
-      return name.substring(0,3).toUpperCase();
-    }
-
-    function renderHeaderLegend() {
-      const container = document.getElementById('headerLegend');
-      if (!appSettings.activeProjects || appSettings.activeProjects.length === 0) { container.innerHTML = ''; return; }
-      let html = '';
-      appSettings.activeProjects.forEach(proj => {
-        if(!proj) return;
-        const colorCls = getProjectColor(proj); const shortName = getProjectAbbreviation(proj);
-        html += `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold border-2 cursor-help ${colorCls}" title="${proj}">${shortName}</span>`;
-      });
-      container.innerHTML = html;
-    }
-
-    function getUnusedColor() {
-      const used = Object.values(appSettings.projectColors || {});
-      const unused = projectColorPalette.filter(c => !used.includes(c));
-      return unused.length > 0 ? unused[0] : projectColorPalette[0];
-    }
-
-    // --- COLOR PICKER UI ---
-    function openColorPickerForNewProject() {
-      pendingColorGroupTarget = 'NEW';
-      if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor();
-      renderColorPickerGrid();
-      document.getElementById('colorPickerModal').classList.remove('hidden-force');
-    }
-
-    function openColorPicker(groupName) {
-      pendingColorGroupTarget = groupName;
-      renderColorPickerGrid();
-      document.getElementById('colorPickerModal').classList.remove('hidden-force');
-    }
-
-    function closeColorPicker() {
-      document.getElementById('colorPickerModal').classList.add('hidden-force');
-    }
-
-    function renderColorPickerGrid() {
-      const grid = document.getElementById('colorPaletteGrid');
-      const usedColors = Object.values(appSettings.projectColors || {});
-      let html = '';
-      
-      projectColorPalette.forEach(colorCls => {
-        let isUsed = usedColors.includes(colorCls);
-        let isCurrent = false;
-
-        if (pendingColorGroupTarget === 'NEW') {
-          isCurrent = (colorCls === newProjectSelectedColor);
-        } else {
-          isCurrent = (colorCls === appSettings.projectColors[pendingColorGroupTarget]);
-          if(isCurrent) isUsed = false; // Allow selecting its own color
-        }
-
-        const opacity = isUsed ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer hover:scale-110';
-        const ring = isCurrent ? 'ring-4 ring-primary ring-offset-2' : '';
-        const onclick = isUsed ? '' : `onclick="selectColor('${colorCls}')"`;
-        
-        // Extract bg color class to show dot
-        const bgMatch = colorCls.match(/bg-[a-z]+-[0-9]+/);
-        const bgClass = bgMatch ? bgMatch[0] : 'bg-gray-200';
-
-        html += `<div ${onclick} class="w-10 h-10 rounded-full border-2 border-gray-400 shadow-sm transition-all ${bgClass} ${opacity} ${ring}"></div>`;
-      });
-      grid.innerHTML = html;
-    }
-
-    async function selectColor(colorClass) {
-      closeColorPicker();
-      if (pendingColorGroupTarget === 'NEW') {
-        newProjectSelectedColor = colorClass;
-        // Update the visual dot next to the Add button
-        const bgMatch = colorClass.match(/bg-[a-z]+-[0-9]+/);
-        const dot = document.getElementById('newGroupColorBtn');
-        dot.className = `w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105 ${bgMatch ? bgMatch[0] : 'bg-gray-200'}`;
-      } else {
-        // Calling backend to update existing group color
-        showToast("Updating color...", false);
-        try {
-          const res = await callBackend('addProjectGroup', { groupName: pendingColorGroupTarget, callerNric: currentUser.nric, colorClass: colorClass });
-          appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors;
-          renderGroupList(res.groups); renderHeaderLegend();
-          showToast("Color Updated!");
-        } catch(e) { showToast(e.message, true); }
-      }
-    }
-
-
-    function setBtnLoading(btn, isLoading) {
-      if (!btn) return; const spinner = btn.querySelector('.btn-spinner');
-      if (isLoading) { btn.disabled = true; btn.classList.add('opacity-80', 'cursor-not-allowed'); if (spinner) spinner.classList.remove('hidden-force'); } 
-      else { btn.disabled = false; btn.classList.remove('opacity-80', 'cursor-not-allowed'); if (spinner) spinner.classList.add('hidden-force'); }
-    }
-
-    function setSyncButtonState(state) {
-      const btn = document.getElementById('btnSyncPairings'); if(!btn) return;
-      const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
-      btn.className = "text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2 shadow-sm"; 
-      spinner.className = "btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"; 
-      if(state === 'saving') { btn.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-400', 'dark:bg-yellow-900', 'dark:text-yellow-300', 'dark:border-yellow-700'); textSpan.textContent = "Saving..."; spinner.classList.remove('hidden-force'); spinner.classList.add('spinner-yellow'); btn.disabled = true; } 
-      else if (state === 'saved') { btn.classList.add('bg-green-100', 'text-green-800', 'border-green-400', 'dark:bg-green-900', 'dark:text-green-300', 'dark:border-green-700'); textSpan.textContent = "Saved"; btn.disabled = false; } 
-      else if (state === 'error') { btn.classList.add('bg-red-100', 'text-red-800', 'border-red-400', 'dark:bg-red-900', 'dark:text-red-300', 'dark:border-red-700'); textSpan.textContent = "Save Failed"; btn.disabled = false; }
-    }
-
-    // --- ROLODEX LOGIC ---
-    let currentPickerTarget = null; const monthsArr =['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    function openDatePicker(targetId, type) {
-      currentPickerTarget = targetId; document.getElementById('datePickerSheet').classList.remove('hidden-force');
-      const colD = document.getElementById('colDay'); const colM = document.getElementById('colMonth'); const colY = document.getElementById('colYear');
-      const spacer = '<div style="height: 80px;"></div>'; let dHtml = spacer; for(let i=1; i<=31; i++) { let val = String(i).padStart(2,'0'); dHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${val}" onclick="scrollToIndex('colDay', ${i-1})">${val}</div>`; } dHtml += spacer;
-      let mHtml = spacer; monthsArr.forEach((m, i) => { mHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${m}" onclick="scrollToIndex('colMonth', ${i})">${m}</div>`; }); mHtml += spacer;
-      let yHtml = spacer; const curYear = new Date().getFullYear(); let startYear, endYear, step;
-      if(type === 'dob') { startYear = curYear; endYear = 1920; step = -1; } else { startYear = curYear; endYear = curYear + 20; step = 1; }
-      let idx = 0; for(let i = startYear; type === 'dob' ? i >= endYear : i <= endYear; i += step) { yHtml += `<div class="picker-item text-gray-400 dark:text-gray-500" data-val="${i}" onclick="scrollToIndex('colYear', ${idx})">${i}</div>`; idx++; } yHtml += spacer;
-      colD.innerHTML = dHtml; colM.innerHTML = mHtml; colY.innerHTML = yHtml;
-      colD.onscroll = () => highlightCenterItem('colDay'); colM.onscroll = () => highlightCenterItem('colMonth'); colY.onscroll = () => highlightCenterItem('colYear');
-      const curVal = document.getElementById(targetId).value;
-      setTimeout(() => {
-        if(curVal) { const parts = curVal.split(' '); if(parts.length === 3) {
-            const dIdx = Array.from(colD.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[0]); const mIdx = Array.from(colM.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[1]); const yIdx = Array.from(colY.querySelectorAll('.picker-item')).findIndex(el => el.dataset.val === parts[2]);
-            if(dIdx > -1) colD.scrollTop = dIdx * 40; if(mIdx > -1) colM.scrollTop = mIdx * 40; if(yIdx > -1) colY.scrollTop = yIdx * 40;
-          } } else { colD.scrollTop = 0; colM.scrollTop = 0; colY.scrollTop = 0; }
-        highlightCenterItem('colMonth'); highlightCenterItem('colYear'); highlightCenterItem('colDay');
-      }, 10);
-    }
-    function scrollToIndex(colId, index) { document.getElementById(colId).scrollTo({ top: index * 40, behavior: 'smooth' }); }
-    function highlightCenterItem(colId) {
-      const col = document.getElementById(colId); const visibleItems = Array.from(col.querySelectorAll('.picker-item')).filter(i => !i.classList.contains('hidden-force'));
-      if(!visibleItems.length) return; let index = Math.round(col.scrollTop / 40); if (index >= visibleItems.length) index = visibleItems.length - 1; 
-      visibleItems.forEach((item, i) => {
-        if(i === index) { item.classList.remove('text-gray-400', 'dark:text-gray-500'); item.classList.add('text-primary', 'font-extrabold', 'text-3xl'); item.dataset.selected = "true"; } 
-        else { item.classList.add('text-gray-400', 'dark:text-gray-500'); item.classList.remove('text-primary', 'font-extrabold', 'text-3xl'); item.dataset.selected = "false"; }
-      });
-      if(colId === 'colMonth' || colId === 'colYear') updateValidDays();
-    }
-    function updateValidDays() {
-      const mItem = document.querySelector('#colMonth .picker-item[data-selected="true"]'); const yItem = document.querySelector('#colYear .picker-item[data-selected="true"]'); if(!mItem || !yItem) return;
-      const maxDays = new Date(parseInt(yItem.dataset.val), monthsArr.indexOf(mItem.dataset.val) + 1, 0).getDate(); const colD = document.getElementById('colDay');
-      colD.querySelectorAll('.picker-item').forEach((item) => {
-        const shouldHide = parseInt(item.dataset.val) > maxDays;
-        if(shouldHide && !item.classList.contains('hidden-force')) item.classList.add('hidden-force'); if(!shouldHide && item.classList.contains('hidden-force')) item.classList.remove('hidden-force');
-      });
-      if (colD.scrollTop > (maxDays - 1) * 40) scrollToIndex('colDay', maxDays - 1);
-    }
-    function confirmPicker() {
-      const d = document.querySelector('#colDay .picker-item[data-selected="true"]'); const m = document.querySelector('#colMonth .picker-item[data-selected="true"]'); const y = document.querySelector('#colYear .picker-item[data-selected="true"]');
-      if(d && m && y && currentPickerTarget) document.getElementById(currentPickerTarget).value = `${d.dataset.val} ${m.dataset.val} ${y.dataset.val}`; closePicker();
-    }
-    function closePicker() { document.getElementById('datePickerSheet').classList.add('hidden-force'); }
-
-    window.onload = async () => {
-      if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
-      if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-      const savedSession = localStorage.getItem('userSession');
-      if(savedSession) currentUser = JSON.parse(savedSession);
-      
-      await fetchConfig();
-      if(currentUser) renderDashboard(); else goHome();
-    };
-
-    function goHome() { if(currentUser) return renderDashboard(); document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force')); document.getElementById('viewLanding').classList.remove('hidden-force'); }
-    function navTo(view) { document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force')); if (view === 'register') { document.getElementById('viewRegister').classList.remove('hidden-force'); document.getElementById('membersContainer').innerHTML = ''; regMemberCount = 0; addRegMember(); } if (view === 'login') { document.getElementById('viewLogin').classList.remove('hidden-force'); document.getElementById('loginPass').value = ''; } }
-    function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
-    function togglePassword(id) { const el = document.getElementById(id); const eyeOpen = document.getElementById('eyeOpen'); const eyeClosed = document.getElementById('eyeClosed'); if(el.type === 'password') { el.type = 'text'; eyeOpen.classList.add('hidden-force'); eyeClosed.classList.remove('hidden-force'); } else { el.type = 'password'; eyeOpen.classList.remove('hidden-force'); eyeClosed.classList.add('hidden-force'); } }
-    function handleEnter(e, func) { if(e.key === 'Enter') func(); }
-    function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 text-sm font-bold text-white border-2 ${isError ? 'bg-red-600 border-red-800' : 'bg-green-600 border-green-800'}`; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 4000); }
-
-    async function callBackend(action, payload = {}) {
-      try {
-        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
-        if(!res.ok) throw new Error("Network error."); const data = await res.json();
-        if(data.status === 'error') throw new Error(data.message); return data;
-      } catch (err) {
-        if(err.message.includes('Failed to fetch')) { showToast("Auth required.", true); setTimeout(() => window.open(API_URL, '_blank'), 2000); }
-        else { throw err; }
-      }
-    }
-
-    async function fetchConfig() {
-      try {
-        const config = await callBackend('getSettings'); appSettings = config;
-        const regBox = document.getElementById('landingRegBox');
-        if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
-        
-        const headerTripName = document.getElementById('headerTripName');
-        if (appSettings.tripTitle && appSettings.tripYear) { headerTripName.textContent = `${appSettings.tripTitle} ${appSettings.tripYear}`; headerTripName.classList.remove('hidden-force'); } else { headerTripName.classList.add('hidden-force'); }
-        
-        renderHeaderLegend();
-        applyAdminVisuals();
-      } catch (e) { showToast("Error syncing settings.", true); } finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
-    }
-
-    function addRegMember() {
-      const idx = regMemberCount++; let groupOpts = `<option value="">Select...</option>`;
-      if(appSettings.projectGroups) appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}">${g}</option>`; });
-      const html = `<div class="member-block bg-white dark:bg-gray-800 p-6 rounded-xl border-2 border-gray-400 dark:border-gray-500 shadow-md relative" data-idx="${idx}">
-          ${idx > 0 ? `<button type="button" onclick="this.closest('.member-block').remove()" class="absolute top-4 right-4 text-red-600 font-extrabold border-2 border-red-600 px-3 py-1 rounded-lg hover:bg-red-50 transition">Remove</button>` : `<div class="absolute top-4 right-4 bg-primary text-white font-extrabold px-3 py-1 text-sm rounded border-2 border-blue-800">MAIN POC</div>`}
-          <h4 class="font-extrabold text-2xl mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Person ${idx + 1}</h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-            <div><label class="block text-sm font-bold mb-1">Full Name</label><input required type="text" class="reg-f-name w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-            <div><label class="block text-sm font-bold mb-1">Email</label><input ${idx===0?'required':''} type="email" class="reg-f-email w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-            <div><label class="block text-sm font-bold mb-1">Role</label><select class="reg-f-role w-full p-3 border-2 border-gray-400 rounded-lg font-bold" onchange="toggleTraineeFields(this)"><option value="TRAINEE">Trainee</option><option value="CAREGIVER">Caregiver</option><option value="VOLUNTEER">Volunteer</option></select></div>
-            <div><label class="block text-sm font-bold mb-1">Gender</label><select class="reg-f-gender w-full p-3 border-2 border-gray-400 rounded-lg font-bold"><option>Male</option><option>Female</option></select></div>
-            <div><label class="block text-sm font-bold mb-1">Contact Number (8-digit)</label><input ${idx===0?'required':''} type="tel" pattern="[0-9]{8}" class="reg-f-contact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-            <div><label class="block text-sm font-bold mb-1">Date of Birth</label><input required type="text" id="dob_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('dob_${idx}', 'dob')" class="reg-f-dob w-full p-3 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer bg-white dark:bg-gray-700"></div>
-            <div><label class="block text-sm font-bold mb-1">Project</label><select class="reg-f-group w-full p-3 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
-            <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Home Address</label><textarea required class="reg-f-address w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
-          </div>
-          <div class="trainee-div hidden-force bg-blue-50 dark:bg-gray-700 p-5 rounded-lg mb-6 border-2 border-blue-200 dark:border-gray-500">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div><label class="block text-sm font-bold mb-1">Related Trainee's Name</label><input type="text" class="reg-f-related w-full p-3 border-2 border-gray-400 rounded-lg"></div><div><label class="block text-sm font-bold mb-1">Relationship to Trainee</label><input type="text" class="reg-f-relation w-full p-3 border-2 border-gray-400 rounded-lg placeholder-gray-400" placeholder="e.g. Father, Mother, Sibling"></div></div>
-          </div>
-          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Identification</h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-            <div><label class="block text-sm font-bold mb-1">Full NRIC / FIN</label><input required type="text" class="reg-f-nric w-full p-3 border-2 border-gray-400 rounded-lg uppercase"></div>
-            <div><label class="block text-sm font-bold mb-1">Nationality</label><input required type="text" class="reg-f-nat w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-            <div><label class="block text-sm font-bold mb-1">Passport No.</label><input required type="text" class="reg-f-pass w-full p-3 border-2 border-gray-400 rounded-lg uppercase"></div>
-            <div><label class="block text-sm font-bold mb-1">Passport Expiry</label><input required type="text" id="exp_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('exp_${idx}', 'exp')" class="reg-f-exp w-full p-3 border-2 border-gray-400 rounded-lg font-bold text-center cursor-pointer bg-white dark:bg-gray-700"></div>
-          </div>
-          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Medical & Emergency</h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-            <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Dietary Restrictions</label><input type="text" class="reg-f-diet w-full p-3 border-2 border-gray-400 rounded-lg" placeholder="Nil if none"></div>
-            <div><label class="block text-sm font-bold mb-1">Emergency Contact Name</label><input required type="text" class="reg-f-emname w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-            <div><label class="block text-sm font-bold mb-1">Emergency Contact Number (8-digit)</label><input required type="tel" pattern="[0-9]{8}" class="reg-f-emcontact w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-            <div><label class="block text-sm font-bold mb-1">Relationship to Emerg. Contact</label><input required type="text" class="reg-f-emrelation w-full p-3 border-2 border-gray-400 rounded-lg"></div>
-          </div>
-          <h4 class="font-extrabold text-lg mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2">Remarks</h4>
-          <div class="space-y-5">
-            <div><label class="block text-sm font-bold mb-1">Sleeping Arrangement Request</label><textarea class="reg-f-sleep w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
-            <div><label class="block text-sm font-bold mb-1">Other Points to Note</label><textarea class="reg-f-other w-full p-3 border-2 border-gray-400 rounded-lg" rows="2"></textarea></div>
-          </div>
-        </div>`;
-      document.getElementById('membersContainer').insertAdjacentHTML('beforeend', html);
-    }
-    function toggleTraineeFields(selectEl) { const div = selectEl.closest('.member-block').querySelector('.trainee-div'); if(selectEl.value === 'CAREGIVER') div.classList.remove('hidden-force'); else div.classList.add('hidden-force'); }
-
-    async function submitRegistration(btn) {
-      const blocks = document.querySelectorAll('.member-block'); const payloadArray =[];
-      blocks.forEach(b => {
-        payloadArray.push({
-          fullName: b.querySelector('.reg-f-name').value, email: b.querySelector('.reg-f-email').value, role: b.querySelector('.reg-f-role').value, gender: b.querySelector('.reg-f-gender').value,
-          contact: b.querySelector('.reg-f-contact').value, dob: b.querySelector('.reg-f-dob').value, group: b.querySelector('.reg-f-group').value, address: b.querySelector('.reg-f-address').value,
-          relatedTrainee: b.querySelector('.reg-f-related').value, relationship: b.querySelector('.reg-f-relation').value, nric: b.querySelector('.reg-f-nric').value.toUpperCase(), nationality: b.querySelector('.reg-f-nat').value,
-          passportNo: b.querySelector('.reg-f-pass').value.toUpperCase(), passportExpiry: b.querySelector('.reg-f-exp').value, diet: b.querySelector('.reg-f-diet').value, emergencyName: b.querySelector('.reg-f-emname').value,
-          emergencyContact: b.querySelector('.reg-f-emcontact').value, emergencyRelation: b.querySelector('.reg-f-emrelation').value, sleeping: b.querySelector('.reg-f-sleep').value, otherPoints: b.querySelector('.reg-f-other').value
-        });
-      });
-      setBtnLoading(btn, true);
-      try { await callBackend('submitRegistration', { payload: payloadArray }); showToast("Registration Successful! Please login."); setTimeout(() => navTo('login'), 1500); } catch (e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-
-    async function attemptLogin(btn) {
-      const nric = document.getElementById('loginNric').value.trim().toUpperCase(); const pass = document.getElementById('loginPass').value; const err = document.getElementById('loginError');
-      if(!nric || !pass) { err.textContent = "Please enter NRIC and Password"; return err.classList.remove('hidden-force'); } err.classList.add('hidden-force'); setBtnLoading(btn, true);
-      try {
-        const res = await callBackend('login', { nric, password: pass }); currentUser = { nric: nric, role: res.role, name: res.name };
-        localStorage.setItem('userSession', JSON.stringify(currentUser)); renderDashboard();
-      } catch (error) { err.textContent = error.message; err.classList.remove('hidden-force'); } finally { setBtnLoading(btn, false); }
-    }
-
-    function logout(btn) { setBtnLoading(btn, true); localStorage.removeItem('userSession'); currentUser = null; window.location.reload(); }
-
-    async function renderDashboard() {
-      document.querySelectorAll('#mainContent > div').forEach(el => el.classList.add('hidden-force'));
-      document.getElementById('viewDashboard').classList.remove('hidden-force');
-      document.getElementById('welcomeUserText').textContent = `Welcome, ${currentUser.name || 'User'}!`;
-      let badgeText = 'Role: Participant'; if (currentUser.nric === 'ADMIN') badgeText = 'Role: Main Admin'; else if (currentUser.role === 'admin') badgeText = 'Role: Committee Member'; document.getElementById('userRoleBadge').textContent = badgeText;
-      if(currentUser.role === 'admin') { 
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-force')); 
-        if (currentUser.nric === 'ADMIN') { document.querySelectorAll('.main-admin-only').forEach(el => el.classList.remove('hidden-force')); document.getElementById('tabBtn-profile').classList.add('hidden-force'); } else { document.querySelectorAll('.main-admin-only').forEach(el => el.classList.add('hidden-force')); document.getElementById('tabBtn-profile').classList.remove('hidden-force'); }
-        if(appSettings.committee) renderCommList(appSettings.committee); if(appSettings.projectGroups) renderGroupList(appSettings.projectGroups); if(appSettings.junctures) renderJunctureList(appSettings.junctures);
-        switchTab('settings'); loadLogisticsData(); 
-      } else { 
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-force')); document.getElementById('tabBtn-profile').classList.remove('hidden-force'); switchTab('profile'); 
-      }
-    }
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-force'));
-      document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); el.classList.add('border-transparent', 'text-gray-500', 'font-bold'); });
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden-force');
-      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-      if(activeBtn) { activeBtn.classList.remove('border-transparent', 'text-gray-500', 'font-bold'); activeBtn.classList.add('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); }
-      if(tabId === 'profile') loadProfileData();
-      if(tabId === 'logistics') switchLogisticsSubTab('pairings');
-      if(tabId === 'attendance') renderAttendanceChecklist();
-    }
-
-    async function loadProfileData() {
-      const container = document.getElementById('profileCardsContainer'); const banner = document.getElementById('lockedProfileBanner'); container.innerHTML = '<div class="loader w-8 h-8 border-primary mx-auto my-10"></div>';
-      if(!appSettings.allowEdits) {
-        banner.classList.remove('hidden-force'); const cList = document.getElementById('commContactList'); cList.innerHTML = '';
-        appSettings.committee.forEach(c => { if(c.phone) cList.innerHTML += `<a href="https://wa.me/65${c.phone}" target="_blank" class="bg-green-500 text-white font-bold px-3 py-1 rounded shadow text-sm hover:bg-green-600 border border-green-700">Chat with ${c.name}</a>`; });
-      } else { banner.classList.add('hidden-force'); }
-      try {
-        const res = await callBackend('getProfile', {nric: currentUser.nric}); loadedFamily = res.family; container.innerHTML = '';
-        loadedFamily.forEach((m, i) => {
-          let groupOpts = `<option value="">Select...</option>`;
-          if(appSettings.projectGroups) { appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; }); }
-          if(m.group && (!appSettings.projectGroups || !appSettings.projectGroups.includes(m.group))) { groupOpts += `<option value="${m.group}" selected>${m.group} (Archived)</option>`; }
-          const dynColor = getProjectColor(m.group);
-          container.innerHTML += `<div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border-2 border-gray-300 dark:border-gray-500 shadow-md relative" id="profCard_${i}">
-              <div class="flex justify-between items-start border-b-2 border-gray-300 dark:border-gray-600 pb-3 mb-4"><div class="flex items-center flex-wrap gap-2"><span class="font-extrabold text-xl px-3 py-1 rounded-md border-2 ${dynColor}">${m.fullName}</span> <span class="text-sm font-bold text-gray-500 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded-lg ml-2">${m.role}</span></div>${appSettings.allowEdits ? `<button onclick="enableEditMode(${i})" class="bg-primary text-white px-5 py-2 rounded-lg font-bold border-2 border-blue-800 hover:bg-blue-700 transition">Edit</button>` : ''}</div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                <div><p class="font-bold text-gray-500 text-xs">NRIC / FIN</p><p class="font-extrabold uppercase">${m.nric}</p></div><div><p class="font-bold text-gray-500 text-xs">Date of Birth</p><p class="font-extrabold">${m.dob}</p></div>
-                <div><p class="font-bold text-gray-500 text-xs">Gender & Nat.</p><p class="font-extrabold">${m.gender} | ${m.nationality}</p></div><div><p class="font-bold text-gray-500 text-xs">Contact & Email</p><p class="font-extrabold">${m.contact} | ${m.email || 'N/A'}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs mb-1">Project</p><span class="font-extrabold text-sm px-2 py-1 rounded-md border-2 inline-block ${dynColor}">${m.group || 'None'}</span></div><div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Home Address</p><p class="font-bold">${m.address}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport No.</p><p class="font-extrabold uppercase">${m.passportNo}</p></div><div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Passport Expiry</p><p class="font-extrabold">${m.passportExpiry}</p></div>
-                <div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Emerg. Contact</p><p class="font-bold">${m.emergencyName} (${m.emergencyRelation}) - ${m.emergencyContact}</p></div><div class="border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Dietary Needs</p><p class="font-bold text-red-600">${m.diet || 'None'}</p></div>
-                <div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Sleeping Arrangement</p><p class="font-bold text-blue-600 dark:text-blue-400">${m.sleeping || 'No special request'}</p></div><div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Other Points to Note</p><p class="font-bold">${m.otherPoints || 'None'}</p></div>
-                ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t-2 border-gray-200 dark:border-gray-600 pt-3 mt-1"><p class="font-bold text-gray-500 text-xs">Caregiver For</p><p class="font-extrabold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''}
-              </div></div>
-            <form id="profEdit_${i}" onsubmit="event.preventDefault(); saveProfileEdit(${i}, this.querySelector('button[type=submit]'));" class="hidden-force bg-blue-50 dark:bg-gray-800 p-6 rounded-xl border-2 border-primary space-y-5 shadow-lg">
-              <h4 class="font-extrabold text-2xl mb-4 border-b-2 border-blue-200 dark:border-gray-600 pb-2">Edit Details</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label class="text-xs font-bold mb-1 block">Full Name</label><input type="text" id="edName_${i}" value="${m.fullName}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Email</label><input type="text" id="edEmail_${i}" value="${m.email}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
-                <div><label class="text-xs font-bold mb-1 block">Contact</label><input type="tel" pattern="[0-9]{8}" id="edContact_${i}" value="${m.contact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Gender</label><select id="edGender_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.gender==='Male'?'selected':''}>Male</option><option ${m.gender==='Female'?'selected':''}>Female</option></select></div>
-                <div><label class="text-xs font-bold mb-1 block">Role</label><select id="edRole_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div><div><label class="text-xs font-bold mb-1 block">Project</label><select id="edGroup_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg font-bold">${groupOpts}</select></div>
-                <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Address</label><textarea id="edAddress_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.address}</textarea></div>
-                <div><label class="text-xs font-bold mb-1 block">Nationality</label><input type="text" id="edNat_${i}" value="${m.nationality}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Date of Birth</label><input type="text" id="edDob_${i}" value="${m.dob}" readonly onclick="openDatePicker('edDob_${i}', 'dob')" class="w-full p-2 border-2 border-gray-400 rounded-lg text-center font-bold cursor-pointer bg-white dark:bg-gray-700"></div>
-                <div><label class="text-xs font-bold mb-1 block">Passport No.</label><input type="text" id="edPass_${i}" value="${m.passportNo}" class="w-full p-2 border-2 border-gray-400 rounded-lg uppercase"></div><div><label class="text-xs font-bold mb-1 block">Passport Expiry</label><input type="text" id="edExp_${i}" value="${m.passportExpiry}" readonly onclick="openDatePicker('edExp_${i}', 'exp')" class="w-full p-2 border-2 border-gray-400 rounded-lg text-center font-bold cursor-pointer bg-white dark:bg-gray-700"></div>
-                <div><label class="text-xs font-bold mb-1 block">Emergency Contact Name</label><input type="text" id="edEmName_${i}" value="${m.emergencyName}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Emergency Contact No.</label><input type="tel" pattern="[0-9]{8}" id="edEmCont_${i}" value="${m.emergencyContact}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
-                <div><label class="text-xs font-bold mb-1 block">Emergency Relation</label><input type="text" id="edEmRel_${i}" value="${m.emergencyRelation}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div><div><label class="text-xs font-bold mb-1 block">Dietary Needs</label><input type="text" id="edDiet_${i}" value="${m.diet}" class="w-full p-2 border-2 border-gray-400 rounded-lg"></div>
-                <div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Sleeping Arrangement Request</label><textarea id="edSleep_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.sleeping}</textarea></div><div class="md:col-span-2"><label class="text-xs font-bold mb-1 block">Other Points to Note</label><textarea id="edOther_${i}" class="w-full p-2 border-2 border-gray-400 rounded-lg">${m.otherPoints}</textarea></div>
-              </div>
-              <div class="flex space-x-3 pt-4 border-t-2 border-blue-200 dark:border-gray-600">
-                <button type="button" onclick="cancelEditMode(${i})" class="flex-1 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-extrabold py-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 transition">Cancel</button>
-                <button type="submit" class="flex-1 bg-primary text-white font-extrabold py-3 rounded-lg border-2 border-blue-800 hover:bg-blue-700 shadow transition flex justify-center items-center"><span class="btn-text">Save Changes</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
-              </div>
-            </form>`;
-        });
-      } catch (e) { container.innerHTML = '<p class="text-red-500 font-bold">Error loading profiles.</p>'; }
-    }
-    function enableEditMode(i) { document.getElementById(`profCard_${i}`).classList.add('hidden-force'); document.getElementById(`profEdit_${i}`).classList.remove('hidden-force'); }
-    function cancelEditMode(i) { document.getElementById(`profEdit_${i}`).classList.add('hidden-force'); document.getElementById(`profCard_${i}`).classList.remove('hidden-force'); }
-
-    async function saveProfileEdit(i, btn) {
-      setBtnLoading(btn, true);
-      const updated = {
-        nric: loadedFamily[i].nric, fullName: document.getElementById(`edName_${i}`).value, email: document.getElementById(`edEmail_${i}`).value, role: document.getElementById(`edRole_${i}`).value, gender: document.getElementById(`edGender_${i}`).value,
-        contact: document.getElementById(`edContact_${i}`).value, dob: document.getElementById(`edDob_${i}`).value, group: document.getElementById(`edGroup_${i}`).value, address: document.getElementById(`edAddress_${i}`).value,
-        nationality: document.getElementById(`edNat_${i}`).value, passportNo: document.getElementById(`edPass_${i}`).value.toUpperCase(), passportExpiry: document.getElementById(`edExp_${i}`).value, diet: document.getElementById(`edDiet_${i}`).value,
-        emergencyName: document.getElementById(`edEmName_${i}`).value, emergencyContact: document.getElementById(`edEmCont_${i}`).value, emergencyRelation: document.getElementById(`edEmRel_${i}`).value, sleeping: document.getElementById(`edSleep_${i}`).value,
-        otherPoints: document.getElementById(`edOther_${i}`).value, relatedTrainee: loadedFamily[i].relatedTrainee, relationship: loadedFamily[i].relationship
-      };
-      try { await callBackend('updateProfile', {member: updated}); showToast("Profile Updated!"); loadProfileData(); } catch (e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-
-    // --- LOGISTICS WIZARD (OPTIMISTIC PAIRING ENGINE) ---
-    function switchLogisticsSubTab(tabId) {['pairings', 'rooms', 'groups', 'buses'].forEach(id => { document.getElementById(`log-${id}`).classList.add('hidden-force'); const btn = document.getElementById(`subTab-${id}`); if(btn) { btn.classList.remove('border-primary', 'text-primary'); btn.classList.add('border-transparent', 'text-gray-500'); } }); document.getElementById(`log-${tabId}`).classList.remove('hidden-force'); const targetBtn = document.getElementById(`subTab-${tabId}`); if(targetBtn) { targetBtn.classList.remove('border-transparent', 'text-gray-500'); targetBtn.classList.add('border-primary', 'text-primary'); } }
-
-    async function loadLogisticsData() { try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); renderAttendanceChecklist(); } catch(e) { showToast("Failed to load logistics.", true); } }
-
-    function triggerPairingSync() {
-      setSyncButtonState('saving');
-      if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
-      pairingSyncTimeout = setTimeout(async () => {
-        try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); } 
-        catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); }
-      }, 800); 
-    }
-
-    function renderPairings() {
-      if(!globalLogistics) return;
-      const trainees = globalLogistics.participants.filter(p => p.role === 'TRAINEE');
-      const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER');
-      const pairings = globalLogistics.pairings ||[];
-      const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
-
-      let unpairedHtml = ''; let pairedHtml = ''; let uCount = 0; let pCount = 0;
-
-      trainees.forEach(t => {
-        const tPairings = pairings.filter(p => p.traineeNric === t.nric);
-        const isFam = familyCounts[t.poc] > 1;
-        const famBadge = isFam ? `<span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ml-2 border border-purple-300 align-middle inline-block">Fam</span>` : '';
-        const dynColor = getProjectColor(t.group);
-
-        let tagsHtml = '';
-        tPairings.forEach(pair => {
-            const vol = vols.find(v => v.nric === pair.volNric);
-            const vDynColor = vol ? getProjectColor(vol.group) : '';
-            tagsHtml += `<span class="bg-gray-100 dark:bg-gray-800 text-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md font-bold flex items-center mb-1 mr-1 shadow-sm">
-                <span class="${vDynColor} px-2 rounded border-2 border-gray-300 dark:border-gray-600">${vol ? vol.name : 'Unknown'}</span>
-                <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-2 text-red-500 hover:text-red-700 font-extrabold focus:outline-none">&times;</button>
-            </span>`;
-        });
-
-        const cardHtml = `<div class="bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-500 shadow-sm mb-3 transition">
-              <div class="flex justify-between items-start mb-2"><div class="flex items-center"><span class="font-extrabold text-lg px-2 py-1 rounded-md border-2 ${dynColor}">${t.name}</span>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-xs bg-blue-100 text-blue-700 font-extrabold px-3 py-1.5 rounded-lg border-2 border-blue-300 hover:bg-blue-200 transition whitespace-nowrap">+ Add Vol</button></div>
-              <div class="flex flex-wrap mt-2 min-h-[28px]">${tagsHtml || '<span class="text-sm font-bold text-red-500">Unassigned</span>'}</div></div>`;
-
-        if(tPairings.length > 0) { pCount++; pairedHtml += cardHtml; } else { uCount++; unpairedHtml += cardHtml; }
-      });
-
-      document.getElementById('unpairedCount').textContent = uCount; document.getElementById('pairedCount').textContent = pCount;
-      document.getElementById('unpairedTraineesList').innerHTML = unpairedHtml || '<p class="text-sm font-bold text-gray-500">All trainees paired!</p>';
-      document.getElementById('pairedTraineesList').innerHTML = pairedHtml || '<p class="text-sm font-bold text-gray-500">No pairings yet.</p>';
-    }
-
-    function openPairingSheet(traineeNric) {
-      currentPairingTarget = traineeNric; document.getElementById('sheetTitle').textContent = "Select Volunteer to Pair"; document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
-      const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER'); const pairings = globalLogistics.pairings ||[]; let html = '';
-      const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
-
-      vols.forEach(v => {
-        const volPairs = pairings.filter(p => p.volNric === v.nric);
-        if(volPairs.some(p => p.traineeNric === traineeNric)) return; 
-        
-        let pairedTraineesHtml = '';
-        if(volPairs.length > 0) {
-            let tNames = volPairs.map(vp => {
-                const t = globalLogistics.participants.find(p => p.nric === vp.traineeNric);
-                if(t) {
-                    const isFam = familyCounts[t.poc] > 1; const famBadge = isFam ? `<span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-bold tracking-wider px-1 py-0 rounded border border-purple-300 ml-1 inline-block align-middle">Fam</span>` : '';
-                    const dynColor = getProjectColor(t.group);
-                    return `<span class="inline-block px-2 py-0.5 border border-gray-300 dark:border-gray-500 rounded-md text-xs font-bold mr-1 mb-1 ${dynColor}">${t.name}${famBadge}</span>`;
-                }
-                return '';
-            }).join('');
-            pairedTraineesHtml = `<div class="mt-2 text-xs text-gray-500 font-medium border-t-2 border-gray-200 dark:border-gray-600 pt-2 w-full">Already paired with: <br>${tNames}</div>`;
-        }
-
-        const vDynColor = getProjectColor(v.group);
-        html += `<div onclick="confirmPairing('${v.nric}')" class="flex flex-col bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm cursor-pointer hover:bg-blue-50 transition mb-2">
-            <div class="flex justify-between items-center w-full"><span class="font-extrabold text-lg px-2 py-1 rounded-md border-2 ${vDynColor}">${v.name}</span><span class="text-xs font-bold text-green-600 border border-green-600 px-2 py-0.5 rounded-full">Volunteer</span></div>
-            ${pairedTraineesHtml}
-          </div>`;
-      });
-      document.getElementById('sheetListContainer').innerHTML = html || '<p class="font-bold text-gray-500 p-2">No available volunteers to add.</p>';
-    }
-
-    function confirmPairing(volNric) {
-      if(!currentPairingTarget) return; closeSelectionSheet(); 
-      globalLogistics.pairings.push({ traineeNric: currentPairingTarget, volNric: volNric }); 
-      renderPairings(); triggerPairingSync();
-    }
-
-    function unpairTrainee(traineeNric, volNric) {
-      globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); 
-      renderPairings(); triggerPairingSync();
-    }
-
-    async function manualSyncPairings(btn) {
-      setSyncButtonState('saving');
-      try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); showToast("Manual save complete!"); } 
-      catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
-    }
-
-    function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
-
-    function renderAttendanceChecklist() {
-      if(!globalLogistics || !document.getElementById('attendanceChecklist')) return;
-      let html = '';
-      globalLogistics.participants.forEach(p => {
-        let roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
-        const dynColor = getProjectColor(p.group);
-        html += `<label class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border-2 border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition mb-2">
-            <div class="flex items-center flex-wrap gap-2"><span class="font-extrabold text-lg px-2 py-1 rounded-md border-2 ${dynColor}">${p.name}</span> <span class="text-sm font-bold ${roleColor}">(${p.role})</span></div>
-            <input type="checkbox" checked class="w-6 h-6 text-primary rounded-md border-2 border-gray-400 focus:ring-primary">
-          </label>`;
-      });
-      document.getElementById('attendanceChecklist').innerHTML = html || '<p class="text-sm font-bold p-2">No participants found.</p>';
-    }
-
-    // --- ADMIN SETTINGS LOGIC ---
-    function applyAdminVisuals() {
-      const rBtn = document.getElementById('toggleRegBtn'); 
-      if(rBtn) { if(appSettings.registrationOpen) { rBtn.innerHTML = `<span class="btn-text">OPEN (Click to Close)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; rBtn.className = "w-full px-6 py-3 bg-green-600 text-white font-extrabold rounded-lg shadow-md border-2 border-green-800 transition flex justify-center items-center"; } else { rBtn.innerHTML = `<span class="btn-text">CLOSED (Click to Open)</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>`; rBtn.className = "w-full px-6 py-3 bg-red-600 text-white font-extrabold rounded-lg shadow-md border-2 border-red-800 transition flex justify-center items-center"; } }
-      const sliderBtn = document.getElementById('editSliderToggle'); const sliderKnob = document.getElementById('editSliderKnob'); const statusText = document.getElementById('editStatusText');
-      if (sliderBtn && sliderKnob && statusText) { if(appSettings.allowEdits) { sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-green-800 bg-green-600 shadow-inner"; sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-7 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center"; statusText.textContent = "Yes"; statusText.className = "font-extrabold text-lg text-green-600 dark:text-green-400 transition-colors"; } else { sliderBtn.className = "relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none border-2 border-gray-400 dark:border-gray-500 bg-gray-300 dark:bg-gray-600 shadow-inner"; sliderKnob.className = "inline-flex w-6 h-6 transform translate-x-1 bg-white rounded-full transition-transform duration-300 shadow-md items-center justify-center"; statusText.textContent = "No"; statusText.className = "font-extrabold text-lg text-gray-600 dark:text-gray-400 transition-colors"; } }
-    }
-
-    function initiateRegistrationToggle(btn) { if(!appSettings.registrationOpen) { document.getElementById('tripYearInput').value = new Date().getFullYear(); document.getElementById('tripSetupModal').classList.remove('hidden-force'); } else { executeToggleRegistration(false, '', '', btn); } }
-    function cancelTripSetup() { document.getElementById('tripSetupModal').classList.add('hidden-force'); }
-    async function confirmTripSetup(btn) { document.getElementById('tripSetupModal').classList.add('hidden-force'); await executeToggleRegistration(true, document.getElementById('tripTitleInput').value.trim() || 'MYG Overseas Trip', document.getElementById('tripYearInput').value.trim() || new Date().getFullYear(), btn); }
-    async function executeToggleRegistration(newState, title = '', year = '', sourceBtn = null) {
-      const mainBtn = document.getElementById('toggleRegBtn'); setBtnLoading(mainBtn, true); if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, true);
-      try { const res = await callBackend('toggleRegistration', { status: newState, tripTitle: title, tripYear: year }); appSettings.registrationOpen = newState; const headerTripName = document.getElementById('headerTripName'); if(newState && res.tripTitle && res.tripYear) { headerTripName.textContent = `${res.tripTitle} ${res.tripYear}`; headerTripName.classList.remove('hidden-force'); } else { headerTripName.classList.add('hidden-force'); } applyAdminVisuals(); showToast(newState ? "Registration Opened" : "Registration Closed"); } catch(e) { showToast("Failed.", true); applyAdminVisuals(); } finally { setBtnLoading(mainBtn, false); if(sourceBtn && sourceBtn !== mainBtn) setBtnLoading(sourceBtn, false); }
-    }
-
-    async function toggleEditSlider(btn) {
-      if(btn.disabled) return; const sliderLoader = document.getElementById('editSliderLoader'); const newState = !appSettings.allowEdits; btn.disabled = true; sliderLoader.classList.remove('hidden-force');
-      try { await callBackend('toggleEdits', { status: newState }); appSettings.allowEdits = newState; applyAdminVisuals(); showToast(newState ? "Edits Enabled" : "Edits Locked"); } catch(e) { showToast("Failed to update.", true); applyAdminVisuals(); } finally { btn.disabled = false; sliderLoader.classList.add('hidden-force'); }
-    }
-
-    // PROJECT GROUPS & COLOR MANAGEMENT
-    function getUnusedColor() {
-      const used = Object.values(appSettings.projectColors || {});
-      const unused = projectColorPalette.filter(c => !used.includes(c));
-      return unused.length > 0 ? unused[0] : projectColorPalette[0];
-    }
-
-    function openColorPickerForNewProject() {
-      pendingColorGroupTarget = 'NEW';
-      if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor();
-      renderColorPickerGrid(); document.getElementById('colorPickerModal').classList.remove('hidden-force');
-    }
-    function openColorPicker(groupName) {
-      pendingColorGroupTarget = groupName; renderColorPickerGrid(); document.getElementById('colorPickerModal').classList.remove('hidden-force');
-    }
-    function closeColorPicker() { document.getElementById('colorPickerModal').classList.add('hidden-force'); }
-
-    function renderColorPickerGrid() {
-      const grid = document.getElementById('colorPaletteGrid');
-      const usedColors = Object.values(appSettings.projectColors || {});
-      let html = '';
-      projectColorPalette.forEach(colorCls => {
-        let isUsed = usedColors.includes(colorCls);
-        let isCurrent = false;
-        if (pendingColorGroupTarget === 'NEW') { isCurrent = (colorCls === newProjectSelectedColor); } 
-        else { isCurrent = (colorCls === appSettings.projectColors[pendingColorGroupTarget]); if(isCurrent) isUsed = false; }
-        
-        const opacity = isUsed ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer hover:scale-110';
-        const ring = isCurrent ? 'ring-4 ring-primary ring-offset-2' : '';
-        const onclick = isUsed ? '' : `onclick="selectColor('${colorCls}')"`;
-        const bgMatch = colorCls.match(/bg-[a-z]+-[0-9]+/); const bgClass = bgMatch ? bgMatch[0] : 'bg-gray-200';
-        
-        html += `<div ${onclick} class="w-10 h-10 rounded-full border-2 border-gray-400 shadow-sm transition-all ${bgClass} ${opacity} ${ring}"></div>`;
-      });
-      grid.innerHTML = html;
-    }
-
-    async function selectColor(colorClass) {
-      closeColorPicker();
-      if (pendingColorGroupTarget === 'NEW') {
-        newProjectSelectedColor = colorClass;
-        const bgMatch = colorClass.match(/bg-[a-z]+-[0-9]+/);
-        document.getElementById('newGroupColorBtn').className = `w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105 ${bgMatch ? bgMatch[0] : 'bg-gray-200'}`;
-      } else {
-        showToast("Updating color...", false);
-        try {
-          const res = await callBackend('addProjectGroup', { groupName: pendingColorGroupTarget, callerNric: currentUser.nric, colorClass: colorClass });
-          appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors;
-          renderGroupList(res.groups); renderHeaderLegend(); showToast("Color Updated!");
-        } catch(e) { showToast(e.message, true); }
-      }
-    }
-
-    async function addProjectGroup(btn) {
-      const name = document.getElementById('newGroupName').value.trim(); if(!name) return showToast("Project name is required", true); setBtnLoading(btn, true);
-      try { 
-        if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor();
-        const res = await callBackend('addProjectGroup', { groupName: name, callerNric: currentUser.nric, colorClass: newProjectSelectedColor }); 
-        document.getElementById('newGroupName').value = ''; newProjectSelectedColor = null; document.getElementById('newGroupColorBtn').className = "w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105 bg-white";
-        appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors;
-        renderGroupList(res.groups); renderHeaderLegend(); showToast("Project Added"); 
-      } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-    
-    async function removeProjectGroup(name, btn) {
-      setBtnLoading(btn, true);
-      try { const res = await callBackend('removeProjectGroup', { groupName: name, callerNric: currentUser.nric }); appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors; renderGroupList(res.groups); renderHeaderLegend(); showToast("Project Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-    function renderGroupList(list) {
-      const ul = document.getElementById('groupList'); if(!ul) return;
-      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No projects defined yet.</li>' : '';
-      if(list) list.forEach(g => { 
-        const safeGroup = g.replace(/'/g, "\\'"); const dynColor = getProjectColor(g); 
-        ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm"><div class="flex items-center space-x-3"><button onclick="openColorPicker('${safeGroup}')" class="w-8 h-8 rounded-full border-2 cursor-pointer shadow-sm ${dynColor}" title="Change Color"></button><span class="font-extrabold text-lg">${g}</span></div><button onclick="removeProjectGroup('${safeGroup}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 dark:hover:bg-gray-700 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
-    }
-
-    async function addJuncture(btn) {
-      const name = document.getElementById('newJunctureName').value.trim(); if(!name) return showToast("Juncture name is required", true); setBtnLoading(btn, true);
-      try { const res = await callBackend('modifyJunctures', { actionType: 'add', newName: name }); document.getElementById('newJunctureName').value = ''; appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-    async function removeJuncture(name, btn) {
-      setBtnLoading(btn, true);
-      try { const res = await callBackend('modifyJunctures', { actionType: 'remove', oldName: name }); appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-    async function editJuncture(oldName) {
-      const newName = prompt(`Edit Juncture Name:`, oldName); if(!newName || newName.trim() === '' || newName.trim() === oldName) return;
-      try { const res = await callBackend('modifyJunctures', { actionType: 'edit', oldName: oldName, newName: newName.trim() }); appSettings.junctures = res.junctures; renderJunctureList(res.junctures); showToast("Juncture Updated"); } catch(e) { showToast(e.message, true); }
-    }
-    function renderJunctureList(list) {
-      const ul = document.getElementById('junctureList'); if(!ul) return;
-      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No junctures defined yet.</li>' : '';
-      if(list) list.forEach(j => { const safeName = j.replace(/'/g, "\\'"); ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm"><span class="font-extrabold text-lg">${j}</span><div class="flex space-x-2"><button onclick="editJuncture('${safeName}')" class="text-blue-600 text-sm font-extrabold px-3 py-2 border-2 border-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg">Edit</button><button onclick="removeJuncture('${safeName}', this)" class="text-red-600 text-sm font-extrabold px-3 py-2 border-2 border-red-600 hover:bg-red-50 dark:hover:bg-gray-700 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></div></li>`; });
-      const attSel = document.getElementById('attendanceJunctureSelect'); if(attSel) { attSel.innerHTML = ''; if(list) list.forEach(j => attSel.innerHTML += `<option value="${j}">${j}</option>`); }
-    }
-
-    async function addCommittee(btn) {
-      const name = document.getElementById('newCommName').value.trim(); const nric = document.getElementById('newCommNric').value.trim(); const phone = document.getElementById('newCommPhone').value.trim();
-      if(!nric || !name || !phone) return showToast("Name, NRIC, and Phone required", true); setBtnLoading(btn, true);
-      try { const res = await callBackend('addCommittee', { nric, name, phone }); document.getElementById('newCommName').value = ''; document.getElementById('newCommNric').value = ''; document.getElementById('newCommPhone').value = ''; appSettings.committee = res.list; renderCommList(res.list); showToast("Added to Committee"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-    async function removeCommittee(nric, btn) { 
-      setBtnLoading(btn, true);
-      try { const res = await callBackend('removeCommittee', { nric }); appSettings.committee = res.list; renderCommList(res.list); showToast("Removed from Committee"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
-    }
-    function renderCommList(list) {
-      const ul = document.getElementById('commList'); if(!ul) return;
-      ul.innerHTML = (!list || list.length === 0) ? '<li class="text-sm font-bold text-gray-500">No committee members assigned yet.</li>' : '';
-      if(list) list.forEach(m => { ul.innerHTML += `<li class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm"><div><p class="font-extrabold text-lg">${m.name}</p><p class="text-sm text-gray-500 font-mono font-bold">${m.nric} | ${m.phone}</p></div><button onclick="removeCommittee('${m.nric}', this)" class="text-red-600 text-sm font-extrabold px-4 py-2 border-2 border-red-600 hover:bg-red-50 dark:hover:bg-gray-700 rounded-lg flex justify-center items-center"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-2"></div></button></li>`; });
-    }
-
-    async function archiveSystem(btn) {
-      if(!confirm("⚠️ ARE YOU SURE?\n\nThis archives the database and completely resets the system. All participants must re-register.")) return;
-      showToast("Archiving system...", false); setBtnLoading(btn, true);
-      try { await callBackend('archiveAndReset'); showToast("Reset successful!"); setTimeout(() => { window.location.reload(); }, 2000); } catch (e) { showToast(e.message, true); setBtnLoading(btn, false); }
-    }
-
-    function updateApp(btn) {
-      setBtnLoading(btn, true); showToast("Updating app data and clearing caches...");
-      if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } }); }
-      setTimeout(() => location.reload(true), 1000);
-    }
-  </script>
+  <!-- Script Loaders -->
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="ui.js"></script>
+  <script src="rolodex.js"></script>
+  <script src="registration.js"></script>
+  <script src="profile.js"></script>
+  <script src="logistics.js"></script>
+  <script src="attendance.js"></script>
+  <script src="settings.js"></script>
 </body>
 </html>
