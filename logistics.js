@@ -12,8 +12,8 @@ function buildLogisticsUI() {
      <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
        <div class="flex justify-between items-center mb-2">
          <h3 class="text-lg font-bold">Volunteer Pairings</h3>
-         <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs px-3 py-1.5 rounded-md font-bold transition flex items-center bg-green-100 text-green-800 border border-green-400 shadow-sm">
-           <span class="btn-text">Saved</span><div class="btn-spinner spinner-primary hidden-force ml-2 !w-3 !h-3"></div>
+         <button id="btnSyncPairings" onclick="manualSyncPairings(this)" class="text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2 shadow-sm bg-green-100 text-green-800 border-green-400 dark:bg-green-900 dark:text-green-300 dark:border-green-700">
+           <span class="btn-text">Saved</span><div class="btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"></div>
          </button>
        </div>
        <p class="text-xs text-gray-500 mb-4">Tap "+ Add Vol" to assign multiple volunteers per trainee.</p>
@@ -41,35 +41,22 @@ async function loadLogisticsData() {
 }
 
 function setSyncButtonState(state) {
- const btn = document.getElementById('btnSyncPairings');
- if (!btn) return;
- const span = btn.querySelector('.btn-text');
- const spinner = btn.querySelector('.btn-spinner');
- 
- btn.classList.remove('bg-green-100', 'text-green-800', 'border-green-400', 'bg-yellow-100', 'text-yellow-800', 'border-yellow-400', 'bg-red-100', 'text-red-800', 'border-red-400');
- 
- if (state === 'saving') {
-   span.textContent = 'Saving...';
-   spinner.classList.remove('hidden-force');
-   btn.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-400');
- } else if (state === 'saved') {
-   span.textContent = 'Saved';
-   spinner.classList.add('hidden-force');
-   btn.classList.add('bg-green-100', 'text-green-800', 'border-green-400');
- } else if (state === 'error') {
-   span.textContent = 'Error';
-   spinner.classList.add('hidden-force');
-   btn.classList.add('bg-red-100', 'text-red-800', 'border-red-400');
- }
+  const btn = document.getElementById('btnSyncPairings'); if(!btn) return;
+  const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
+  btn.className = "text-xs px-3 py-1.5 rounded font-extrabold transition flex items-center justify-center border-2 shadow-sm"; 
+  spinner.className = "btn-spinner ml-2 !w-3 !h-3 border-2 hidden-force"; 
+  if(state === 'saving') { btn.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-400', 'dark:bg-yellow-900', 'dark:text-yellow-300', 'dark:border-yellow-700'); textSpan.textContent = "Saving..."; spinner.classList.remove('hidden-force'); spinner.classList.add('spinner-yellow'); btn.disabled = true; } 
+  else if (state === 'saved') { btn.classList.add('bg-green-100', 'text-green-800', 'border-green-400', 'dark:bg-green-900', 'dark:text-green-300', 'dark:border-green-700'); textSpan.textContent = "Saved"; btn.disabled = false; } 
+  else if (state === 'error') { btn.classList.add('bg-red-100', 'text-red-800', 'border-red-400', 'dark:bg-red-900', 'dark:text-red-300', 'dark:border-red-700'); textSpan.textContent = "Save Failed"; btn.disabled = false; }
 }
 
 function triggerPairingSync() {
- setSyncButtonState('saving');
- if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
- pairingSyncTimeout = setTimeout(async () => {
-   try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); } 
-   catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); }
- }, 800); 
+  setSyncButtonState('saving');
+  if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
+  pairingSyncTimeout = setTimeout(async () => {
+    try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); } 
+    catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); }
+  }, 800); 
 }
 
 function renderPairings() {
@@ -148,9 +135,9 @@ function unpairTrainee(traineeNric, volNric) {
 }
 
 async function manualSyncPairings(btn) {
- setSyncButtonState('saving');
- try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); showToast("Manual save complete!"); } 
- catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
+  setSyncButtonState('saving');
+  try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); showToast("Manual save complete!"); } 
+  catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
 }
 
 function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
