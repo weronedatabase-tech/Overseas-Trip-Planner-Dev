@@ -40,6 +40,29 @@ async function loadLogisticsData() {
  try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); } catch(e) { showToast("Failed to load logistics.", true); } 
 }
 
+function setSyncButtonState(state) {
+ const btn = document.getElementById('btnSyncPairings');
+ if (!btn) return;
+ const span = btn.querySelector('.btn-text');
+ const spinner = btn.querySelector('.btn-spinner');
+ 
+ btn.classList.remove('bg-green-100', 'text-green-800', 'border-green-400', 'bg-yellow-100', 'text-yellow-800', 'border-yellow-400', 'bg-red-100', 'text-red-800', 'border-red-400');
+ 
+ if (state === 'saving') {
+   span.textContent = 'Saving...';
+   spinner.classList.remove('hidden-force');
+   btn.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-400');
+ } else if (state === 'saved') {
+   span.textContent = 'Saved';
+   spinner.classList.add('hidden-force');
+   btn.classList.add('bg-green-100', 'text-green-800', 'border-green-400');
+ } else if (state === 'error') {
+   span.textContent = 'Error';
+   spinner.classList.add('hidden-force');
+   btn.classList.add('bg-red-100', 'text-red-800', 'border-red-400');
+ }
+}
+
 function triggerPairingSync() {
  setSyncButtonState('saving');
  if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
