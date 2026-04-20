@@ -12,14 +12,14 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.3s, color 0.3s; }
     .dark body { background-color: #111827; color: #f9fafb; }
     
-    /* Enhanced Visibility for Forms in Light & Dark Mode */
+    /* Clean Inputs */
     input, select, textarea { transition: all 0.2s ease-in-out; }
-    input:focus, select:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); outline: none; }
-    .dark input, .dark select, .dark textarea { background-color: #374151; color: #f9fafb; border-color: #4b5563; }
-    .dark input:focus, .dark select:focus, .dark textarea:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4); outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); outline: none; }
+    .dark input, .dark select, .dark textarea { background-color: #1f2937; color: #f9fafb; border-color: #374151; }
+    .dark input:focus, .dark select:focus, .dark textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); outline: none; }
 
     .hidden-force { display: none !important; }
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #2563eb; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -27,7 +27,7 @@
     .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
     .picker-col::-webkit-scrollbar { display: none; }
     .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; transition: all 0.15s ease-in-out; cursor: pointer; user-select: none; }
-    .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 2px solid rgba(37, 99, 235, 0.6); border-bottom: 2px solid rgba(37, 99, 235, 0.6); pointer-events: none; z-index: 10; }
+    .picker-highlight { position: absolute; top: 80px; height: 40px; width: 100%; background: rgba(37, 99, 235, 0.08); border-top: 1px solid rgba(37, 99, 235, 0.4); border-bottom: 1px solid rgba(37, 99, 235, 0.4); pointer-events: none; z-index: 10; }
     
     .btn-spinner { width: 18px; height: 18px; border: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
     .spinner-white { border-color: rgba(255,255,255,0.3); border-top-color: #ffffff; }
@@ -39,131 +39,127 @@
     .animate-slide-up { animation: slide-up 0.25s ease-out forwards; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-screen flex flex-col">
 
-  <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force tracking-widest">DEV MODE</div>
+  <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-sm font-bold hidden-force tracking-widest uppercase">Dev Mode</div>
 
-  <!-- Header -->
-  <header class="bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-300 dark:border-gray-700 px-4 py-3 z-20 sticky top-0 transition-colors duration-300">
-    <div class="flex items-center justify-between w-full gap-4">
-      
-      <!-- Left Part: Titles & Controls -->
-      <div class="flex items-center gap-3 md:gap-5 min-w-0">
-        <!-- Titles -->
-        <div class="cursor-pointer flex flex-col justify-center min-w-0" onclick="goHome()">
-          <div class="font-extrabold text-xl md:text-2xl text-primary leading-tight truncate">MYG Overseas Trip</div>
-          <div id="headerTripName" class="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 hidden-force truncate mt-0.5"></div>
-        </div>
-        
-        <!-- Divider -->
-        <div class="w-px h-8 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
-        
-        <!-- Controls -->
-        <div class="flex items-center space-x-1 shrink-0">
-          <!-- Update Icon -->
-          <button onclick="updateApp(this)" class="relative p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-all duration-300 group focus:outline-none focus:ring-2 focus:ring-primary" aria-label="Update App" title="Update App">
-            <svg class="w-5 h-5 md:w-6 md:h-6 transition-transform duration-500 group-active:rotate-180 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            <div class="btn-spinner spinner-primary dark:spinner-white hidden-force !w-5 !h-5 border-2 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
-          </button>
-          <!-- Theme Toggle -->
-          <button onclick="toggleTheme()" class="p-2 text-xl md:text-2xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary" aria-label="Toggle Dark Mode" title="Toggle Light/Dark Theme">🌗</button>
-        </div>
+  <!-- Flattened Header -->
+  <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 z-20 sticky top-0 flex items-center justify-between gap-3 transition-colors duration-300">
+    <div class="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+      <div class="cursor-pointer flex flex-col justify-center min-w-0 shrink" onclick="goHome()">
+        <h1 class="font-bold text-lg md:text-xl text-primary leading-tight truncate">MYG Overseas Trip</h1>
+        <span id="headerTripName" class="text-[11px] md:text-xs font-semibold text-gray-500 dark:text-gray-400 hidden-force truncate mt-0.5"></span>
       </div>
       
-      <!-- Right Part: Project Legend -->
-      <div id="headerLegend" class="flex flex-wrap gap-1.5 md:gap-2 items-center justify-end shrink-0 max-w-[45%]"></div>
+      <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block shrink-0 mx-1"></div>
+      
+      <div class="flex items-center gap-1 shrink-0">
+        <button onclick="updateApp(this)" class="relative p-1.5 md:p-2 text-gray-500 dark:text-gray-400 hover:text-primary bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-all focus:outline-none" aria-label="Update App" title="Update App">
+          <svg class="w-4 h-4 md:w-5 md:h-5 transition-transform duration-500 active:rotate-180 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <div class="btn-spinner spinner-primary dark:spinner-white hidden-force !w-4 !h-4 border-2 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+        </button>
+        <button onclick="toggleTheme()" class="p-1.5 md:p-2 text-lg md:text-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-all hover:scale-110 focus:outline-none" aria-label="Toggle Dark Mode" title="Toggle Theme">🌗</button>
+      </div>
     </div>
+    
+    <!-- Legend -->
+    <div id="headerLegend" class="flex flex-wrap gap-1 justify-end shrink-0 max-w-[45%]"></div>
   </header>
 
   <main class="flex-grow overflow-y-auto p-4 relative" id="mainContent">
-    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded shadow-xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-bold border-2 border-gray-900 dark:border-gray-200 z-[100]"></div>
+    <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-bold border border-gray-700 dark:border-gray-200 z-[100]"></div>
     <div id="viewLoading" class="flex justify-center items-center h-full"><div class="loader w-10 h-10"></div></div>
 
     <!-- View: Landing -->
     <div id="viewLanding" class="hidden-force max-w-md mx-auto mt-10 space-y-6">
       <div class="text-center">
-        <h1 class="text-3xl font-extrabold mb-2">MYG Overseas Trip Planner</h1>
+        <h1 class="text-3xl font-extrabold mb-2">Trip Planner</h1>
         <p class="text-gray-600 dark:text-gray-400 font-medium">Welcome! Please select an option below.</p>
       </div>
-      <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-700 border-t-green-500 hidden-force">
-        <h3 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Join the Trip</h3>
-        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded font-extrabold text-lg hover:bg-green-700 shadow-md transition mt-4">Register Now</button>
+      <div id="landingRegBox" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center border-t-4 border-t-green-500 hidden-force">
+        <h3 class="text-xl font-bold mb-1 text-gray-900 dark:text-white">Join the Trip</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Registration is currently open.</p>
+        <button onclick="navTo('register')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-green-700 shadow-sm transition">Register Now</button>
       </div>
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center border-2 border-t-8 border-gray-300 dark:border-gray-700 border-t-primary">
-        <h3 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Participant Portal</h3>
-        <button onclick="navTo('login')" class="w-full bg-primary text-white py-3 rounded font-extrabold text-lg hover:bg-blue-700 shadow-md transition mt-4">Log In</button>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center border-t-4 border-t-primary">
+        <h3 class="text-xl font-bold mb-1 text-gray-900 dark:text-white">Participant Portal</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Already registered? Log in to view details.</p>
+        <button onclick="navTo('login')" class="w-full bg-primary text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 shadow-sm transition">Log In</button>
       </div>
     </div>
 
-    <!-- View: Registration (Injected via JS) -->
-    <div id="viewRegister" class="hidden-force max-w-4xl mx-auto mt-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-700 space-y-4 pb-20">
-      <div class="flex justify-between items-center border-b-2 border-gray-300 dark:border-gray-700 pb-3 mb-4">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">New Registration</h3>
-        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
+    <!-- View: Registration (Removed outer box framing) -->
+    <div id="viewRegister" class="hidden-force max-w-4xl mx-auto mt-4 space-y-4 pb-20">
+      <div class="flex justify-between items-center pb-2 border-b border-gray-300 dark:border-gray-700">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">New Registration</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Register your group at once. Person 1 is the Main POC.</p>
+        </div>
+        <button onclick="goHome()" class="text-sm font-bold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
       </div>
       <form id="regForm" onsubmit="event.preventDefault(); submitRegistration(this.querySelector('button[type=submit]'));" class="space-y-6">
-        <div id="membersContainer" class="space-y-8"></div>
-        <button type="button" onclick="addRegMember()" class="w-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-extrabold py-4 rounded-lg border-4 border-gray-400 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700 border-dashed transition">+ Add Another Family / Group Member</button>
-        <div class="pt-6 border-t-2 border-gray-300 dark:border-gray-700">
-          <button type="submit" class="w-full bg-green-600 text-white font-extrabold text-lg py-4 rounded-lg hover:bg-green-700 flex justify-center items-center shadow-lg border-2 border-green-800 transition">
-            <span class="btn-text">Submit</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
+        <div id="membersContainer" class="space-y-6"></div>
+        <button type="button" onclick="addRegMember()" class="w-full bg-transparent text-primary dark:text-blue-400 font-bold py-4 rounded-xl border-2 border-primary dark:border-blue-400 border-dashed hover:bg-blue-50 dark:hover:bg-gray-800 transition">+ Add Another Family / Group Member</button>
+        <div class="pt-6">
+          <button type="submit" class="w-full bg-green-600 text-white font-bold text-lg py-4 rounded-xl hover:bg-green-700 flex justify-center items-center shadow-md transition">
+            <span class="btn-text">Submit Registration</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
           </button>
         </div>
       </form>
     </div>
 
     <!-- View: Login -->
-    <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-300 dark:border-gray-700">
-      <div class="flex justify-between items-center mb-6 border-b-2 border-gray-300 dark:border-gray-700 pb-2">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Secure Login</h2>
-        <button onclick="goHome()" class="text-sm font-extrabold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg border-2 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">Cancel</button>
+    <div id="viewLogin" class="hidden-force max-w-sm mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-2">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Secure Login</h2>
+        <button onclick="goHome()" class="text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 transition">Cancel</button>
       </div>
       <div id="loginError" class="text-red-500 text-sm mb-3 font-bold hidden-force"></div>
-      <div class="mb-5">
-        <label class="block text-sm font-bold mb-1 text-gray-900 dark:text-gray-200">Full NRIC / FIN</label>
-        <input type="text" id="loginNric" class="w-full p-3 border-2 rounded-lg uppercase font-medium" placeholder="S1234567A" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
+      <div class="mb-4">
+        <label class="block text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Full NRIC / FIN</label>
+        <input type="text" id="loginNric" class="w-full p-2.5 border rounded-lg uppercase font-medium bg-gray-50" placeholder="S1234567A" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
       </div>
       <div class="mb-8 relative">
-        <label class="block text-sm font-bold mb-1 text-gray-900 dark:text-gray-200">Password</label>
-        <input type="password" id="loginPass" class="w-full p-3 border-2 rounded-lg pr-12 font-medium" placeholder="••••••••" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
-        <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-9 text-gray-500 hover:text-primary transition focus:outline-none">
-          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-          <svg id="eyeClosed" class="hidden-force" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+        <label class="block text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Password</label>
+        <input type="password" id="loginPass" class="w-full p-2.5 border rounded-lg pr-12 font-medium bg-gray-50" placeholder="••••••••" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">
+        <button type="button" onclick="togglePassword('loginPass')" class="absolute right-3 top-8 text-gray-400 hover:text-primary transition focus:outline-none">
+          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          <svg id="eyeClosed" class="hidden-force" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
         </button>
       </div>
-      <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md border-2 border-blue-800">
+      <button id="loginSubmitBtn" onclick="attemptLogin(this)" class="w-full bg-primary text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition flex justify-center items-center shadow-md">
         <span class="btn-text">Login</span><div class="btn-spinner spinner-white hidden-force ml-2"></div>
       </button>
     </div>
 
     <!-- View: Dashboard Main Shell -->
-    <div id="viewDashboard" class="hidden-force max-w-4xl mx-auto space-y-6">
+    <div id="viewDashboard" class="hidden-force max-w-4xl mx-auto space-y-4">
       
-      <div class="bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow-sm border-2 border-l-8 border-gray-300 dark:border-gray-700 border-l-primary flex justify-between items-center mt-2">
+      <div class="bg-white dark:bg-gray-800 px-5 py-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center mt-2">
         <div>
-          <h3 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white" id="welcomeUserText">Welcome!</h3>
-          <p class="text-xs font-bold text-gray-500 dark:text-gray-400" id="userRoleBadge">Role: Participant</p>
+          <h3 class="text-lg font-bold leading-tight text-gray-900 dark:text-white" id="welcomeUserText">Welcome!</h3>
+          <p class="text-xs font-semibold text-primary dark:text-blue-400 mt-0.5" id="userRoleBadge">Role: Participant</p>
         </div>
-        <button onclick="logout(this)" class="text-red-600 dark:text-red-400 text-xs font-extrabold border-2 border-red-600 dark:border-red-500 px-3 py-1.5 rounded-md hover:bg-red-50 dark:hover:bg-gray-700 transition flex items-center justify-center shadow-sm">
-          <span class="btn-text">Logout</span><div class="btn-spinner spinner-red hidden-force ml-2 !w-3 !h-3 border-2"></div>
+        <button onclick="logout(this)" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-bold bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg transition flex items-center justify-center">
+          <span class="btn-text">Logout</span><div class="btn-spinner hidden-force ml-2 !w-3 !h-3"></div>
         </button>
       </div>
 
       <!-- Segmented Pill Tabs -->
-      <div class="flex space-x-2 overflow-x-auto pb-0 border-b-4 border-gray-300 dark:border-gray-700 scrollbar-hide mt-4" id="navTabs">
-        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors">My Profile</button>
-        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Pairing & Grouping</button>
-        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Attendance</button>
-        <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Finance</button>
-        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn px-5 py-3 font-bold border-b-4 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 whitespace-nowrap mb-[-4px] rounded-t-lg transition-colors hidden-force admin-only">Settings</button>
+      <div class="flex space-x-1 overflow-x-auto p-1 bg-gray-200 dark:bg-gray-800 rounded-lg scrollbar-hide border border-gray-300 dark:border-gray-700" id="navTabs">
+        <button id="tabBtn-profile" onclick="switchTab('profile')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-bold rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">My Profile</button>
+        <button id="tabBtn-logistics" onclick="switchTab('logistics')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-bold rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors hidden-force admin-only">Pairing & Grouping</button>
+        <button id="tabBtn-attendance" onclick="switchTab('attendance')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-bold rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors hidden-force admin-only">Attendance</button>
+        <button id="tabBtn-finance" onclick="switchTab('finance')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-bold rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors hidden-force admin-only">Finance</button>
+        <button id="tabBtn-settings" onclick="switchTab('settings')" class="tab-btn flex-1 min-w-[100px] py-2 text-sm font-bold rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors hidden-force admin-only">Settings</button>
       </div>
 
-      <!-- Content injections target these containers -->
-      <div id="tab-profile" class="tab-content"></div>
-      <div id="tab-logistics" class="tab-content hidden-force"></div>
-      <div id="tab-attendance" class="tab-content hidden-force"></div>
-      <div id="tab-finance" class="tab-content hidden-force"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400 font-bold mt-4">Finance Module Coming Soon...</div></div>
-      <div id="tab-settings" class="tab-content hidden-force space-y-6 mt-4"></div>
+      <!-- Content injections target these containers (removed outer framing) -->
+      <div id="tab-profile" class="tab-content hidden-force mt-2 space-y-4"></div>
+      <div id="tab-logistics" class="tab-content hidden-force mt-2 space-y-4"></div>
+      <div id="tab-attendance" class="tab-content hidden-force mt-2 space-y-4"></div>
+      <div id="tab-finance" class="tab-content hidden-force mt-2"><div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400 font-bold">Finance Module Coming Soon</div></div>
+      <div id="tab-settings" class="tab-content hidden-force mt-2 space-y-4"></div>
     </div>
   </main>
 
