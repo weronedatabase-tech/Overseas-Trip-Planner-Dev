@@ -39,7 +39,7 @@ function renderHeaderLegend() {
  appSettings.activeProjects.forEach(proj => {
    if(!proj) return;
    const colorCls = getProjectColor(proj); const shortName = getProjectAbbreviation(proj);
-   html += `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold border-2 cursor-help ${colorCls}" title="${proj}">${shortName}</span>`;
+   html += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold border cursor-help ${colorCls}" title="${proj}">${shortName}</span>`;
  });
  container.innerHTML = html;
 }
@@ -65,7 +65,7 @@ function setBtnLoading(btn, isLoading) {
 
 function showToast(msg, isError = false) {
   const t = document.getElementById('toast'); t.textContent = msg;
-  t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-xl z-50 transition-opacity duration-300 text-sm font-bold border-2 ${isError ? 'bg-red-600 text-white border-red-800' : 'bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-900 dark:border-gray-200'}`;
+  t.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-xl z-50 transition-opacity duration-300 text-sm font-bold border ${isError ? 'bg-red-600 text-white border-red-700' : 'bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-700 dark:border-gray-200'}`;
   t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 4000);
 }
 
@@ -80,10 +80,10 @@ function navTo(view) {
 
 function switchTab(tabId) {
  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-force'));
- document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); el.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400', 'font-bold'); });
+ document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm', 'text-gray-900', 'dark:text-white'); el.classList.add('text-gray-500', 'dark:text-gray-400'); });
  document.getElementById(`tab-${tabId}`).classList.remove('hidden-force');
  const activeBtn = document.getElementById(`tabBtn-${tabId}`);
- if(activeBtn) { activeBtn.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400', 'font-bold'); activeBtn.classList.add('border-primary', 'text-primary', 'bg-blue-50', 'dark:bg-gray-700', 'font-extrabold'); }
+ if(activeBtn) { activeBtn.classList.remove('text-gray-500', 'dark:text-gray-400'); activeBtn.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm', 'text-gray-900', 'dark:text-white'); }
  if(tabId === 'profile') loadProfileData();
  if(tabId === 'logistics') { buildLogisticsUI(); switchLogisticsSubTab('pairings'); renderPairings(); }
  if(tabId === 'attendance') { buildAttendanceUI(); renderAttendanceChecklist(); }
@@ -93,43 +93,43 @@ function switchTab(tabId) {
 function injectGlobalModals() {
  document.getElementById('modalContainer').innerHTML = `
    <div id="tripSetupModal" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
-     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-primary">
-       <h3 class="text-2xl font-extrabold mb-2 text-gray-900 dark:text-white border-b-2 border-gray-300 dark:border-gray-700 pb-2">Initialize Trip Setup</h3>
-       <div class="space-y-5 mb-6 mt-4">
-         <div><label class="block text-sm font-extrabold mb-1 text-gray-900 dark:text-gray-200">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-3 border-2 rounded-lg font-bold"></div>
-         <div><label class="block text-sm font-extrabold mb-1 text-gray-900 dark:text-gray-200">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-3 border-2 rounded-lg font-bold"></div>
+     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
+       <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Initialize Trip Setup</h3>
+       <div class="space-y-4 mb-6 mt-4">
+         <div><label class="block text-xs font-bold mb-1 text-gray-600 dark:text-gray-300">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-2.5 border rounded-lg font-medium bg-gray-50"></div>
+         <div><label class="block text-xs font-bold mb-1 text-gray-600 dark:text-gray-300">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-2.5 border rounded-lg font-medium bg-gray-50"></div>
        </div>
        <div class="flex space-x-3">
-         <button onclick="cancelTripSetup()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-extrabold border-2 border-gray-400 dark:border-gray-500">Cancel</button>
-         <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-3 rounded-lg font-extrabold border-2 border-blue-800 flex justify-center items-center"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
+         <button onclick="cancelTripSetup()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Cancel</button>
+         <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold shadow-sm flex justify-center items-center hover:bg-blue-600 transition"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
        </div>
      </div>
    </div>
 
    <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end">
-     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-700 h-[70vh] flex flex-col">
-       <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-         <span id="sheetTitle" class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 text-3xl font-extrabold px-3 focus:outline-none">&times;</button>
+     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t border-gray-200 dark:border-gray-700 h-[70vh] flex flex-col">
+       <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+         <span id="sheetTitle" class="font-bold text-lg text-gray-800 dark:text-gray-100">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none">&times;</button>
        </div>
-       <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100 dark:bg-gray-800" id="sheetListContainer"></div>
+       <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100 dark:bg-gray-900" id="sheetListContainer"></div>
      </div>
    </div>
 
    <div id="colorPickerModal" class="fixed inset-0 bg-black/60 z-[96] hidden-force flex justify-center items-center p-4 backdrop-blur-sm">
-     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border-4 border-gray-400 dark:border-gray-700">
-       <div class="flex justify-between items-center mb-4 border-b-2 border-gray-300 dark:border-gray-700 pb-2">
-         <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">Select Color</h3>
-         <button type="button" onclick="closeColorPicker()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 text-2xl font-extrabold px-2 focus:outline-none">&times;</button>
+     <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
+       <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+         <h3 class="text-lg font-bold text-gray-900 dark:text-white">Select Color</h3>
+         <button type="button" onclick="closeColorPicker()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none">&times;</button>
        </div>
-       <div class="grid grid-cols-6 gap-3 mb-6" id="colorPaletteGrid"></div>
+       <div class="grid grid-cols-6 gap-3 mb-2" id="colorPaletteGrid"></div>
      </div>
    </div>
 
    <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end">
-     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t-4 border-x-4 border-gray-400 dark:border-gray-700">
-       <div class="flex justify-between items-center p-5 border-b-2 border-gray-300 dark:border-gray-700"><span class="font-extrabold text-xl text-gray-800 dark:text-gray-100">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 text-3xl font-extrabold px-3 focus:outline-none">&times;</button></div>
-       <div class="relative flex h-[200px] text-xl font-bold"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
-       <div class="p-5 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-300 dark:border-gray-700"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-4 rounded-xl font-extrabold text-xl border-2 border-blue-800 shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-300">Done</button></div>
+     <div class="bg-white dark:bg-gray-800 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t border-gray-200 dark:border-gray-700">
+       <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700"><span class="font-bold text-lg text-gray-800 dark:text-gray-100">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none">&times;</button></div>
+       <div class="relative flex h-[200px] text-lg font-bold"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
+       <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-3 rounded-lg font-bold text-lg shadow-sm focus:outline-none hover:bg-blue-600 transition">Done</button></div>
      </div>
    </div>`;
 }
@@ -162,11 +162,11 @@ function renderColorPickerGrid() {
     else { isCurrent = (colorCls === appSettings.projectColors[pendingColorGroupTarget]); if(isCurrent) isUsed = false; }
     
     const opacity = isUsed ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer hover:scale-110';
-    const ring = isCurrent ? 'ring-4 ring-primary ring-offset-2 dark:ring-offset-gray-800' : '';
+    const ring = isCurrent ? 'ring-2 ring-primary ring-offset-2 dark:ring-offset-gray-800' : '';
     const onclick = isUsed ? '' : `onclick="selectColor('${colorCls}')"`;
     const bgMatch = colorCls.match(/bg-[a-z]+-[0-9]+/); const bgClass = bgMatch ? bgMatch[0] : 'bg-gray-200';
     
-    html += `<div ${onclick} class="w-10 h-10 rounded-full border-2 border-gray-400 shadow-sm transition-all ${bgClass} ${opacity} ${ring}"></div>`;
+    html += `<div ${onclick} class="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm transition-all ${bgClass} ${opacity} ${ring}"></div>`;
   });
   grid.innerHTML = html;
 }
@@ -176,7 +176,7 @@ async function selectColor(colorClass) {
   if (pendingColorGroupTarget === 'NEW') {
     newProjectSelectedColor = colorClass;
     const bgMatch = colorClass.match(/bg-[a-z]+-[0-9]+/);
-    document.getElementById('newGroupColorBtn').className = `w-12 h-12 rounded-full border-4 border-gray-400 shadow-md transition hover:scale-105 ${bgMatch ? bgMatch[0] : 'bg-gray-200'}`;
+    document.getElementById('newGroupColorBtn').className = `w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm transition hover:scale-105 ${bgMatch ? bgMatch[0] : 'bg-gray-200'}`;
   } else {
     showToast("Updating color...", false);
     try {
