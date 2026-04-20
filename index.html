@@ -56,7 +56,8 @@
       <div class="flex items-center gap-1 shrink-0">
         <button onclick="updateApp(this)" class="relative p-1.5 md:p-2 text-gray-500 dark:text-gray-400 hover:text-primary bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-all focus:outline-none" aria-label="Update App" title="Update App">
           <svg class="w-4 h-4 md:w-5 md:h-5 transition-transform duration-500 active:rotate-180 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-          <div class="btn-spinner spinner-primary dark:spinner-white hidden-force !w-4 !h-4 border-2 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+          <!-- Using absolute inset-0 m-auto centers it without using 'transform', fixing the CSS spin bug -->
+          <div class="btn-spinner spinner-primary dark:spinner-white hidden-force !w-4 !h-4 md:!w-5 md:!h-5 border-2 absolute inset-0 m-auto"></div>
         </button>
         <button onclick="toggleTheme()" class="p-1.5 md:p-2 text-lg md:text-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-all hover:scale-110 focus:outline-none" aria-label="Toggle Dark Mode" title="Toggle Theme">🌗</button>
       </div>
