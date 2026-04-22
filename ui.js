@@ -39,7 +39,7 @@ function renderHeaderLegend() {
  appSettings.activeProjects.forEach(proj => {
    if(!proj) return;
    const colorCls = getProjectColor(proj); const shortName = getProjectAbbreviation(proj);
-   html += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold border cursor-help ${colorCls}" title="${proj}">${shortName}</span>`;
+   html += `<span class="px-1.5 py-0.5 rounded text-[9px] md:text-[10px] font-bold border cursor-help ${colorCls}" title="${proj}">${shortName}</span>`;
  });
  container.innerHTML = html;
 }
@@ -134,7 +134,6 @@ function injectGlobalModals() {
    </div>`;
 }
 
-// Color Picker Helpers
 function getUnusedColor() {
   const used = Object.values(appSettings.projectColors || {});
   const unused = projectColorPalette.filter(c => !used.includes(c));
