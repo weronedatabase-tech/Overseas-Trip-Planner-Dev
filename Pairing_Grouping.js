@@ -27,27 +27,30 @@ function buildLogisticsUI() {
 
    <!-- Alternative Drag & Drop Pairing UI -->
    <div id="log-pairings-alt" class="hidden-force space-y-4 pt-2">
-     <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+     <div class="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
        <div class="flex justify-between items-center mb-2">
-         <h3 class="text-lg font-bold text-gray-900 dark:text-white">Drag & Drop Pairings</h3>
+         <h3 class="text-base md:text-lg font-bold text-gray-900 dark:text-white">Drag & Drop Pairings</h3>
          <button onclick="manualSyncPairings(this)" class="btn-sync-pairings text-xs px-3 py-1.5 rounded font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none">
            <span class="btn-text">Saved</span><div class="btn-spinner ml-2 !w-3 !h-3 hidden-force"></div>
          </button>
        </div>
-       <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Drag available volunteers and drop them onto a trainee's card.</p>
+       <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Drag available volunteers from the left and drop them onto a trainee's card on the right.</p>
        
-       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         <!-- Volunteer Pool -->
-         <div class="lg:col-span-1 bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-[65vh]">
-           <h4 class="font-bold text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 mb-3 shrink-0">Available Volunteers</h4>
+       <!-- Side-by-Side Flex Container -->
+       <div class="flex flex-row gap-2 md:gap-4 h-[65vh]">
+         
+         <!-- Volunteer Pool (Left Side: 1/3 width) -->
+         <div class="w-1/3 lg:w-1/4 bg-gray-50 dark:bg-gray-900 p-2 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full min-w-0">
+           <h4 class="font-bold text-[11px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 mb-2 shrink-0 truncate">Volunteers</h4>
            <div id="dnd-volunteer-pool" class="space-y-2 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
          </div>
          
-         <!-- Trainee Drop Zones -->
-         <div class="lg:col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-[65vh]">
-           <h4 class="font-bold text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 mb-3 shrink-0">Trainees</h4>
-           <div id="dnd-trainee-list" class="space-y-3 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
+         <!-- Trainee Drop Zones (Right Side: 2/3 width) -->
+         <div class="w-2/3 lg:w-3/4 bg-gray-50 dark:bg-gray-900 p-2 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full min-w-0">
+           <h4 class="font-bold text-[11px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 mb-2 shrink-0 truncate">Trainees</h4>
+           <div id="dnd-trainee-list" class="space-y-2 md:space-y-3 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
          </div>
+         
        </div>
      </div>
    </div>
@@ -150,14 +153,14 @@ function renderPairingsAlt() {
   vols.forEach(v => {
     const vDynColor = getProjectColor(v.group);
     const assignmentCount = pairings.filter(p => p.volNric === v.nric).length;
-    const badgeHtml = assignmentCount > 0 ? `<span class="text-[10px] font-bold text-white bg-green-500 px-1.5 py-0.5 rounded-full ml-2">${assignmentCount}</span>` : '';
+    const badgeHtml = assignmentCount > 0 ? `<span class="text-[9px] md:text-[10px] font-bold text-white bg-green-500 px-1.5 py-0.5 rounded-full ml-1 md:ml-2">${assignmentCount}</span>` : '';
     
     volHtml += `
-      <div draggable="true" ondragstart="dndDragStart(event, '${v.nric}')" class="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none">
-        <span class="font-bold text-sm px-2 py-0.5 rounded border ${vDynColor} pointer-events-none">${v.name}</span>
-        <div class="pointer-events-none flex items-center">
+      <div draggable="true" ondragstart="dndDragStart(event, '${v.nric}')" class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none overflow-hidden gap-1">
+        <span class="font-bold text-[10px] md:text-sm px-1.5 md:px-2 py-0.5 rounded border ${vDynColor} pointer-events-none truncate max-w-full">${v.name}</span>
+        <div class="pointer-events-none flex items-center shrink-0">
           ${badgeHtml}
-          <span class="text-gray-300 dark:text-gray-600 ml-2">⋮⋮</span>
+          <span class="text-gray-300 dark:text-gray-600 ml-1 hidden sm:inline-block">⋮⋮</span>
         </div>
       </div>
     `;
@@ -174,17 +177,17 @@ function renderPairingsAlt() {
     tPairings.forEach(pair => {
        const vol = vols.find(v => v.nric === pair.volNric);
        const vDynColor = vol ? getProjectColor(vol.group) : '';
-       pairedVolsHtml += `<span class="bg-gray-100 dark:bg-gray-900 text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded-md font-medium flex items-center shadow-sm text-gray-800 dark:text-gray-200 z-10 relative">
-           <span class="${vDynColor} px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600">${vol ? vol.name : 'Unknown'}</span>
-           <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-1.5 text-gray-400 hover:text-red-500 font-bold focus:outline-none text-base leading-none">&times;</button>
+       pairedVolsHtml += `<span class="bg-gray-100 dark:bg-gray-900 text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 border border-gray-200 dark:border-gray-600 rounded font-medium flex items-center shadow-sm text-gray-800 dark:text-gray-200 z-10 relative">
+           <span class="${vDynColor} px-1 md:px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600 truncate max-w-[80px] sm:max-w-[120px]">${vol ? vol.name : 'Unknown'}</span>
+           <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-1 text-gray-400 hover:text-red-500 font-bold focus:outline-none text-sm md:text-base leading-none">&times;</button>
        </span>`;
     });
 
     traineeHtml += `
-      <div ondragover="dndDragOver(event)" ondragenter="dndDragEnter(event)" ondragleave="dndDragLeave(event)" ondrop="dndDrop(event, '${t.nric}')" class="bg-white dark:bg-gray-800 p-4 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 relative min-h-[80px]">
-        <div class="flex items-center mb-2 pointer-events-none"><span class="font-bold text-sm px-2 py-0.5 rounded border border-solid ${tDynColor}">${t.name}</span></div>
-        <div class="flex flex-wrap gap-2 min-h-[26px]">
-          ${pairedVolsHtml || '<span class="text-xs font-medium text-gray-400 dark:text-gray-500 pointer-events-none self-center">Drop volunteer here</span>'}
+      <div ondragover="dndDragOver(event)" ondragenter="dndDragEnter(event)" ondragleave="dndDragLeave(event)" ondrop="dndDrop(event, '${t.nric}')" class="bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 relative min-h-[70px] flex flex-col">
+        <div class="flex items-center mb-1.5 pointer-events-none shrink-0"><span class="font-bold text-[11px] md:text-sm px-1.5 md:px-2 py-0.5 rounded border border-solid ${tDynColor} truncate max-w-full">${t.name}</span></div>
+        <div class="flex flex-wrap gap-1.5 flex-grow items-start content-start">
+          ${pairedVolsHtml || '<span class="text-[10px] md:text-xs font-medium text-gray-400 dark:text-gray-500 pointer-events-none mt-1">Drop vol here</span>'}
         </div>
       </div>
     `;
