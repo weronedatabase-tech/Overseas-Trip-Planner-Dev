@@ -6,7 +6,7 @@ const URLS = {
 const API_URL = DEV_MODE ? URLS.DEV : URLS.PROD;
 
 let currentUser = null; 
-let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[], projectColors:{}, activeProjects:[], junctures:[], tripTitle:'', tripYear:'' };
+let appSettings = { registrationOpen: false, allowEdits: false, committee:[], projectGroups:[], projectColors:{}, activeProjects:[], junctures:[], sortingRules:[], tripTitle:'', tripYear:'' };
 
 let globalLogistics = null; 
 let currentPairingTarget = null; 
@@ -21,7 +21,7 @@ window.onload = async () => {
  const savedSession = localStorage.getItem('userSession');
  if(savedSession) currentUser = JSON.parse(savedSession);
  
- injectGlobalModals(); // From ui.js
+ injectGlobalModals(); 
  await fetchConfig();
  if(currentUser) renderDashboard(); else goHome();
 };
@@ -59,4 +59,39 @@ function updateApp(btn) {
  setBtnLoading(btn, true); showToast("Updating app data and clearing caches...");
  if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.unregister(); }); }
  setTimeout(() => location.reload(true), 1000);
+}
+
+// Global Sorting Logic (Applies to all lists across the App)
+function applyGlobalSorting(participants) {
+  const rules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
+  const familyCounts = {};
+  participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
+
+  return participants.sort((a, b) => {
+      for (let rule of rules) {
+          if (rule === 'none') continue;
+          if (rule === 'project') {
+              const aG = a.group || 'ZZZ';
+              const bG = b.group || 'ZZZ';
+              const cmp = aG.localeCompare(bG);
+              if (cmp !== 0) return cmp;
+          }
+          if (rule === 'family') {
+              const aFam = familyCounts[a.poc] > 1 ? 1 : 0;
+              const bFam = familyCounts[b.poc] > 1 ? 1 : 0;
+              if (aFam !== bFam) return bFam - aFam; // 1 before 0
+          }
+          if (rule === 'role') {
+              const rW = { 'CAREGIVER': 1, 'TRAINEE': 2, 'VOLUNTEER': 3 };
+              const aR = rW[a.role] || 9;
+              const bR = rW[b.role] || 9;
+              if (aR !== bR) return aR - bR;
+          }
+          if (rule === 'name') {
+              const cmp = (a.name || '').localeCompare(b.name || '');
+              if (cmp !== 0) return cmp;
+          }
+      }
+      return 0;
+  });
 }
