@@ -1,13 +1,21 @@
 let pairingSyncTimeout = null;
+let altSwapMode = false;
+
+// Global DND Variables for Alt View
+let dndEl = null;
+let dndClone = null;
+let isDragging = false;
+let dndStartX = 0;
+let dndStartY = 0;
 
 function buildLogisticsUI() {
  document.getElementById('tab-logistics').innerHTML = `
    <div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 scrollbar-hide pb-2">
-     <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-4 py-2 font-semibold border-b-2 border-primary text-primary whitespace-nowrap mb-[-9px] transition">1. Pairings</button>
-     <button onclick="switchLogisticsSubTab('pairings-alt')" id="subTab-pairings-alt" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition">1. Pairings (Alt)</button>
-     <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition">2. Rooms</button>
-     <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition">3. Groups</button>
-     <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition">4. Buses</button>
+     <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-4 py-2 font-semibold border-b-2 border-primary text-primary whitespace-nowrap mb-[-9px] transition focus:outline-none">1. Pairings</button>
+     <button onclick="switchLogisticsSubTab('pairings-alt')" id="subTab-pairings-alt" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition focus:outline-none">1. Pairings (Alt)</button>
+     <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition focus:outline-none">2. Rooms</button>
+     <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition focus:outline-none">3. Groups</button>
+     <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap mb-[-9px] transition focus:outline-none">4. Buses</button>
    </div>
    
    <!-- Standard Pairing UI -->
@@ -26,29 +34,35 @@ function buildLogisticsUI() {
    </div>
 
    <!-- Alternative Drag & Drop Pairing UI -->
-   <div id="log-pairings-alt" class="hidden-force space-y-4 pt-2">
-     <div class="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-       <div class="flex justify-between items-center mb-2">
-         <h3 class="text-base md:text-lg font-bold text-gray-900 dark:text-white">Drag & Drop Pairings</h3>
-         <button onclick="manualSyncPairings(this)" class="btn-sync-pairings text-xs px-3 py-1.5 rounded font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none">
-           <span class="btn-text">Saved</span><div class="btn-spinner ml-2 !w-3 !h-3 hidden-force"></div>
+   <div id="log-pairings-alt" class="hidden-force space-y-4 pt-2 touch-none">
+     <div class="bg-white dark:bg-gray-800 p-2 md:p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+       
+       <div class="flex justify-between items-center mb-2 px-1">
+         <div class="flex items-center gap-3">
+             <h3 class="text-base md:text-lg font-bold text-gray-900 dark:text-white">Drag & Drop Pairings</h3>
+             <button onclick="toggleAltSwap()" class="bg-gray-200 dark:bg-gray-700 p-1.5 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition focus:outline-none" title="Swap Columns">
+                <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+             </button>
+         </div>
+         <button onclick="manualSyncPairings(this)" class="btn-sync-pairings text-xs px-2 py-1 rounded font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none">
+           <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
          </button>
        </div>
-       <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Drag available volunteers from the left and drop them onto a trainee's card on the right.</p>
+       <p class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mb-3 px-1">Drag items from the left pool and drop onto target cards on the right. Both sides show current pairings.</p>
        
-       <!-- Side-by-Side Flex Container -->
-       <div class="flex flex-row gap-2 md:gap-4 h-[65vh]">
+       <!-- STRICT Side-by-Side Flex Container -->
+       <div class="flex flex-row gap-2 h-[65vh] w-full overflow-hidden">
          
-         <!-- Volunteer Pool (Left Side: 1/3 width) -->
-         <div class="w-1/3 lg:w-1/4 bg-gray-50 dark:bg-gray-900 p-2 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full min-w-0">
-           <h4 class="font-bold text-[11px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 mb-2 shrink-0 truncate">Volunteers</h4>
-           <div id="dnd-volunteer-pool" class="space-y-2 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
+         <!-- Source Pool (Left Side: ~35% width) -->
+         <div class="w-[38%] md:w-1/3 lg:w-1/4 bg-gray-50 dark:bg-gray-900 p-2 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-hidden shrink-0">
+           <h4 id="dnd-source-title" class="font-bold text-[11px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-1.5 mb-2 shrink-0 truncate uppercase tracking-wide">Volunteers</h4>
+           <div id="dnd-source-pool" class="space-y-2 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
          </div>
          
-         <!-- Trainee Drop Zones (Right Side: 2/3 width) -->
-         <div class="w-2/3 lg:w-3/4 bg-gray-50 dark:bg-gray-900 p-2 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full min-w-0">
-           <h4 class="font-bold text-[11px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 mb-2 shrink-0 truncate">Trainees</h4>
-           <div id="dnd-trainee-list" class="space-y-2 md:space-y-3 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
+         <!-- Target Zones (Right Side: ~62% width) -->
+         <div class="w-[62%] md:w-2/3 lg:w-3/4 bg-gray-50 dark:bg-gray-900 p-2 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-hidden shrink-0">
+           <h4 id="dnd-target-title" class="font-bold text-[11px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-1.5 mb-2 shrink-0 truncate uppercase tracking-wide">Trainees</h4>
+           <div id="dnd-target-list" class="space-y-2 flex-grow overflow-y-auto pr-1 custom-scrollbar pb-10"></div>
          </div>
          
        </div>
@@ -59,6 +73,7 @@ function buildLogisticsUI() {
    <div id="log-groups" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"><p class="text-sm text-gray-500 dark:text-gray-400">Group builder in development...</p></div></div>
    <div id="log-buses" class="hidden-force space-y-4"><div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"><p class="text-sm text-gray-500 dark:text-gray-400">Bus Allocation in development...</p></div></div>
  `;
+ initCustomDND();
 }
 
 function switchLogisticsSubTab(tabId) {['pairings', 'pairings-alt', 'rooms', 'groups', 'buses'].forEach(id => { 
@@ -74,7 +89,14 @@ function switchLogisticsSubTab(tabId) {['pairings', 'pairings-alt', 'rooms', 'gr
 }
 
 async function loadLogisticsData() { 
- try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); } catch(e) { showToast("Failed to load logistics.", true); } 
+ try { 
+     const res = await callBackend('fetchLogistics'); 
+     globalLogistics = res; 
+     if (typeof applyGlobalSorting === "function") {
+         globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
+     }
+     renderPairings(); 
+ } catch(e) { showToast("Failed to load logistics.", true); } 
 }
 
 function setSyncButtonState(state) {
@@ -83,8 +105,8 @@ function setSyncButtonState(state) {
   
   btns.forEach(btn => {
     const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
-    btn.className = "btn-sync-pairings text-xs px-3 py-1.5 rounded font-bold transition flex items-center justify-center border shadow-sm focus:outline-none"; 
-    spinner.className = "btn-spinner ml-2 !w-3 !h-3 hidden-force"; 
+    btn.className = "btn-sync-pairings text-xs px-2 md:px-3 py-1 md:py-1.5 rounded font-bold transition flex items-center justify-center border shadow-sm focus:outline-none"; 
+    spinner.className = "btn-spinner ml-1 !w-3 !h-3 hidden-force"; 
     if(state === 'saving') { btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); textSpan.textContent = "Saving..."; spinner.classList.remove('hidden-force'); spinner.classList.add('spinner-yellow'); btn.disabled = true; } 
     else if (state === 'saved') { btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); textSpan.textContent = "Saved"; btn.disabled = false; } 
     else if (state === 'error') { btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); textSpan.textContent = "Save Failed"; btn.disabled = false; }
@@ -98,6 +120,11 @@ function triggerPairingSync() {
     try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); } 
     catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); }
   }, 800); 
+}
+
+function toggleAltSwap() {
+  altSwapMode = !altSwapMode;
+  renderPairingsAlt();
 }
 
 function renderPairings() {
@@ -119,15 +146,18 @@ function renderPairings() {
    tPairings.forEach(pair => {
        const vol = vols.find(v => v.nric === pair.volNric);
        const vDynColor = vol ? getProjectColor(vol.group) : '';
-       tagsHtml += `<span class="bg-gray-50 dark:bg-gray-800 text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded-md font-medium flex items-center mb-1 mr-1 shadow-sm text-gray-800 dark:text-gray-200">
-           <span class="${vDynColor} px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600">${vol ? vol.name : 'Unknown'}</span>
-           <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-1.5 text-gray-400 hover:text-red-500 font-bold focus:outline-none text-base leading-none">&times;</button>
-       </span>`;
+       
+       tagsHtml += `<div class="relative inline-block m-0.5">
+           <span class="bg-white dark:bg-gray-800 text-[10px] md:text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded font-medium flex items-center shadow-sm text-gray-800 dark:text-gray-200">
+               <span class="${vDynColor} px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600">${vol ? vol.name : 'Unknown'}</span>
+           </span>
+           <div class="remove-x" onclick="unpairTrainee('${t.nric}', '${pair.volNric}')">×</div>
+       </div>`;
    });
 
    const cardHtml = `<div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-2 transition">
          <div class="flex justify-between items-start mb-2"><div class="flex items-center"><span class="font-bold text-sm px-2 py-0.5 rounded border ${dynColor}">${t.name}</span>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-xs bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-semibold px-2 py-1 rounded-md border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none">+ Vol</button></div>
-         <div class="flex flex-wrap mt-2 min-h-[26px]">${tagsHtml || '<span class="text-xs font-medium text-gray-400">Unassigned</span>'}</div></div>`;
+         <div class="flex flex-wrap mt-2 min-h-[26px]">${tagsHtml || '<span class="text-xs font-medium text-gray-400 mt-1">Unassigned</span>'}</div></div>`;
 
    if(tPairings.length > 0) { pCount++; pairedHtml += cardHtml; } else { uCount++; unpairedHtml += cardHtml; }
  });
@@ -140,94 +170,190 @@ function renderPairings() {
  renderPairingsAlt();
 }
 
-// === DRAG AND DROP (ALT) UI LOGIC ===
+// === CUSTOM POINTER EVENTS DND SYSTEM ===
+function initCustomDND() {
+    const container = document.getElementById('log-pairings-alt');
+    if(!container || container.dataset.dndInit) return;
+    container.dataset.dndInit = "true";
+    
+    container.addEventListener('pointerdown', (e) => {
+        if(e.target.closest('.remove-x')) return; 
+        const draggable = e.target.closest('.dnd-draggable');
+        if(!draggable) return;
+        
+        document.body.style.touchAction = 'none'; 
+        
+        dndEl = draggable;
+        dndEl.classList.add('locked-for-drag');
+        isDragging = true;
+        
+        const rect = dndEl.getBoundingClientRect();
+        dndStartX = e.clientX - rect.left;
+        dndStartY = e.clientY - rect.top;
+        
+        dndClone = dndEl.cloneNode(true);
+        dndClone.classList.add('dragging-clone');
+        dndClone.classList.remove('locked-for-drag');
+        dndClone.style.width = rect.width + 'px';
+        
+        // Remove interactive elements from clone
+        dndClone.querySelectorAll('.remove-x').forEach(x => x.remove()); 
+        
+        document.body.appendChild(dndClone);
+        moveDndClone(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('pointermove', (e) => {
+        if(isDragging && dndClone) {
+            e.preventDefault();
+            moveDndClone(e.clientX, e.clientY);
+            
+            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+                const r = dz.getBoundingClientRect();
+                if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+                } else {
+                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+                }
+            });
+        }
+    }, {passive: false});
+
+    document.addEventListener('pointerup', (e) => {
+        document.body.style.touchAction = '';
+        if(dndEl) dndEl.classList.remove('locked-for-drag');
+        
+        if(isDragging && dndClone) {
+            dndClone.remove(); dndClone = null; isDragging = false;
+            
+            let dropZone = null;
+            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+                dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+                const r = dz.getBoundingClientRect();
+                if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+                    dropZone = dz;
+                }
+            });
+            
+            if(dropZone && dndEl) {
+                const sourceNric = dndEl.dataset.nric;
+                const targetNric = dropZone.dataset.nric;
+                if(sourceNric && targetNric) handleDndDrop(sourceNric, targetNric);
+            }
+        }
+        dndEl = null;
+    });
+    document.addEventListener('pointercancel', () => {
+        document.body.style.touchAction = '';
+        if(dndEl) dndEl.classList.remove('locked-for-drag');
+        if(dndClone) dndClone.remove();
+        dndEl = null; dndClone = null; isDragging = false;
+        document.querySelectorAll('.dnd-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary'));
+    });
+}
+
+function moveDndClone(x, y) {
+    if(dndClone) {
+        dndClone.style.left = (x - dndStartX) + 'px';
+        dndClone.style.top = (y - dndStartY) + 'px';
+    }
+}
+
+function handleDndDrop(sourceNric, targetNric) {
+    let volNric = altSwapMode ? targetNric : sourceNric;
+    let traineeNric = altSwapMode ? sourceNric : targetNric;
+    
+    if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNric === volNric)) {
+        globalLogistics.pairings.push({ traineeNric: traineeNric, volNric: volNric });
+        renderPairings(); 
+        triggerPairingSync();
+    } else {
+        showToast("Already paired!", true);
+    }
+}
+
+function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
+    return `<div class="relative inline-block m-0.5">
+        <span class="bg-gray-100 dark:bg-gray-800 text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded font-medium flex items-center shadow-sm text-gray-800 dark:text-gray-200">
+            <span class="${targetColorClass} px-1 md:px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600 truncate max-w-[80px] sm:max-w-[120px]">${targetName}</span>
+        </span>
+        <div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
+    </div>`;
+}
 
 function renderPairingsAlt() {
-  if(!globalLogistics || !document.getElementById('dnd-volunteer-pool')) return;
+  if(!globalLogistics || !document.getElementById('dnd-source-pool')) return;
   const trainees = globalLogistics.participants.filter(p => p.role === 'TRAINEE');
   const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER');
   const pairings = globalLogistics.pairings ||[];
+  const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
   
-  // Render Volunteer Pool
-  let volHtml = '';
-  vols.forEach(v => {
-    const vDynColor = getProjectColor(v.group);
-    const assignmentCount = pairings.filter(p => p.volNric === v.nric).length;
-    const badgeHtml = assignmentCount > 0 ? `<span class="text-[9px] md:text-[10px] font-bold text-white bg-green-500 px-1.5 py-0.5 rounded-full ml-1 md:ml-2">${assignmentCount}</span>` : '';
-    
-    volHtml += `
-      <div draggable="true" ondragstart="dndDragStart(event, '${v.nric}')" class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none overflow-hidden gap-1">
-        <span class="font-bold text-[10px] md:text-sm px-1.5 md:px-2 py-0.5 rounded border ${vDynColor} pointer-events-none truncate max-w-full">${v.name}</span>
-        <div class="pointer-events-none flex items-center shrink-0">
-          ${badgeHtml}
-          <span class="text-gray-300 dark:text-gray-600 ml-1 hidden sm:inline-block">⋮⋮</span>
-        </div>
-      </div>
-    `;
-  });
-  document.getElementById('dnd-volunteer-pool').innerHTML = volHtml || '<p class="text-xs text-gray-400">No volunteers available.</p>';
+  const sourceArr = altSwapMode ? trainees : vols;
+  const targetArr = altSwapMode ? vols : trainees;
+  
+  document.getElementById('dnd-source-title').innerText = altSwapMode ? "Trainees" : "Volunteers";
+  document.getElementById('dnd-target-title').innerText = altSwapMode ? "Volunteers" : "Trainees";
 
-  // Render Trainee Drop Zones
-  let traineeHtml = '';
-  trainees.forEach(t => {
-    const tDynColor = getProjectColor(t.group);
-    const tPairings = pairings.filter(p => p.traineeNric === t.nric);
+  // Render Source Pool
+  let sourceHtml = '';
+  sourceArr.forEach(s => {
+    const sDynColor = getProjectColor(s.group);
+    const sFam = familyCounts[s.poc] > 1 ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1">Fam</span>` : '';
     
-    let pairedVolsHtml = '';
-    tPairings.forEach(pair => {
-       const vol = vols.find(v => v.nric === pair.volNric);
-       const vDynColor = vol ? getProjectColor(vol.group) : '';
-       pairedVolsHtml += `<span class="bg-gray-100 dark:bg-gray-900 text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 border border-gray-200 dark:border-gray-600 rounded font-medium flex items-center shadow-sm text-gray-800 dark:text-gray-200 z-10 relative">
-           <span class="${vDynColor} px-1 md:px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600 truncate max-w-[80px] sm:max-w-[120px]">${vol ? vol.name : 'Unknown'}</span>
-           <button onclick="unpairTrainee('${t.nric}', '${pair.volNric}')" class="ml-1 text-gray-400 hover:text-red-500 font-bold focus:outline-none text-sm md:text-base leading-none">&times;</button>
-       </span>`;
+    // Find who they are paired with
+    const myPairings = altSwapMode ? pairings.filter(p => p.traineeNric === s.nric) : pairings.filter(p => p.volNric === s.nric);
+    let pairedPills = '';
+    myPairings.forEach(pair => {
+        const pairedPerson = (altSwapMode) ? vols.find(v => v.nric === pair.volNric) : trainees.find(t => t.nric === pair.traineeNric);
+        if(pairedPerson) {
+            const pColor = getProjectColor(pairedPerson.group);
+            pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
+        }
     });
 
-    traineeHtml += `
-      <div ondragover="dndDragOver(event)" ondragenter="dndDragEnter(event)" ondragleave="dndDragLeave(event)" ondrop="dndDrop(event, '${t.nric}')" class="bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 relative min-h-[70px] flex flex-col">
-        <div class="flex items-center mb-1.5 pointer-events-none shrink-0"><span class="font-bold text-[11px] md:text-sm px-1.5 md:px-2 py-0.5 rounded border border-solid ${tDynColor} truncate max-w-full">${t.name}</span></div>
-        <div class="flex flex-wrap gap-1.5 flex-grow items-start content-start">
-          ${pairedVolsHtml || '<span class="text-[10px] md:text-xs font-medium text-gray-400 dark:text-gray-500 pointer-events-none mt-1">Drop vol here</span>'}
+    sourceHtml += `
+      <div class="dnd-draggable bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none flex flex-col gap-1" data-nric="${s.nric}">
+        <div class="flex justify-between items-center w-full pointer-events-none">
+            <span class="font-bold text-[10px] md:text-sm px-1.5 py-0.5 rounded border ${sDynColor} truncate w-full tracking-tight">${s.name} ${s.role === 'TRAINEE' ? sFam : ''}</span>
+            <span class="text-gray-300 dark:text-gray-600 ml-1 hidden sm:inline-block">⋮⋮</span>
+        </div>
+        <div class="flex flex-wrap gap-0.5 pointer-events-auto">
+            ${pairedPills}
         </div>
       </div>
     `;
   });
-  document.getElementById('dnd-trainee-list').innerHTML = traineeHtml || '<p class="text-xs text-gray-400">No trainees available.</p>';
-}
+  document.getElementById('dnd-source-pool').innerHTML = sourceHtml || '<p class="text-xs text-gray-400">No items available.</p>';
 
-function dndDragStart(e, volNric) {
-  e.dataTransfer.setData('text/plain', volNric);
-  e.dataTransfer.effectAllowed = 'copy';
-}
+  // Render Target Drop Zones
+  let targetHtml = '';
+  targetArr.forEach(t => {
+    const tDynColor = getProjectColor(t.group);
+    const tFam = familyCounts[t.poc] > 1 ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1">Fam</span>` : '';
+    
+    const myPairings = (!altSwapMode) ? pairings.filter(p => p.traineeNric === t.nric) : pairings.filter(p => p.volNric === t.nric);
+    
+    let pairedPills = '';
+    myPairings.forEach(pair => {
+       const pairedPerson = (!altSwapMode) ? vols.find(v => v.nric === pair.volNric) : trainees.find(tr => tr.nric === pair.traineeNric);
+       if(pairedPerson) {
+           const pColor = getProjectColor(pairedPerson.group);
+           pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
+       }
+    });
 
-function dndDragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'copy';
-}
-
-function dndDragEnter(e) {
-  e.preventDefault();
-  e.currentTarget.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-}
-
-function dndDragLeave(e) {
-  e.currentTarget.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-}
-
-function dndDrop(e, traineeNric) {
-  e.preventDefault();
-  e.currentTarget.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-  
-  const volNric = e.dataTransfer.getData('text/plain');
-  if(volNric) {
-      if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNric === volNric)) {
-          globalLogistics.pairings.push({ traineeNric: traineeNric, volNric: volNric });
-          renderPairings(); 
-          triggerPairingSync();
-      } else {
-          showToast("Volunteer is already paired with this Trainee!", true);
-      }
-  }
+    targetHtml += `
+      <div class="dnd-dropzone bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 relative min-h-[70px] flex flex-col" data-nric="${t.nric}">
+        <div class="flex items-center mb-1.5 pointer-events-none shrink-0">
+            <span class="font-bold text-[11px] md:text-sm px-1.5 md:px-2 py-0.5 rounded border border-solid ${tDynColor} truncate w-full tracking-tight">${t.name} ${t.role === 'TRAINEE' ? tFam : ''}</span>
+        </div>
+        <div class="flex flex-wrap gap-0.5 flex-grow items-start content-start pointer-events-auto">
+          ${pairedPills || '<span class="text-[10px] md:text-xs font-medium text-gray-400 dark:text-gray-500 pointer-events-none mt-1">Drop here</span>'}
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-xs text-gray-400">No targets available.</p>';
 }
 
 // === ORIGINAL BOTTOM SHEET UI LOGIC ===
@@ -256,8 +382,8 @@ function openPairingSheet(traineeNric) {
        let tNames = volPairs.map(vp => {
            const t = globalLogistics.participants.find(p => p.nric === vp.traineeNric);
            if(t) {
-               const isFam = familyCounts[t.poc] > 1; const famBadge = isFam ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[9px] uppercase font-bold tracking-wider px-1 py-0 rounded border border-purple-200 dark:border-purple-800 ml-1 inline-block align-middle">Fam</span>` : '';
-               const dynColor = getProjectColor(t.group); return `<span class="inline-block px-1.5 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-xs font-medium mr-1 mb-1 ${dynColor}">${t.name}${famBadge}</span>`;
+               const isFam = familyCounts[t.poc] > 1 ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[9px] uppercase font-bold tracking-wider px-1 py-0 rounded border border-purple-200 dark:border-purple-800 ml-1 inline-block align-middle">Fam</span>` : '';
+               const dynColor = getProjectColor(t.group); return `<span class="inline-block px-1.5 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-xs font-medium mr-1 mb-1 ${dynColor}">${t.name}${isFam}</span>`;
            } return '';
        }).join('');
        pairedTraineesHtml = `<div class="mt-1 text-[11px] text-gray-500 dark:text-gray-400 font-medium border-t border-gray-100 dark:border-gray-700 pt-1 w-full">Paired with: <br>${tNames}</div>`;
