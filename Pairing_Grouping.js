@@ -4,118 +4,121 @@ let altSwapMode = false;
 // Global DND State Management
 if (!window.dndInitialized) {
     window.dndInitialized = true;
-    let touchEl = null;
+    let dndEl = null;
     let dndClone = null;
     let isDragging = false;
-    let touchOffsetX = 0;
-    let touchOffsetY = 0;
-    let longPressTimer = null;
 
-    // Mobile Touch DND listeners
-    document.addEventListener('touchstart', function(e) {
-        if(e.target.closest('.remove-x') || e.target.closest('button')) return;
-        const target = e.target.closest('.dnd-draggable');
-        if (target && !document.getElementById('log-pairings-alt').classList.contains('hidden-force')) {
-            touchEl = target; 
-            touchEl.setAttribute('draggable', 'false');
-            longPressTimer = setTimeout(() => {
-                isDragging = true;
-                touchEl.classList.add('locked-for-drag');
-                if(navigator.vibrate) navigator.vibrate(50);
-                
-                const rect = touchEl.getBoundingClientRect();
-                touchOffsetX = e.touches[0].clientX - rect.left;
-                touchOffsetY = e.touches[0].clientY - rect.top;
-                
-                dndClone = touchEl.cloneNode(true);
-                dndClone.querySelectorAll('.remove-x').forEach(x => x.remove());
-                dndClone.classList.add('dragging-clone');
-                dndClone.classList.remove('locked-for-drag');
-                dndClone.style.width = rect.width + 'px';
-                document.body.appendChild(dndClone);
-                
-                moveDndClone(e.touches[0].clientX, e.touches[0].clientY);
-            }, 150); // 150ms allows easy dragging without waiting long
+    // Utilize universal pointer events (Handles both Mouse and Mobile Touch flawlessly)
+    document.addEventListener('pointerdown', (e) => {
+        if(e.target.closest('.remove-x') || e.target.closest('button')) return; 
+        
+        // Detect if dragging an Unpair Pill or a Main Source Card
+        let draggable = e.target.closest('.dnd-draggable-pill');
+        let dragType = 'pill';
+        
+        if(!draggable) {
+            draggable = e.target.closest('.dnd-draggable');
+            dragType = 'card';
         }
-    }, {passive: false});
+        if(!draggable) return;
+        
+        // Disable scroll for touch events while dragging
+        if (e.pointerType === 'touch') document.body.style.touchAction = 'none'; 
+        
+        dndEl = draggable;
+        dndEl.dataset.dragType = dragType;
+        dndEl.classList.add('locked-for-drag');
+        isDragging = true;
+        
+        // Create clone from ONLY the visual name pill (not the whole card frame)
+        const nameNode = dndEl.querySelector('.main-name-pill') || dndEl;
+        const rect = nameNode.getBoundingClientRect();
+        
+        dndClone = nameNode.cloneNode(true);
+        dndClone.classList.add('dragging-clone');
+        dndClone.classList.remove('locked-for-drag');
+        dndClone.style.width = rect.width + 'px';
+        
+        // Strip out the red X if it existed in the clone
+        dndClone.querySelectorAll('.remove-x').forEach(x => x.remove()); 
+        
+        document.body.appendChild(dndClone);
+        
+        // Center the clone under the pointer
+        moveDndClone(e.clientX, e.clientY, rect.width, rect.height);
+    });
 
-    document.addEventListener('touchmove', function(e) {
-        if (isDragging && dndClone) {
-            e.preventDefault(); // Stop mobile scroll while dragging
-            moveDndClone(e.touches[0].clientX, e.touches[0].clientY);
+    document.addEventListener('pointermove', (e) => {
+        if(isDragging && dndClone) {
+            e.preventDefault();
+            const rect = dndClone.getBoundingClientRect();
+            moveDndClone(e.clientX, e.clientY, rect.width, rect.height);
             
-            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+            // Determine valid dropzone based on what we are dragging
+            const dragType = dndEl.dataset.dragType;
+            const validDropSelector = dragType === 'pill' ? '.dnd-dropzone-unpair' : '.dnd-dropzone';
+            
+            document.querySelectorAll(validDropSelector).forEach(dz => {
                 const r = dz.getBoundingClientRect();
-                if(e.touches[0].clientX >= r.left && e.touches[0].clientX <= r.right && e.touches[0].clientY >= r.top && e.touches[0].clientY <= r.bottom) {
+                if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
                     dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
                 } else {
                     dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
                 }
             });
-        } else {
-            clearTimeout(longPressTimer);
-            if(touchEl) touchEl.classList.remove('locked-for-drag');
         }
     }, {passive: false});
 
-    function cleanupDrag(e) {
-        clearTimeout(longPressTimer);
-        if(touchEl) {
-            touchEl.classList.remove('locked-for-drag');
-            touchEl.setAttribute('draggable', 'true');
-        }
-        if (isDragging && dndClone) {
-            let clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-            let clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    document.addEventListener('pointerup', (e) => {
+        document.body.style.touchAction = '';
+        if(dndEl) dndEl.classList.remove('locked-for-drag');
+        
+        if(isDragging && dndClone) {
+            dndClone.remove(); dndClone = null; isDragging = false;
             
-            dndClone.remove(); dndClone = null;
-            
+            const dragType = dndEl.dataset.dragType;
+            const validDropSelector = dragType === 'pill' ? '.dnd-dropzone-unpair' : '.dnd-dropzone';
             let dropZone = null;
-            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+            
+            document.querySelectorAll(validDropSelector).forEach(dz => {
                 dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
                 const r = dz.getBoundingClientRect();
-                if(clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+                if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
                     dropZone = dz;
                 }
             });
             
-            if (dropZone && touchEl) {
-                handleDndDrop(touchEl.dataset.nric, dropZone.dataset.nric);
+            if(dropZone && dndEl) {
+                if (dragType === 'card') {
+                    // Standard Pairing (Left to Right)
+                    const sourceNric = dndEl.dataset.nric;
+                    const targetNric = dropZone.dataset.nric;
+                    if(sourceNric && targetNric) handleDndDrop(sourceNric, targetNric);
+                } else if (dragType === 'pill') {
+                    // Unpairing via Right to Left drag
+                    const tNric = dndEl.dataset.traineeNric;
+                    const vNric = dndEl.dataset.volNric;
+                    if(tNric && vNric) unpairTrainee(tNric, vNric);
+                }
             }
         }
-        touchEl = null; isDragging = false;
+        dndEl = null;
+    });
+
+    document.addEventListener('pointercancel', () => {
+        document.body.style.touchAction = '';
+        if(dndEl) dndEl.classList.remove('locked-for-drag');
+        if(dndClone) dndClone.remove();
+        dndEl = null; dndClone = null; isDragging = false;
+        document.querySelectorAll('.dnd-dropzone, .dnd-dropzone-unpair').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary'));
+    });
+}
+
+function moveDndClone(x, y, width, height) {
+    if(dndClone) {
+        dndClone.style.left = (x - (width / 2)) + 'px';
+        dndClone.style.top = (y - (height / 2)) + 'px';
     }
-
-    document.addEventListener('touchend', cleanupDrag);
-    document.addEventListener('touchcancel', cleanupDrag);
-
-    function moveDndClone(x, y) {
-        if(dndClone) {
-            dndClone.style.left = (x - touchOffsetX) + 'px';
-            dndClone.style.top = (y - touchOffsetY) + 'px';
-        }
-    }
-
-    // HTML5 Mouse DND implementations for desktop
-    window.dndDragStart = function(e, sourceNric) {
-      e.dataTransfer.setData('text/plain', sourceNric);
-      e.dataTransfer.effectAllowed = 'copy';
-    };
-    window.dndDragOver = function(e) {
-      e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
-    };
-    window.dndDragEnter = function(e) {
-      e.preventDefault(); e.currentTarget.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-    };
-    window.dndDragLeave = function(e) {
-      e.currentTarget.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-    };
-    window.dndDrop = function(e, targetNric) {
-      e.preventDefault();
-      e.currentTarget.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-      const sourceNric = e.dataTransfer.getData('text/plain');
-      if(sourceNric) handleDndDrop(sourceNric, targetNric);
-    };
 }
 
 function handleDndDrop(sourceNric, targetNric) {
@@ -170,18 +173,18 @@ function buildLogisticsUI() {
            <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
          </button>
        </div>
-       <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2 px-1 shrink-0">Drag from left pool and drop onto right targets.</p>
+       <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2 px-1 shrink-0">Drag left items to right targets. Drag a paired pill back left to unpair.</p>
        
-       <!-- STRICT Side-by-Side Flex Container (Equal Widths) -->
+       <!-- 50/50 Flex Container -->
        <div class="flex flex-row gap-2 flex-1 min-h-0 w-full overflow-hidden">
-         <!-- Source Pool (Left Side: 50% width) -->
-         <div class="w-1/2 bg-gray-50 dark:bg-gray-900 p-2 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-hidden shrink-0">
-           <h4 id="dnd-source-title" class="font-bold text-[10px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-1.5 mb-2 shrink-0 truncate uppercase tracking-wide">Volunteers</h4>
+         <!-- Source Pool (Left Side: 50%) -->
+         <div id="dnd-source-col" class="w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 dnd-dropzone-unpair transition-colors">
+           <h4 id="dnd-source-title" class="font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest"></h4>
            <div id="dnd-source-pool" class="space-y-1.5 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
          </div>
-         <!-- Target Zones (Right Side: 50% width) -->
-         <div class="w-1/2 bg-gray-50 dark:bg-gray-900 p-2 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-hidden shrink-0">
-           <h4 id="dnd-target-title" class="font-bold text-[10px] md:text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-1.5 mb-2 shrink-0 truncate uppercase tracking-wide">Trainees</h4>
+         <!-- Target Zones (Right Side: 50%) -->
+         <div id="dnd-target-col" class="w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors">
+           <h4 id="dnd-target-title" class="font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest"></h4>
            <div id="dnd-target-list" class="space-y-2 flex-grow overflow-y-auto pr-1 custom-scrollbar pb-6"></div>
          </div>
        </div>
@@ -207,13 +210,19 @@ function switchLogisticsSubTab(tabId) {['pairings', 'pairings-alt', 'rooms', 'gr
 }
 
 async function loadLogisticsData() { 
- try { const res = await callBackend('fetchLogistics'); globalLogistics = res; renderPairings(); } catch(e) { showToast("Failed to load logistics.", true); } 
+ try { 
+     const res = await callBackend('fetchLogistics'); 
+     globalLogistics = res; 
+     if (typeof applyGlobalSorting === "function") {
+         globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
+     }
+     renderPairings(); 
+ } catch(e) { showToast("Failed to load logistics.", true); } 
 }
 
 function setSyncButtonState(state) {
   const btns = document.querySelectorAll('.btn-sync-pairings');
   if(btns.length === 0) return;
-  
   btns.forEach(btn => {
     const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
     btn.className = "btn-sync-pairings text-xs px-2 md:px-3 py-1 md:py-1.5 rounded font-bold transition flex items-center justify-center border shadow-sm focus:outline-none"; 
@@ -235,10 +244,10 @@ function triggerPairingSync() {
 
 function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairingsAlt(); }
 
-// Clean isolated pill generator with red X positioned nicely on the corner
+// Clean isolated pill generator with red X positioned nicely on the corner (NO double borders)
 function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
-    return `<div class="relative inline-block m-1.5 align-top">
-        <div class="${targetColorClass} text-[10px] md:text-xs px-1.5 py-1 md:px-2 md:py-1.5 rounded border border-gray-300 dark:border-gray-600 font-bold shadow-sm flex items-center justify-center truncate max-w-[85px] sm:max-w-[120px]">
+    return `<div class="dnd-draggable-pill relative inline-block m-1 align-top cursor-grab active:cursor-grabbing" data-trainee-nric="${traineeNric}" data-vol-nric="${volNric}">
+        <div class="main-name-pill ${targetColorClass} text-[9px] md:text-[10px] px-1.5 py-1 md:px-2 md:py-1 rounded font-bold shadow-sm flex items-center justify-center truncate max-w-[80px] sm:max-w-[120px] opacity-90">
             ${targetName}
         </div>
         <div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
@@ -257,7 +266,7 @@ function renderPairings() {
  trainees.forEach(t => {
    const tPairings = pairings.filter(p => p.traineeNric === t.nric);
    const isFam = familyCounts[t.poc] > 1;
-   const famBadge = isFam ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ml-1 border border-purple-200 dark:border-purple-800 align-middle inline-block">Fam</span>` : '';
+   const famBadge = isFam ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1">Fam</span>` : '';
    const dynColor = getProjectColor(t.group);
 
    let tagsHtml = '';
@@ -288,11 +297,28 @@ function renderPairingsAlt() {
   const pairings = globalLogistics.pairings ||[];
   const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
   
-  const sourceArr = altSwapMode ? trainees : vols;
-  const targetArr = altSwapMode ? vols : trainees;
+  const isSourceVol = !altSwapMode;
+  const sourceArr = isSourceVol ? vols : trainees;
+  const targetArr = isSourceVol ? trainees : vols;
   
-  document.getElementById('dnd-source-title').innerText = altSwapMode ? "Trainees" : "Volunteers";
-  document.getElementById('dnd-target-title').innerText = altSwapMode ? "Volunteers" : "Trainees";
+  // Style Titles & Backgrounds Distinctly
+  const volColClass = "bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30";
+  const traineeColClass = "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/30";
+
+  const sourceColClass = isSourceVol ? volColClass : traineeColClass;
+  const targetColClass = isSourceVol ? traineeColClass : volColClass;
+  
+  const sourceCol = document.getElementById('dnd-source-col');
+  const targetCol = document.getElementById('dnd-target-col');
+  sourceCol.className = `w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 dnd-dropzone-unpair ${sourceColClass} transition-colors`;
+  targetCol.className = `w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 ${targetColClass} transition-colors`;
+
+  const sourceTitle = document.getElementById('dnd-source-title');
+  const targetTitle = document.getElementById('dnd-target-title');
+  sourceTitle.innerText = isSourceVol ? "Volunteers" : "Trainees";
+  targetTitle.innerText = isSourceVol ? "Trainees" : "Volunteers";
+  sourceTitle.className = `font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest ${isSourceVol ? 'text-green-800 dark:text-green-400 border-green-200 dark:border-green-800/50' : 'text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'}`;
+  targetTitle.className = `font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest ${!isSourceVol ? 'text-green-800 dark:text-green-400 border-green-200 dark:border-green-800/50' : 'text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'}`;
 
   // Render Source Pool
   let sourceHtml = '';
@@ -300,10 +326,10 @@ function renderPairingsAlt() {
     const sDynColor = getProjectColor(s.group);
     const sFam = familyCounts[s.poc] > 1 ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1 shrink-0">Fam</span>` : '';
     
-    const myPairings = altSwapMode ? pairings.filter(p => p.traineeNric === s.nric) : pairings.filter(p => p.volNric === s.nric);
+    const myPairings = isSourceVol ? pairings.filter(p => p.volNric === s.nric) : pairings.filter(p => p.traineeNric === s.nric);
     let pairedPills = '';
     myPairings.forEach(pair => {
-        const pairedPerson = (altSwapMode) ? vols.find(v => v.nric === pair.volNric) : trainees.find(t => t.nric === pair.traineeNric);
+        const pairedPerson = isSourceVol ? trainees.find(t => t.nric === pair.traineeNric) : vols.find(v => v.nric === pair.volNric);
         if(pairedPerson) {
             const pColor = getProjectColor(pairedPerson.group);
             pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
@@ -311,9 +337,9 @@ function renderPairingsAlt() {
     });
 
     sourceHtml += `
-      <div class="dnd-draggable bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none flex flex-col gap-1" data-nric="${s.nric}" draggable="true" ondragstart="dndDragStart(event, '${s.nric}')">
-        <div class="flex items-center w-full pointer-events-none truncate text-ellipsis">
-            <span class="font-bold text-[10px] md:text-xs px-1.5 py-0.5 rounded border ${sDynColor} truncate w-full tracking-tight">${s.name} ${s.role === 'TRAINEE' ? sFam : ''}</span>
+      <div class="dnd-draggable bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none flex flex-col gap-1" data-nric="${s.nric}">
+        <div class="main-name-pill flex items-center w-full pointer-events-none truncate text-ellipsis">
+            <span class="font-extrabold text-xs md:text-sm px-2 py-1 rounded border shadow-sm ${sDynColor} truncate w-full tracking-tight">${s.name} ${s.role === 'TRAINEE' ? sFam : ''}</span>
         </div>
         <div class="flex flex-wrap pointer-events-auto">
             ${pairedPills}
@@ -329,11 +355,11 @@ function renderPairingsAlt() {
     const tDynColor = getProjectColor(t.group);
     const tFam = familyCounts[t.poc] > 1 ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1 shrink-0">Fam</span>` : '';
     
-    const myPairings = (!altSwapMode) ? pairings.filter(p => p.traineeNric === t.nric) : pairings.filter(p => p.volNric === t.nric);
+    const myPairings = !isSourceVol ? pairings.filter(p => p.volNric === t.nric) : pairings.filter(p => p.traineeNric === t.nric);
     
     let pairedPills = '';
     myPairings.forEach(pair => {
-       const pairedPerson = (!altSwapMode) ? vols.find(v => v.nric === pair.volNric) : trainees.find(tr => tr.nric === pair.traineeNric);
+       const pairedPerson = !isSourceVol ? trainees.find(tr => tr.nric === pair.traineeNric) : vols.find(v => v.nric === pair.volNric);
        if(pairedPerson) {
            const pColor = getProjectColor(pairedPerson.group);
            pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
@@ -341,9 +367,9 @@ function renderPairingsAlt() {
     });
 
     targetHtml += `
-      <div class="dnd-dropzone bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 relative min-h-[60px] flex flex-col" data-nric="${t.nric}" ondragover="dndDragOver(event)" ondragenter="dndDragEnter(event)" ondragleave="dndDragLeave(event)" ondrop="dndDrop(event, '${t.nric}')">
-        <div class="flex items-center mb-1 pointer-events-none shrink-0 truncate text-ellipsis">
-            <span class="font-bold text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded border border-solid ${tDynColor} truncate w-full tracking-tight">${t.name} ${t.role === 'TRAINEE' ? tFam : ''}</span>
+      <div class="dnd-dropzone bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 relative min-h-[70px] flex flex-col" data-nric="${t.nric}">
+        <div class="main-name-pill flex items-center mb-1.5 pointer-events-none shrink-0 truncate text-ellipsis">
+            <span class="font-extrabold text-xs md:text-sm px-2 py-1 rounded border shadow-sm ${tDynColor} truncate w-full tracking-tight">${t.name} ${t.role === 'TRAINEE' ? tFam : ''}</span>
         </div>
         <div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto">
           ${pairedPills || '<span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 pointer-events-none mt-1 ml-1">Drop here</span>'}
@@ -354,6 +380,7 @@ function renderPairingsAlt() {
   document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-[10px] text-gray-400">No targets available.</p>';
 }
 
+// === ORIGINAL BOTTOM SHEET UI LOGIC ===
 function openPairingSheet(traineeNric) {
  currentPairingTarget = traineeNric; 
  const targetTrainee = globalLogistics.participants.find(p => p.nric === traineeNric);
