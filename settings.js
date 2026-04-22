@@ -26,6 +26,25 @@ function buildSettingsUI() {
    </div>
    
    <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 admin-only">
+     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Global Sorting Priorities</h3>
+     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-4">Stacking rules applied to all lists across the App.</p>
+     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        ${[1,2,3,4].map((i) => `
+        <div>
+          <label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Priority ${i}</label>
+          <select id="sortRule${i}" class="w-full p-2 border rounded-lg text-sm font-semibold bg-gray-50 dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="none">None</option>
+            <option value="project">Project</option>
+            <option value="family">Family / Indep</option>
+            <option value="role">Role (Trainee/Vol)</option>
+            <option value="name">Name (A-Z)</option>
+          </select>
+        </div>`).join('')}
+     </div>
+     <button onclick="saveSortingSettings(this)" class="w-full md:w-auto bg-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center justify-center shadow-sm"><span class="btn-text">Save Sort Order</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
+   </div>
+
+   <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 admin-only">
      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Attendance Junctures</h3>
      <div class="flex space-x-2 mb-4 mt-3">
        <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-2.5 border rounded-lg text-sm bg-gray-50">
@@ -64,9 +83,37 @@ function buildSettingsUI() {
    </div>
  `;
  applyAdminVisuals();
+ 
+ // Apply existing Sorting Settings to the UI selectors
+ const sRules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
+ for(let i=0; i<4; i++) {
+     const sel = document.getElementById(`sortRule${i+1}`);
+     if(sel) sel.value = sRules[i] || 'none';
+ }
+ 
  renderJunctureList(appSettings.junctures);
  if(currentUser && currentUser.nric === 'ADMIN') renderGroupList(appSettings.projectGroups);
  renderCommList(appSettings.committee);
+}
+
+async function saveSortingSettings(btn) {
+    setBtnLoading(btn, true);
+    const r1 = document.getElementById('sortRule1').value;
+    const r2 = document.getElementById('sortRule2').value;
+    const r3 = document.getElementById('sortRule3').value;
+    const r4 = document.getElementById('sortRule4').value;
+    const rules = [r1, r2, r3, r4];
+    
+    try {
+        const res = await callBackend('saveSortingRules', { rules: rules, callerNric: currentUser.nric });
+        appSettings.sortingRules = res.sortingRules;
+        showToast("Sorting Rules updated. Reloading data...");
+        if(globalLogistics) await loadLogisticsData();
+    } catch(e) {
+        showToast(e.message, true);
+    } finally {
+        setBtnLoading(btn, false);
+    }
 }
 
 function initiateRegistrationToggle(btn) { if(!appSettings.registrationOpen) { document.getElementById('tripYearInput').value = new Date().getFullYear(); document.getElementById('tripSetupModal').classList.remove('hidden-force'); } else { executeToggleRegistration(false, '', '', btn); } }
@@ -84,7 +131,7 @@ async function toggleEditSlider(btn) {
 
 async function addProjectGroup(btn) {
  const name = document.getElementById('newGroupName').value.trim(); if(!name) return showToast("Project name required", true); setBtnLoading(btn, true);
- try { if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor(); const res = await callBackend('addProjectGroup', { groupName: name, callerNric: currentUser.nric, colorClass: newProjectSelectedColor }); document.getElementById('newGroupName').value = ''; newProjectSelectedColor = null; document.getElementById('newGroupColorBtn').className = "w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm transition hover:scale-105 bg-white dark:bg-gray-800"; appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors; renderGroupList(res.groups); renderHeaderLegend(); showToast("Project Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
+ try { if(!newProjectSelectedColor) newProjectSelectedColor = getUnusedColor(); const res = await callBackend('addProjectGroup', { groupName: name, callerNric: currentUser.nric, colorClass: newProjectSelectedColor }); document.getElementById('newGroupName').value = ''; newProjectSelectedColor = null; document.getElementById('newGroupColorBtn').className = "w-10 h-10 shrink-0 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm transition hover:scale-105 bg-white dark:bg-gray-800"; appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors; renderGroupList(res.groups); renderHeaderLegend(); showToast("Project Added"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); }
 }
 async function removeProjectGroup(name, btn) { setBtnLoading(btn, true); try { const res = await callBackend('removeProjectGroup', { groupName: name, callerNric: currentUser.nric }); appSettings.projectGroups = res.groups; appSettings.projectColors = res.projectColors; renderGroupList(res.groups); renderHeaderLegend(); showToast("Project Removed"); } catch(e) { showToast(e.message, true); } finally { setBtnLoading(btn, false); } }
 function renderGroupList(list) {
