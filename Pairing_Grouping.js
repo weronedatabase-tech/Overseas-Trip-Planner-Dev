@@ -431,4 +431,10 @@ function unpairTrainee(traineeNric, volNric) {
  globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); renderPairings(); triggerPairingSync();
 }
 
-async function manua
+async function manualSyncPairings(btn) {
+  setSyncButtonState('saving');
+  try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); showToast("Manual save complete!"); } 
+  catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
+}
+
+function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
