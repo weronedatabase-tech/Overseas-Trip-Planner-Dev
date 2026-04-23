@@ -23,7 +23,14 @@ if (!window.dndInitialized) {
     }, {passive: false});
 
     document.addEventListener('touchmove', (e) => {
-        moveDrag(e, e.touches[0].clientX, e.touches[0].clientY);
+        if (dndState.isDragging) {
+            e.preventDefault(); 
+            moveDrag(e, e.touches[0].clientX, e.touches[0].clientY);
+        } else if (dndState.timer) {
+            clearTimeout(dndState.timer);
+            dndState.timer = null;
+            dndState.el = null;
+        }
     }, {passive: false});
 
     document.addEventListener('touchend', (e) => {
@@ -38,12 +45,15 @@ if (!window.dndInitialized) {
 
     // --- MOUSE EVENTS (DESKTOP) ---
     document.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return; // Only allow left-clicks
+        if (e.button !== 0) return; 
         startDrag(e, e.clientX, e.clientY, false);
     });
 
     document.addEventListener('mousemove', (e) => {
-        moveDrag(e, e.clientX, e.clientY);
+        if (dndState.isDragging) {
+            e.preventDefault();
+            moveDrag(e, e.clientX, e.clientY);
+        }
     });
 
     document.addEventListener('mouseup', (e) => {
@@ -54,7 +64,6 @@ if (!window.dndInitialized) {
     function startDrag(e, clientX, clientY, isTouch) {
         if(e.target.closest('.remove-x') || e.target.closest('button')) return;
         
-        // Prevent DND if we aren't even on the Alt Pairing screen
         const altContainer = document.getElementById('log-pairings-alt');
         if(!altContainer || altContainer.classList.contains('hidden-force')) return;
 
@@ -63,11 +72,13 @@ if (!window.dndInitialized) {
 
         dndState.el = draggable;
         
-        const rect = dndState.el.getBoundingClientRect();
+        // Pick up ONLY the visual name pill, not the whole dropzone box
+        const nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
+        const rect = nameNode.getBoundingClientRect();
+        
         dndState.startX = clientX - rect.left;
         dndState.startY = clientY - rect.top;
 
-        // Delay Touch to allow scrolling. Mouse starts instantly.
         const delay = isTouch ? 200 : 0;
 
         dndState.timer = setTimeout(() => {
@@ -76,48 +87,36 @@ if (!window.dndInitialized) {
             
             dndState.el.classList.add('locked-for-drag');
             
-            // Pick up ONLY the visual name pill
-            const nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
-            const cloneRect = nameNode.getBoundingClientRect();
-            
             dndState.clone = nameNode.cloneNode(true);
             dndState.clone.classList.add('dragging-clone');
-            dndState.clone.style.width = cloneRect.width + 'px';
+            dndState.clone.style.width = rect.width + 'px';
             dndState.clone.style.margin = '0px';
-            dndState.clone.style.pointerEvents = 'none';
+            dndState.clone.style.pointerEvents = 'none'; // Critical for elementFromPoint
+            dndState.clone.style.zIndex = '9999';
             
             document.body.appendChild(dndState.clone);
-            updateClonePosition(clientX, clientY, cloneRect.width, cloneRect.height);
+            updateClonePosition(clientX, clientY, rect.width, rect.height);
         }, delay);
     }
 
     function moveDrag(e, clientX, clientY) {
-        if (!dndState.isDragging && dndState.timer) {
-            // Cancel hold-to-drag if the user moves their finger early (they are trying to scroll)
-            clearTimeout(dndState.timer);
-            dndState.timer = null;
-            dndState.el = null;
-        }
+        if (!dndState.isDragging || !dndState.clone) return;
+        
+        const w = parseFloat(dndState.clone.style.width);
+        const h = dndState.clone.offsetHeight || 30;
+        updateClonePosition(clientX, clientY, w, h);
+        
+        // Find valid dropzone under finger using elementFromPoint
+        const elAtPoint = document.elementFromPoint(clientX, clientY);
+        const activeDz = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
 
-        if (dndState.isDragging && dndState.clone) {
-            e.preventDefault(); // Aggressively stop scrolling while dragging
-            
-            const w = parseFloat(dndState.clone.style.width);
-            const h = dndState.clone.offsetHeight;
-            updateClonePosition(clientX, clientY, w, h);
-            
-            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
-                // Ensure we only highlight opposite roles (Trainee <-> Volunteer)
-                if (dz.dataset.role !== dndState.el.dataset.role) {
-                    const r = dz.getBoundingClientRect();
-                    if(clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
-                        dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-                    } else {
-                        dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-                    }
-                }
-            });
-        }
+        document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+            if (dz === activeDz && dz.dataset.role !== dndState.el.dataset.role) {
+                dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+            } else {
+                dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+            }
+        });
     }
 
     function endDrag(e, clientX, clientY) {
@@ -133,18 +132,13 @@ if (!window.dndInitialized) {
             dndState.clone = null; 
             dndState.isDragging = false;
             
-            let dropZone = null;
-            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
-                dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-                if (dz.dataset.role !== dndState.el.dataset.role) {
-                    const r = dz.getBoundingClientRect();
-                    if(clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
-                        dropZone = dz;
-                    }
-                }
-            });
+            document.querySelectorAll('.dnd-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary'));
+
+            // Find where we dropped
+            const elAtPoint = document.elementFromPoint(clientX, clientY);
+            const dropZone = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
             
-            if(dropZone && dndState.el) {
+            if(dropZone && dndState.el && dropZone.dataset.role !== dndState.el.dataset.role) {
                 const sourceNric = dndState.el.dataset.nric;
                 const sourceRole = dndState.el.dataset.role;
                 const targetNric = dropZone.dataset.nric;
@@ -175,9 +169,6 @@ function handleDndDrop(sourceNric, sourceRole, targetNric) {
     }
 }
 
-// ==========================================
-// UI RENDERERS
-// ==========================================
 function buildLogisticsUI() {
  document.getElementById('tab-logistics').innerHTML = `
    <div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 scrollbar-hide pb-1 shrink-0">
@@ -222,12 +213,12 @@ function buildLogisticsUI() {
        <div class="flex flex-row gap-2 flex-1 min-h-0 w-full overflow-hidden">
          <!-- Source Pool (Left Side: 50%) -->
          <div id="dnd-source-col" class="w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors">
-           <h4 id="dnd-source-title" class="font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm"></h4>
+           <h4 id="dnd-source-title" class="font-extrabold text-[12px] md:text-sm py-1.5 shrink-0 text-center uppercase tracking-widest shadow-sm rounded-t-md border-b-2"></h4>
            <div id="dnd-source-pool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar bg-opacity-50 pb-6"></div>
          </div>
          <!-- Target Zones (Right Side: 50%) -->
          <div id="dnd-target-col" class="w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors">
-           <h4 id="dnd-target-title" class="font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm"></h4>
+           <h4 id="dnd-target-title" class="font-extrabold text-[12px] md:text-sm py-1.5 shrink-0 text-center uppercase tracking-widest shadow-sm rounded-t-md border-b-2"></h4>
            <div id="dnd-target-list" class="space-y-2 flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6 bg-opacity-50"></div>
          </div>
        </div>
@@ -287,20 +278,22 @@ function triggerPairingSync() {
 
 function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairingsAlt(); }
 
-// Simple paired pill generator with isolated red X
+// Generates the smaller, distinct paired pill inside the cards
 function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
-    return `<div class="relative inline-block m-1.5 align-top pointer-events-auto">
-        <div class="${targetColorClass} text-[10px] md:text-xs px-2 py-1 md:px-2 md:py-1.5 rounded-md border border-gray-300 dark:border-gray-600 font-bold shadow-sm flex items-center justify-center truncate max-w-[90px] sm:max-w-[130px] bg-opacity-90 dark:bg-opacity-90">
+    return `<div class="relative inline-block m-1 align-top pointer-events-auto">
+        <!-- Added right padding to avoid red 'x' overlap -->
+        <div class="${targetColorClass} text-[9px] md:text-[10px] pl-1.5 pr-3 py-0.5 rounded border border-gray-300 dark:border-gray-600 font-semibold shadow-sm flex items-center justify-center truncate max-w-[85px] sm:max-w-[120px] opacity-85">
             ${targetName}
         </div>
         <div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
     </div>`;
 }
 
+// Generates the main large cards for both columns
 function generateCardHtml(item, familyCounts, pairings, vols, trainees) {
     const dynColor = getProjectColor(item.group);
     const isFam = familyCounts[item.poc] > 1;
-    const famBadge = isFam && item.role === 'TRAINEE' ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[8px] uppercase font-bold tracking-wider px-1 py-0.5 rounded ml-1 shrink-0 shadow-sm border border-purple-200 dark:border-purple-700 pointer-events-none">Fam</span>` : '';
+    const famBadge = isFam && item.role === 'TRAINEE' ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[8px] uppercase font-bold tracking-wider px-1 py-0.5 rounded ml-2 shrink-0 shadow-sm border border-purple-200 dark:border-purple-700 pointer-events-none">Fam</span>` : '';
     
     const myPairings = item.role === 'TRAINEE' ? pairings.filter(p => p.traineeNric === item.nric) : pairings.filter(p => p.volNric === item.nric);
     
@@ -314,11 +307,13 @@ function generateCardHtml(item, familyCounts, pairings, vols, trainees) {
     });
 
     return `
-      <div class="dnd-draggable dnd-dropzone bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none flex flex-col min-h-[65px] gap-1" data-nric="${item.nric}" data-role="${item.role}">
-        <div class="main-name-pill flex items-center w-full pointer-events-none truncate text-ellipsis shrink-0">
-            <span class="font-extrabold text-sm md:text-base px-2 py-1 rounded-md border shadow-sm ${dynColor} truncate w-full tracking-tight">${item.name} ${famBadge}</span>
+      <div class="dnd-draggable dnd-dropzone bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none flex flex-col min-h-[75px] gap-1.5" data-nric="${item.nric}" data-role="${item.role}">
+        <!-- Main Name Pill: Larger, bolder -->
+        <div class="main-name-pill flex items-center w-full pointer-events-none shrink-0 bg-white dark:bg-gray-800 rounded z-10">
+            <span class="font-extrabold text-[13px] md:text-sm px-2.5 py-1 rounded border shadow-sm ${dynColor} truncate max-w-full tracking-tight inline-flex items-center">${item.name} ${famBadge}</span>
         </div>
-        <div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto">
+        <!-- Paired Pills Zone -->
+        <div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto bg-gray-50/50 dark:bg-gray-900/50 p-1 rounded min-h-[32px] border border-dashed border-gray-200 dark:border-gray-700">
             ${pairedPills || '<span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 mt-1 ml-1 pointer-events-none">Drop pair here</span>'}
         </div>
       </div>
@@ -337,7 +332,7 @@ function renderPairings() {
  trainees.forEach(t => {
    const tPairings = pairings.filter(p => p.traineeNric === t.nric);
    const isFam = familyCounts[t.poc] > 1;
-   const famBadge = isFam ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[8px] uppercase font-bold tracking-wider px-1 py-0.5 rounded ml-1 shrink-0 shadow-sm border border-purple-200 dark:border-purple-700">Fam</span>` : '';
+   const famBadge = isFam ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[8px] uppercase font-bold tracking-wider px-1 py-0.5 rounded ml-1 shrink-0 shadow-sm border border-purple-200 dark:border-purple-700 pointer-events-none">Fam</span>` : '';
    const dynColor = getProjectColor(t.group);
 
    let tagsHtml = '';
@@ -372,29 +367,34 @@ function renderPairingsAlt() {
   const sourceArr = isSourceVol ? vols : trainees;
   const targetArr = isSourceVol ? trainees : vols;
   
-  // Distinct visual themes for columns
-  const volColClass = "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40";
-  const traineeColClass = "bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/40";
+  // Apply centralized, distinctly colored headers and column backgrounds
+  const volColClass = "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-800";
+  const traineeColClass = "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800";
+  const sourceColClass = isSourceVol ? volColClass : traineeColClass;
+  const targetColClass = isSourceVol ? traineeColClass : volColClass;
+  
+  const volTitleClass = "bg-green-600 dark:bg-green-700 text-white border-green-700 dark:border-green-900";
+  const traineeTitleClass = "bg-blue-600 dark:bg-blue-700 text-white border-blue-700 dark:border-blue-900";
 
   const sourceCol = document.getElementById('dnd-source-col');
   const targetCol = document.getElementById('dnd-target-col');
-  sourceCol.className = `w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors ${isSourceVol ? volColClass : traineeColClass}`;
-  targetCol.className = `w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors ${!isSourceVol ? volColClass : traineeColClass}`;
+  sourceCol.className = `w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors ${sourceColClass}`;
+  targetCol.className = `w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors ${targetColClass}`;
 
   const sourceTitle = document.getElementById('dnd-source-title');
   const targetTitle = document.getElementById('dnd-target-title');
   sourceTitle.innerText = isSourceVol ? "Volunteers" : "Trainees";
   targetTitle.innerText = isSourceVol ? "Trainees" : "Volunteers";
-  sourceTitle.className = `font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm rounded-t-lg ${isSourceVol ? 'bg-green-600 dark:bg-green-700' : 'bg-blue-600 dark:bg-blue-700'}`;
-  targetTitle.className = `font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm rounded-t-lg ${!isSourceVol ? 'bg-green-600 dark:bg-green-700' : 'bg-blue-600 dark:bg-blue-700'}`;
+  sourceTitle.className = `font-extrabold text-[12px] md:text-sm py-1.5 shrink-0 text-center uppercase tracking-widest shadow-sm rounded-t-md border-b-2 ${isSourceVol ? volTitleClass : traineeTitleClass}`;
+  targetTitle.className = `font-extrabold text-[12px] md:text-sm py-1.5 shrink-0 text-center uppercase tracking-widest shadow-sm rounded-t-md border-b-2 ${!isSourceVol ? volTitleClass : traineeTitleClass}`;
 
   let sourceHtml = '';
   sourceArr.forEach(item => { sourceHtml += generateCardHtml(item, familyCounts, pairings, vols, trainees); });
-  document.getElementById('dnd-source-pool').innerHTML = sourceHtml || '<p class="text-[10px] text-gray-400 p-2">No items.</p>';
+  document.getElementById('dnd-source-pool').innerHTML = sourceHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-4">No items.</p>';
 
   let targetHtml = '';
   targetArr.forEach(item => { targetHtml += generateCardHtml(item, familyCounts, pairings, vols, trainees); });
-  document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-[10px] text-gray-400 p-2">No targets.</p>';
+  document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-4">No targets.</p>';
 }
 
 // === ORIGINAL BOTTOM SHEET UI LOGIC ===
