@@ -27,14 +27,14 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
     .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #4b5563; }
     
-    /* Cleaned up Red 'X' Pill Overlay - No outline, smaller, positioned to not overlap text */
+    /* Perfected Red 'X' Pill Overlay - No Outline, Small, Cleanly Positioned */
     .remove-x {
-        position: absolute; top: -4px; right: -4px;
-        width: 14px; height: 14px;
+        position: absolute; top: -5px; right: -5px;
+        width: 12px; height: 12px;
         background-color: #ef4444; color: white;
-        border-radius: 50%; font-size: 10px; line-height: 14px;
+        border-radius: 50%; font-size: 8px; line-height: 12px;
         text-align: center; cursor: pointer; z-index: 20;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3); font-weight: bold;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.4); font-weight: bold;
         transition: transform 0.1s, background-color 0.1s;
     }
     .remove-x:hover { background-color: #dc2626; transform: scale(1.15); }
@@ -42,9 +42,10 @@
     /* Drag & Drop Core Styling */
     .locked-for-drag { opacity: 0.4; filter: grayscale(50%); }
     .dragging-clone {
-        position: fixed; pointer-events: none; z-index: 9999;
+        position: fixed; pointer-events: none !important; z-index: 9999;
         opacity: 0.95; box-shadow: 0 15px 30px rgba(0,0,0,0.4);
         transform: scale(1.05); display: flex; align-items: center; justify-content: center;
+        margin: 0 !important;
     }
     
     .picker-col { height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
@@ -66,8 +67,11 @@
 
   <div id="devModeBar" class="bg-red-600 text-white text-center py-1 text-[10px] font-bold hidden-force tracking-widest uppercase shrink-0">Dev Mode</div>
 
-  <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-3 py-2 z-20 shrink-0 flex items-center justify-between gap-2 transition-colors duration-300 w-full">
-    <div class="flex items-center gap-2 min-w-0">
+  <!-- Re-engineered Header to prevent Legend squishing -->
+  <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-3 py-2 z-20 shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-2 transition-colors duration-300 w-full">
+    
+    <!-- Top Row (Mobile): Title & Icons -->
+    <div class="flex items-center justify-between w-full md:w-auto gap-2 min-w-0">
       <div class="cursor-pointer flex flex-col justify-center min-w-0 shrink-0" onclick="goHome()">
         <h1 class="font-bold text-lg text-primary leading-tight truncate">MYG Overseas Trip</h1>
         <span id="headerTripName" class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 hidden-force truncate mt-0.5"></span>
@@ -78,20 +82,24 @@
           <svg class="w-5 h-5 transition-transform duration-500 active:rotate-180 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           <div class="btn-spinner spinner-primary dark:spinner-white hidden-force !w-4 !h-4 border-2 absolute inset-0 m-auto"></div>
         </button>
+        <button onclick="toggleTheme()" class="p-1 text-lg transition-all hover:scale-110 focus:outline-none">🌗</button>
       </div>
     </div>
     
-    <!-- Legend Wrapper Flex-1 pushes it to the right and ensures it wraps safely -->
-    <div id="headerLegend" class="flex flex-wrap gap-1 justify-end shrink min-w-0 flex-1 ml-2"></div>
-
-    <!-- Desktop Icons -->
-    <div class="hidden md:flex items-center gap-0.5 shrink-0 ml-2">
-      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 shrink-0 mx-2"></div>
-      <button onclick="updateApp(this)" class="relative p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary transition-all focus:outline-none" title="Update App">
-        <svg class="w-5 h-5 transition-transform duration-500 active:rotate-180 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-        <div class="btn-spinner spinner-primary dark:spinner-white hidden-force !w-4 !h-4 border-2 absolute inset-0 m-auto"></div>
-      </button>
-      <button onclick="toggleTheme()" class="p-1.5 text-lg transition-all hover:scale-110 focus:outline-none" title="Toggle Theme">🌗</button>
+    <!-- Bottom Row (Mobile) / Right Side (Desktop): Legend & Desktop Icons -->
+    <div class="flex flex-row items-center justify-between md:justify-end w-full md:w-auto gap-2 mt-1 md:mt-0">
+        <!-- Legend safely wraps here -->
+        <div id="headerLegend" class="flex flex-wrap gap-1 shrink w-full md:w-auto"></div>
+        
+        <!-- Desktop Icons -->
+        <div class="hidden md:flex items-center gap-0.5 shrink-0 ml-2">
+          <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 shrink-0 mx-2"></div>
+          <button onclick="updateApp(this)" class="relative p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary transition-all focus:outline-none" title="Update App">
+            <svg class="w-5 h-5 transition-transform duration-500 active:rotate-180 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <div class="btn-spinner spinner-primary dark:spinner-white hidden-force !w-4 !h-4 border-2 absolute inset-0 m-auto"></div>
+          </button>
+          <button onclick="toggleTheme()" class="p-1.5 text-lg transition-all hover:scale-110 focus:outline-none" title="Toggle Theme">🌗</button>
+        </div>
     </div>
   </header>
 
