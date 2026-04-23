@@ -12,21 +12,13 @@ if (!window.dndInitialized) {
     document.addEventListener('pointerdown', (e) => {
         if(e.target.closest('.remove-x') || e.target.closest('button')) return; 
         
-        // Detect if dragging an Unpair Pill or a Main Source Card
-        let draggable = e.target.closest('.dnd-draggable-pill');
-        let dragType = 'pill';
-        
-        if(!draggable) {
-            draggable = e.target.closest('.dnd-draggable');
-            dragType = 'card';
-        }
+        const draggable = e.target.closest('.dnd-draggable');
         if(!draggable) return;
         
         // Disable scroll for touch events while dragging
         if (e.pointerType === 'touch') document.body.style.touchAction = 'none'; 
         
         dndEl = draggable;
-        dndEl.dataset.dragType = dragType;
         dndEl.classList.add('locked-for-drag');
         isDragging = true;
         
@@ -38,9 +30,7 @@ if (!window.dndInitialized) {
         dndClone.classList.add('dragging-clone');
         dndClone.classList.remove('locked-for-drag');
         dndClone.style.width = rect.width + 'px';
-        
-        // Strip out the red X if it existed in the clone
-        dndClone.querySelectorAll('.remove-x').forEach(x => x.remove()); 
+        dndClone.style.margin = '0px';
         
         document.body.appendChild(dndClone);
         
@@ -54,16 +44,15 @@ if (!window.dndInitialized) {
             const rect = dndClone.getBoundingClientRect();
             moveDndClone(e.clientX, e.clientY, rect.width, rect.height);
             
-            // Determine valid dropzone based on what we are dragging
-            const dragType = dndEl.dataset.dragType;
-            const validDropSelector = dragType === 'pill' ? '.dnd-dropzone-unpair' : '.dnd-dropzone';
-            
-            document.querySelectorAll(validDropSelector).forEach(dz => {
-                const r = dz.getBoundingClientRect();
-                if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-                } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+                // Only highlight if it's the opposite role!
+                if (dz.dataset.role !== dndEl.dataset.role) {
+                    const r = dz.getBoundingClientRect();
+                    if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+                        dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+                    } else {
+                        dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
+                    }
                 }
             });
         }
@@ -76,30 +65,23 @@ if (!window.dndInitialized) {
         if(isDragging && dndClone) {
             dndClone.remove(); dndClone = null; isDragging = false;
             
-            const dragType = dndEl.dataset.dragType;
-            const validDropSelector = dragType === 'pill' ? '.dnd-dropzone-unpair' : '.dnd-dropzone';
             let dropZone = null;
             
-            document.querySelectorAll(validDropSelector).forEach(dz => {
+            document.querySelectorAll('.dnd-dropzone').forEach(dz => {
                 dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary');
-                const r = dz.getBoundingClientRect();
-                if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-                    dropZone = dz;
+                if (dz.dataset.role !== dndEl.dataset.role) {
+                    const r = dz.getBoundingClientRect();
+                    if(e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+                        dropZone = dz;
+                    }
                 }
             });
             
             if(dropZone && dndEl) {
-                if (dragType === 'card') {
-                    // Standard Pairing (Left to Right)
-                    const sourceNric = dndEl.dataset.nric;
-                    const targetNric = dropZone.dataset.nric;
-                    if(sourceNric && targetNric) handleDndDrop(sourceNric, targetNric);
-                } else if (dragType === 'pill') {
-                    // Unpairing via Right to Left drag
-                    const tNric = dndEl.dataset.traineeNric;
-                    const vNric = dndEl.dataset.volNric;
-                    if(tNric && vNric) unpairTrainee(tNric, vNric);
-                }
+                const sourceNric = dndEl.dataset.nric;
+                const sourceRole = dndEl.dataset.role;
+                const targetNric = dropZone.dataset.nric;
+                if(sourceNric && targetNric) handleDndDrop(sourceNric, sourceRole, targetNric);
             }
         }
         dndEl = null;
@@ -110,7 +92,7 @@ if (!window.dndInitialized) {
         if(dndEl) dndEl.classList.remove('locked-for-drag');
         if(dndClone) dndClone.remove();
         dndEl = null; dndClone = null; isDragging = false;
-        document.querySelectorAll('.dnd-dropzone, .dnd-dropzone-unpair').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary'));
+        document.querySelectorAll('.dnd-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-700', 'dark:border-primary'));
     });
 }
 
@@ -121,9 +103,10 @@ function moveDndClone(x, y, width, height) {
     }
 }
 
-function handleDndDrop(sourceNric, targetNric) {
-    let volNric = altSwapMode ? targetNric : sourceNric;
-    let traineeNric = altSwapMode ? sourceNric : targetNric;
+function handleDndDrop(sourceNric, sourceRole, targetNric) {
+    // Determine which NRIC is the volunteer and which is the trainee based on the source's actual role
+    let volNric = sourceRole === 'VOLUNTEER' ? sourceNric : targetNric;
+    let traineeNric = sourceRole === 'TRAINEE' ? sourceNric : targetNric;
     
     if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNric === volNric)) {
         globalLogistics.pairings.push({ traineeNric: traineeNric, volNric: volNric });
@@ -173,19 +156,19 @@ function buildLogisticsUI() {
            <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
          </button>
        </div>
-       <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2 px-1 shrink-0">Drag left items to right targets. Drag a paired pill back left to unpair.</p>
+       <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2 px-1 shrink-0">Drag between columns to pair. Tap 'X' to unpair.</p>
        
-       <!-- 50/50 Flex Container -->
+       <!-- STRICT Side-by-Side Flex Container (Equal Widths) -->
        <div class="flex flex-row gap-2 flex-1 min-h-0 w-full overflow-hidden">
-         <!-- Source Pool (Left Side: 50%) -->
-         <div id="dnd-source-col" class="w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 dnd-dropzone-unpair transition-colors">
-           <h4 id="dnd-source-title" class="font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest"></h4>
-           <div id="dnd-source-pool" class="space-y-1.5 flex-grow overflow-y-auto pr-1 custom-scrollbar"></div>
+         <!-- Source Pool (Left Side: 50% width) -->
+         <div id="dnd-source-col" class="w-1/2 rounded-xl flex flex-col h-full overflow-hidden shrink-0 transition-colors">
+           <h4 id="dnd-source-title" class="font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm"></h4>
+           <div id="dnd-source-pool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar bg-opacity-50"></div>
          </div>
-         <!-- Target Zones (Right Side: 50%) -->
-         <div id="dnd-target-col" class="w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors">
-           <h4 id="dnd-target-title" class="font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest"></h4>
-           <div id="dnd-target-list" class="space-y-2 flex-grow overflow-y-auto pr-1 custom-scrollbar pb-6"></div>
+         <!-- Target Zones (Right Side: 50% width) -->
+         <div id="dnd-target-col" class="w-1/2 rounded-xl flex flex-col h-full overflow-hidden shrink-0 transition-colors">
+           <h4 id="dnd-target-title" class="font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm"></h4>
+           <div id="dnd-target-list" class="space-y-2 flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6 bg-opacity-50"></div>
          </div>
        </div>
      </div>
@@ -244,14 +227,42 @@ function triggerPairingSync() {
 
 function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairingsAlt(); }
 
-// Clean isolated pill generator with red X positioned nicely on the corner (NO double borders)
+// Clean isolated pill generator with red X positioned nicely on the corner
 function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
-    return `<div class="dnd-draggable-pill relative inline-block m-1 align-top cursor-grab active:cursor-grabbing" data-trainee-nric="${traineeNric}" data-vol-nric="${volNric}">
-        <div class="main-name-pill ${targetColorClass} text-[9px] md:text-[10px] px-1.5 py-1 md:px-2 md:py-1 rounded font-bold shadow-sm flex items-center justify-center truncate max-w-[80px] sm:max-w-[120px] opacity-90">
+    return `<div class="relative inline-block m-1.5 align-top">
+        <div class="${targetColorClass} text-[10px] md:text-xs px-2 py-1 md:px-2 md:py-1 rounded-md border border-gray-300 dark:border-gray-600 font-bold shadow-sm flex items-center justify-center truncate max-w-[90px] sm:max-w-[130px] bg-opacity-90 dark:bg-opacity-90">
             ${targetName}
         </div>
         <div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
     </div>`;
+}
+
+function generateCardHtml(item, familyCounts, pairings, vols, trainees) {
+    const dynColor = getProjectColor(item.group);
+    const isFam = familyCounts[item.poc] > 1;
+    const famBadge = isFam && item.role === 'TRAINEE' ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[8px] uppercase font-bold tracking-wider px-1 py-0.5 rounded ml-1 shrink-0 shadow-sm border border-purple-200 dark:border-purple-700">Fam</span>` : '';
+    
+    const myPairings = item.role === 'TRAINEE' ? pairings.filter(p => p.traineeNric === item.nric) : pairings.filter(p => p.volNric === item.nric);
+    
+    let pairedPills = '';
+    myPairings.forEach(pair => {
+        const pairedPerson = item.role === 'TRAINEE' ? vols.find(v => v.nric === pair.volNric) : trainees.find(t => t.nric === pair.traineeNric);
+        if(pairedPerson) {
+            const pColor = getProjectColor(pairedPerson.group);
+            pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
+        }
+    });
+
+    return `
+      <div class="dnd-draggable dnd-dropzone bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none flex flex-col min-h-[65px] gap-1" data-nric="${item.nric}" data-role="${item.role}">
+        <div class="main-name-pill flex items-center w-full pointer-events-none truncate text-ellipsis shrink-0">
+            <span class="font-extrabold text-sm md:text-base px-2 py-1 rounded-md border shadow-sm ${dynColor} truncate w-full tracking-tight">${item.name} ${famBadge}</span>
+        </div>
+        <div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto">
+            ${pairedPills || '<span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 mt-1 ml-1 pointer-events-none">Drop pair here</span>'}
+        </div>
+      </div>
+    `;
 }
 
 function renderPairings() {
@@ -266,7 +277,7 @@ function renderPairings() {
  trainees.forEach(t => {
    const tPairings = pairings.filter(p => p.traineeNric === t.nric);
    const isFam = familyCounts[t.poc] > 1;
-   const famBadge = isFam ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1">Fam</span>` : '';
+   const famBadge = isFam ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[8px] uppercase font-bold tracking-wider px-1 py-0.5 rounded ml-1 shrink-0 shadow-sm border border-purple-200 dark:border-purple-700">Fam</span>` : '';
    const dynColor = getProjectColor(t.group);
 
    let tagsHtml = '';
@@ -277,7 +288,7 @@ function renderPairings() {
    });
 
    const cardHtml = `<div class="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-2 transition">
-         <div class="flex justify-between items-start mb-1"><div class="flex items-center"><span class="font-bold text-xs md:text-sm px-2 py-0.5 rounded border ${dynColor}">${t.name}</span>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-[10px] md:text-xs bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-semibold px-2 py-1 rounded-md border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none">+ Vol</button></div>
+         <div class="flex justify-between items-start mb-1"><div class="flex items-center"><span class="font-extrabold text-sm md:text-base px-2 py-0.5 rounded border shadow-sm ${dynColor}">${t.name}</span>${famBadge}</div><button onclick="openPairingSheet('${t.nric}')" class="text-[10px] md:text-xs bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-2 py-1 rounded-md border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none">+ Vol</button></div>
          <div class="flex flex-wrap min-h-[28px] items-center pt-1">${tagsHtml || '<span class="text-[10px] md:text-xs font-medium text-gray-400">Unassigned</span>'}</div></div>`;
 
    if(tPairings.length > 0) { pCount++; pairedHtml += cardHtml; } else { uCount++; unpairedHtml += cardHtml; }
@@ -301,83 +312,31 @@ function renderPairingsAlt() {
   const sourceArr = isSourceVol ? vols : trainees;
   const targetArr = isSourceVol ? trainees : vols;
   
-  // Style Titles & Backgrounds Distinctly
-  const volColClass = "bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30";
-  const traineeColClass = "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/30";
+  // Apply distinct, centralized Header styling for the columns
+  const volColClass = "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40";
+  const traineeColClass = "bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/40";
 
-  const sourceColClass = isSourceVol ? volColClass : traineeColClass;
-  const targetColClass = isSourceVol ? traineeColClass : volColClass;
-  
   const sourceCol = document.getElementById('dnd-source-col');
   const targetCol = document.getElementById('dnd-target-col');
-  sourceCol.className = `w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 dnd-dropzone-unpair ${sourceColClass} transition-colors`;
-  targetCol.className = `w-1/2 p-2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 ${targetColClass} transition-colors`;
+  sourceCol.className = `w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors ${isSourceVol ? volColClass : traineeColClass}`;
+  targetCol.className = `w-1/2 rounded-xl border flex flex-col h-full overflow-hidden shrink-0 transition-colors ${!isSourceVol ? volColClass : traineeColClass}`;
 
   const sourceTitle = document.getElementById('dnd-source-title');
   const targetTitle = document.getElementById('dnd-target-title');
   sourceTitle.innerText = isSourceVol ? "Volunteers" : "Trainees";
   targetTitle.innerText = isSourceVol ? "Trainees" : "Volunteers";
-  sourceTitle.className = `font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest ${isSourceVol ? 'text-green-800 dark:text-green-400 border-green-200 dark:border-green-800/50' : 'text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'}`;
-  targetTitle.className = `font-extrabold text-[11px] md:text-sm border-b pb-1.5 mb-2 shrink-0 text-center uppercase tracking-widest ${!isSourceVol ? 'text-green-800 dark:text-green-400 border-green-200 dark:border-green-800/50' : 'text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'}`;
+  sourceTitle.className = `font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm rounded-t-lg ${isSourceVol ? 'bg-green-600 dark:bg-green-700' : 'bg-blue-600 dark:bg-blue-700'}`;
+  targetTitle.className = `font-extrabold text-[11px] md:text-sm p-2 shrink-0 text-center uppercase tracking-widest text-white shadow-sm rounded-t-lg ${!isSourceVol ? 'bg-green-600 dark:bg-green-700' : 'bg-blue-600 dark:bg-blue-700'}`;
 
   // Render Source Pool
   let sourceHtml = '';
-  sourceArr.forEach(s => {
-    const sDynColor = getProjectColor(s.group);
-    const sFam = familyCounts[s.poc] > 1 ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1 shrink-0">Fam</span>` : '';
-    
-    const myPairings = isSourceVol ? pairings.filter(p => p.volNric === s.nric) : pairings.filter(p => p.traineeNric === s.nric);
-    let pairedPills = '';
-    myPairings.forEach(pair => {
-        const pairedPerson = isSourceVol ? trainees.find(t => t.nric === pair.traineeNric) : vols.find(v => v.nric === pair.volNric);
-        if(pairedPerson) {
-            const pColor = getProjectColor(pairedPerson.group);
-            pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
-        }
-    });
-
-    sourceHtml += `
-      <div class="dnd-draggable bg-white dark:bg-gray-800 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary dark:hover:border-primary transition select-none flex flex-col gap-1" data-nric="${s.nric}">
-        <div class="main-name-pill flex items-center w-full pointer-events-none truncate text-ellipsis">
-            <span class="font-extrabold text-xs md:text-sm px-2 py-1 rounded border shadow-sm ${sDynColor} truncate w-full tracking-tight">${s.name} ${s.role === 'TRAINEE' ? sFam : ''}</span>
-        </div>
-        <div class="flex flex-wrap pointer-events-auto">
-            ${pairedPills}
-        </div>
-      </div>
-    `;
-  });
-  document.getElementById('dnd-source-pool').innerHTML = sourceHtml || '<p class="text-[10px] text-gray-400">No items available.</p>';
+  sourceArr.forEach(item => { sourceHtml += generateCardHtml(item, familyCounts, pairings, vols, trainees); });
+  document.getElementById('dnd-source-pool').innerHTML = sourceHtml || '<p class="text-[10px] text-gray-400 p-2">No items.</p>';
 
   // Render Target Drop Zones
   let targetHtml = '';
-  targetArr.forEach(t => {
-    const tDynColor = getProjectColor(t.group);
-    const tFam = familyCounts[t.poc] > 1 ? `<span class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[8px] uppercase font-bold px-1 rounded border border-purple-200 dark:border-purple-800 ml-1 shrink-0">Fam</span>` : '';
-    
-    const myPairings = !isSourceVol ? pairings.filter(p => p.volNric === t.nric) : pairings.filter(p => p.traineeNric === t.nric);
-    
-    let pairedPills = '';
-    myPairings.forEach(pair => {
-       const pairedPerson = !isSourceVol ? trainees.find(tr => tr.nric === pair.traineeNric) : vols.find(v => v.nric === pair.volNric);
-       if(pairedPerson) {
-           const pColor = getProjectColor(pairedPerson.group);
-           pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
-       }
-    });
-
-    targetHtml += `
-      <div class="dnd-dropzone bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 relative min-h-[70px] flex flex-col" data-nric="${t.nric}">
-        <div class="main-name-pill flex items-center mb-1.5 pointer-events-none shrink-0 truncate text-ellipsis">
-            <span class="font-extrabold text-xs md:text-sm px-2 py-1 rounded border shadow-sm ${tDynColor} truncate w-full tracking-tight">${t.name} ${t.role === 'TRAINEE' ? tFam : ''}</span>
-        </div>
-        <div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto">
-          ${pairedPills || '<span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 pointer-events-none mt-1 ml-1">Drop here</span>'}
-        </div>
-      </div>
-    `;
-  });
-  document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-[10px] text-gray-400">No targets available.</p>';
+  targetArr.forEach(item => { targetHtml += generateCardHtml(item, familyCounts, pairings, vols, trainees); });
+  document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-[10px] text-gray-400 p-2">No targets.</p>';
 }
 
 // === ORIGINAL BOTTOM SHEET UI LOGIC ===
@@ -393,7 +352,6 @@ function openPairingSheet(traineeNric) {
  document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
  
  const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER'); const pairings = globalLogistics.pairings ||[]; let html = '';
- const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
 
  vols.forEach(v => {
    const volPairs = pairings.filter(p => p.volNric === v.nric);
