@@ -309,3 +309,4 @@ function archiveAndReset() {
  props.deleteProperty('COMMITTEE_LIST'); props.deleteProperty('ATTENDANCE_JUNCTURES');
  return { status: 'success' };
 }
+ 
