@@ -43,4 +43,5 @@ jobs:
 
       - name: Deploy and Maintain Web App URL
         working-directory: ./backend
-        run: clasp deploy -i ${{ secrets.GAS_DEPLOYMENT_ID }} -d "Auto-deploy via GitHub Actions (Commit: ${{ github.sha }})"
+        run: |
+          clasp deploy -i ${{ secrets.GAS_DEPLOYMENT_ID }} -d "Auto-deploy via GitHub Actions (Commit ${{ github.sha }})"
