@@ -23,9 +23,39 @@ jobs:
       - name: Install Google Clasp
         run: npm install -g @google/clasp
 
-      - name: Write Clasp Credentials
+      - name: Write Clasp Credentials (Safely via Node)
+        env:
+          CLASPRC_JSON_SECRET: ${{ secrets.CLASPRC_JSON }}
         run: |
-          echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
+          node -e "
+          const fs = require('fs');
+          const os = require('os');
+          const path = require('path');
+          
+          try {
+            // 1. Verify the secret isn't empty
+            if (!process.env.CLASPRC_JSON_SECRET) {
+              throw new Error('Secret is empty! Check GitHub Secrets.');
+            }
+            
+            // 2. Parse JSON to ensure it is perfectly formatted
+            const parsed = JSON.parse(process.env.CLASPRC_JSON_SECRET);
+            
+            // 3. Double check the token actually exists inside
+            if (!parsed.token || !parsed.token.access_token) {
+               throw new Error('JSON is valid, but missing the token.access_token property!');
+            }
+            
+            // 4. Safely write directly to the runner's home directory
+            const destPath = path.join(os.homedir(), '.clasprc.json');
+            fs.writeFileSync(destPath, process.env.CLASPRC_JSON_SECRET, 'utf8');
+            console.log('✅ Successfully parsed and wrote .clasprc.json');
+            
+          } catch (e) {
+            console.error('❌ CRITICAL ERROR writing credentials:', e.message);
+            process.exit(1);
+          }
+          "
 
       - name: Create .clasp.json config
         working-directory: ./backend
