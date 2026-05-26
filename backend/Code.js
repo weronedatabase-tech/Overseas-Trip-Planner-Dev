@@ -8,20 +8,28 @@ PROD: '1ROD8FT46w5vpbZdWBGxTL59hSOKHIKH-',
 DEV: '162ZkzByQajQ-EE8OAoV76-VG5VXBX2BO'
 };
 
+// SAFE SETUP: Triggers authorization without wiping data.
 function setupProject() {
 const props = PropertiesService.getScriptProperties();
-props.setProperty('PASS_GENERAL', 'P@ssw0rd');
-props.setProperty('PASS_ADMIN', 'P@ssw0rd');
-props.setProperty('REGISTRATION_OPEN', 'false');
-props.setProperty('ALLOW_EDITS', 'false');
+if(!props.getProperty('PASS_GENERAL')) props.setProperty('PASS_GENERAL', 'P@ssw0rd');
+if(!props.getProperty('PASS_ADMIN')) props.setProperty('PASS_ADMIN', 'P@ssw0rd');
+if(!props.getProperty('REGISTRATION_OPEN')) props.setProperty('REGISTRATION_OPEN', 'false');
+if(!props.getProperty('ALLOW_EDITS')) props.setProperty('ALLOW_EDITS', 'false');
+
+DriveApp.getRootFolder(); // Triggers the Drive permission prompt
+console.log(`Safe setup complete for ${APP_ENV} environment.`);
+}
+
+// DANGER: Wipes all UI Settings (Run only if you want a fresh start)
+function factoryResetSettings() {
+const props = PropertiesService.getScriptProperties();
 props.deleteProperty('COMMITTEE_LIST');
 props.deleteProperty('PROJECT_GROUPS');
 props.deleteProperty('PROJECT_COLORS');
 props.deleteProperty('ATTENDANCE_JUNCTURES');
 props.deleteProperty('SORTING_RULES');
 props.deleteProperty('APP_GRANTED_ACCESS');
-DriveApp.getRootFolder();
-console.log(`Setup complete for ${APP_ENV} environment.`);
+console.log("Settings wiped.");
 }
 
 function getDatabase() {
