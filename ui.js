@@ -118,8 +118,8 @@ document.getElementById('modalContainer').innerHTML = `
    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
      <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Initialize Trip Setup</h3>
      <div class="space-y-4 mb-6 mt-4">
-       <div><label class="block text-xs font-bold mb-1 text-gray-600 dark:text-gray-300">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-2.5 border rounded-lg font-medium bg-gray-50"></div>
-       <div><label class="block text-xs font-bold mb-1 text-gray-600 dark:text-gray-300">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-2.5 border rounded-lg font-medium bg-gray-50"></div>
+       <div><label class="block text-xs font-bold mb-1 text-gray-600 dark:text-gray-300">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
+       <div><label class="block text-xs font-bold mb-1 text-gray-600 dark:text-gray-300">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
      </div>
      <div class="flex space-x-3">
        <button onclick="cancelTripSetup()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition focus:outline-none">Cancel</button>

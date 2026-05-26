@@ -32,7 +32,7 @@ document.getElementById('tab-settings').innerHTML = `
        ${[1,2,3,4].map((i) => `
        <div>
          <label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Priority ${i}</label>
-         <select id="sortRule${i}" class="w-full p-2 border rounded-lg text-sm font-semibold bg-gray-50 dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary">
+         <select id="sortRule${i}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary">
            <option value="none">None</option>
            <option value="project">Project</option>
            <option value="family">Family / Indep</option>
@@ -47,7 +47,7 @@ document.getElementById('tab-settings').innerHTML = `
   <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 admin-only">
     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Attendance Junctures</h3>
     <div class="flex space-x-2 mb-4 mt-3">
-      <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-2.5 border rounded-lg text-sm bg-gray-50">
+      <input type="text" id="newJunctureName" placeholder="e.g. Day 1: Dinner" class="flex-grow p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary">
       <button onclick="addJuncture(this)" class="bg-primary text-white px-4 py-2.5 rounded-lg font-semibold flex items-center shadow-sm"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
     </div>
     <ul id="junctureList" class="space-y-2"></ul>
@@ -56,7 +56,7 @@ document.getElementById('tab-settings').innerHTML = `
   <div id="projectsSettingsBlock" class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 main-admin-only ${currentUser && currentUser.nric === 'ADMIN' ? '' : 'hidden-force'}">
     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Projects</h3>
     <div class="flex space-x-2 mb-4 mt-3">
-      <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-2.5 border rounded-lg text-sm bg-gray-50">
+      <input type="text" id="newGroupName" placeholder="e.g. Project A" class="flex-grow p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary">
       <button onclick="openColorPickerForNewProject()" class="w-10 h-10 shrink-0 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm transition hover:scale-105 bg-white dark:bg-gray-800" id="newGroupColorBtn" title="Pick a color"></button>
       <button onclick="addProjectGroup(this)" class="bg-primary text-white px-4 py-2.5 rounded-lg font-semibold flex items-center shadow-sm"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
     </div>
@@ -66,10 +66,10 @@ document.getElementById('tab-settings').innerHTML = `
   <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Committee Members</h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4 mt-3">
-      <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50">
-      <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-2.5 border rounded-lg uppercase text-sm bg-gray-50">
+      <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary">
+      <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg uppercase text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary">
       <div class="flex space-x-2">
-        <input type="tel" id="newCommPhone" placeholder="Phone" pattern="[0-9]{8}" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50">
+        <input type="tel" id="newCommPhone" placeholder="Phone" pattern="[0-9]{8}" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary">
         <button onclick="addCommittee(this)" class="bg-primary text-white px-4 py-2.5 rounded-lg font-semibold flex items-center shadow-sm"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
       </div>
     </div>
@@ -80,8 +80,8 @@ document.getElementById('tab-settings').innerHTML = `
     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Drive Access Management</h3>
     <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-4">Grant specific users access to the underlying Google Drive trip folder. You can only revoke access that was granted via this interface.</p>
     <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4 mt-3">
-      <input type="email" id="newDriveEmail" placeholder="Google Account Email" class="flex-grow p-2.5 border rounded-lg text-sm bg-gray-50">
-      <select id="newDriveRole" class="p-2.5 border rounded-lg text-sm font-semibold bg-gray-50 w-full md:w-32">
+      <input type="email" id="newDriveEmail" placeholder="Google Account Email" class="flex-grow p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary">
+      <select id="newDriveRole" class="p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white w-full md:w-32 focus:outline-none focus:ring-1 focus:ring-primary">
         <option value="viewer">Viewer</option>
         <option value="editor">Editor</option>
       </select>
@@ -98,7 +98,6 @@ document.getElementById('tab-settings').innerHTML = `
 `;
 applyAdminVisuals();
 
-// Apply existing Sorting Settings to the UI selectors
 const sRules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
 for(let i=0; i<4; i++) {
     const sel = document.getElementById(`sortRule${i+1}`);
