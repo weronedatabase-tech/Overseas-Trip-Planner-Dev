@@ -367,15 +367,44 @@ return { status: 'success' };
 }
 
 function archiveAndReset() {
-const props = PropertiesService.getScriptProperties(); const dbId = props.getProperty('DB_SHEET_ID');
+const props = PropertiesService.getScriptProperties(); 
+const dbId = props.getProperty('DB_SHEET_ID');
+
+// Step 1: Auto-revoke all drive permissions granted via the app interface
+try {
+  if (dbId) {
+    const folder = getTripFolder();
+    const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
+    if (rawAccess) {
+      const accessObj = JSON.parse(rawAccess);
+      for (let email in accessObj) {
+        try {
+          if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
+          else { folder.removeViewer(email); }
+        } catch(e) { /* Ignore individual removal errors if user manually unshared it */ }
+      }
+    }
+  }
+} catch (e) {
+  console.log("Could not auto-revoke access: " + e.message);
+}
+
+// Step 2: Archive the Database File
 if (dbId) {
-  const t = props.getProperty('TRIP_TITLE') || 'Archived Trip'; const y = props.getProperty('TRIP_YEAR') || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy");
+  const t = props.getProperty('TRIP_TITLE') || 'Archived Trip'; 
+  const y = props.getProperty('TRIP_YEAR') || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy");
   const d = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
   try { DriveApp.getFileById(dbId).setName(`${t} ${y} (Archived ${d})`); } catch(e){}
 }
-props.deleteProperty('DB_SHEET_ID'); props.setProperty('REGISTRATION_OPEN', 'false'); props.setProperty('ALLOW_EDITS', 'false');
-props.deleteProperty('TRIP_TITLE'); props.deleteProperty('TRIP_YEAR');
-props.deleteProperty('COMMITTEE_LIST'); props.deleteProperty('ATTENDANCE_JUNCTURES');
-props.deleteProperty('APP_GRANTED_ACCESS'); // Reset app-managed drive access tracker
+
+// Step 3: Wipe System Data completely
+props.deleteProperty('DB_SHEET_ID'); 
+props.setProperty('REGISTRATION_OPEN', 'false'); 
+props.setProperty('ALLOW_EDITS', 'false');
+props.deleteProperty('TRIP_TITLE'); 
+props.deleteProperty('TRIP_YEAR');
+props.deleteProperty('COMMITTEE_LIST'); 
+props.deleteProperty('ATTENDANCE_JUNCTURES');
+props.deleteProperty('APP_GRANTED_ACCESS'); 
 return { status: 'success' };
 }

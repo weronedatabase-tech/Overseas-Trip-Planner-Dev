@@ -1,7 +1,7 @@
 const DEV_MODE = true; 
 const URLS = {
- DEV: "https://script.google.com/macros/s/AKfycby48gbzI_4V0TEJ0Gra4Qb_J3xywBA6A792d2reGx0QWUx-6QFEKRWBTmr8mGG86osg/exec",
- PROD: "https://script.google.com/macros/s/AKfycbz4OLZtR2lX97MrGZVaNg13Lrzvwgy7mBfQr7PgoQGK617sL8ZCkKvZD2hIZodus-O_/exec"
+DEV: "https://script.google.com/macros/s/AKfycby48gbzI_4V0TEJ0Gra4Qb_J3xywBA6A792d2reGx0QWUx-6QFEKRWBTmr8mGG86osg/exec",
+PROD: "https://script.google.com/macros/s/AKfycbz4OLZtR2lX97MrGZVaNg13Lrzvwgy7mBfQr7PgoQGK617sL8ZCkKvZD2hIZodus-O_/exec"
 };
 const API_URL = DEV_MODE ? URLS.DEV : URLS.PROD;
 
@@ -14,84 +14,89 @@ let pendingColorGroupTarget = null;
 let newProjectSelectedColor = null;
 
 window.onload = async () => {
- if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
- if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
- if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
- 
- const savedSession = localStorage.getItem('userSession');
- if(savedSession) currentUser = JSON.parse(savedSession);
- 
- injectGlobalModals(); 
- await fetchConfig();
- if(currentUser) renderDashboard(); else goHome();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if(DEV_MODE) document.getElementById('devModeBar').classList.remove('hidden-force');
+if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+
+const savedSession = localStorage.getItem('userSession');
+if(savedSession) currentUser = JSON.parse(savedSession);
+
+injectGlobalModals(); 
+await fetchConfig();
+if(currentUser) renderDashboard(); else goHome();
 };
 
 async function callBackend(action, payload = {}) {
- try {
-   const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
-   if(!res.ok) throw new Error("Network error."); 
-   const data = await res.json();
-   if(data.status === 'error') throw new Error(data.message); 
-   return data;
- } catch (err) {
-   if(err.message.includes('Failed to fetch')) { showToast("Auth required.", true); setTimeout(() => window.open(API_URL, '_blank'), 2000); }
-   else { throw err; }
- }
+try {
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+  if(!res.ok) throw new Error("Network error."); 
+  const data = await res.json();
+  if(data.status === 'error') throw new Error(data.message); 
+  return data;
+} catch (err) {
+  if(err.message.includes('Failed to fetch')) { showToast("Auth required.", true); setTimeout(() => window.open(API_URL, '_blank'), 2000); }
+  else { throw err; }
+}
 }
 
 async function fetchConfig() {
- try {
-   const config = await callBackend('getSettings'); appSettings = config;
-   const regBox = document.getElementById('landingRegBox');
-   if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
-   
-   const headerTripName = document.getElementById('headerTripName');
-   if (appSettings.tripTitle && appSettings.tripYear) { 
-     headerTripName.textContent = `${appSettings.tripTitle} ${appSettings.tripYear}`; headerTripName.classList.remove('hidden-force'); 
-   } else { headerTripName.classList.add('hidden-force'); }
-   
-   renderHeaderLegend();
-   if(currentUser && currentUser.role === 'admin') applyAdminVisuals(); 
- } catch (e) { showToast("Error syncing settings.", true); } finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
+try {
+  const config = await callBackend('getSettings'); appSettings = config;
+  const regBox = document.getElementById('landingRegBox');
+  if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
+  
+  const tripStr = (appSettings.tripTitle && appSettings.tripYear) ? `${appSettings.tripTitle} ${appSettings.tripYear}` : '';
+  const titleEls = ['deskTripName', 'mobTripName', 'unauthTripName'];
+  titleEls.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) {
+          if(tripStr) { el.textContent = tripStr; el.classList.remove('hidden-force'); } 
+          else { el.classList.add('hidden-force'); }
+      }
+  });
+  
+  renderHeaderLegend();
+  if(currentUser && currentUser.role === 'admin') applyAdminVisuals(); 
+} catch (e) { showToast("Error syncing settings.", true); } finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
 }
 
 function updateApp(btn) {
- setBtnLoading(btn, true); showToast("Updating app data and clearing caches...");
- if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.unregister(); }); }
- setTimeout(() => location.reload(true), 1000);
+setBtnLoading(btn, true); showToast("Updating app data and clearing caches...");
+if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.unregister(); }); }
+setTimeout(() => location.reload(true), 1000);
 }
 
 // Global Sorting Logic (Applies to all lists across the App)
 function applyGlobalSorting(participants) {
-  const rules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
-  const familyCounts = {};
-  participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
+ const rules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
+ const familyCounts = {};
+ participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
 
-  return participants.sort((a, b) => {
-      for (let rule of rules) {
-          if (rule === 'none') continue;
-          if (rule === 'project') {
-              const aG = a.group || 'ZZZ';
-              const bG = b.group || 'ZZZ';
-              const cmp = aG.localeCompare(bG);
-              if (cmp !== 0) return cmp;
-          }
-          if (rule === 'family') {
-              const aFam = familyCounts[a.poc] > 1 ? 1 : 0;
-              const bFam = familyCounts[b.poc] > 1 ? 1 : 0;
-              if (aFam !== bFam) return bFam - aFam; // 1 before 0
-          }
-          if (rule === 'role') {
-              const rW = { 'CAREGIVER': 1, 'TRAINEE': 2, 'VOLUNTEER': 3 };
-              const aR = rW[a.role] || 9;
-              const bR = rW[b.role] || 9;
-              if (aR !== bR) return aR - bR;
-          }
-          if (rule === 'name') {
-              const cmp = (a.name || '').localeCompare(b.name || '');
-              if (cmp !== 0) return cmp;
-          }
-      }
-      return 0;
-  });
+ return participants.sort((a, b) => {
+     for (let rule of rules) {
+         if (rule === 'none') continue;
+         if (rule === 'project') {
+             const aG = a.group || 'ZZZ';
+             const bG = b.group || 'ZZZ';
+             const cmp = aG.localeCompare(bG);
+             if (cmp !== 0) return cmp;
+         }
+         if (rule === 'family') {
+             const aFam = familyCounts[a.poc] > 1 ? 1 : 0;
+             const bFam = familyCounts[b.poc] > 1 ? 1 : 0;
+             if (aFam !== bFam) return bFam - aFam; // 1 before 0
+         }
+         if (rule === 'role') {
+             const rW = { 'CAREGIVER': 1, 'TRAINEE': 2, 'VOLUNTEER': 3 };
+             const aR = rW[a.role] || 9;
+             const bR = rW[b.role] || 9;
+             if (aR !== bR) return aR - bR;
+         }
+         if (rule === 'name') {
+             const cmp = (a.name || '').localeCompare(b.name || '');
+             if (cmp !== 0) return cmp;
+         }
+     }
+     return 0;
+ });
 }
