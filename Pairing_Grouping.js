@@ -1,6 +1,9 @@
 let pairingSyncTimeout = null;
 let altSwapMode = false;
 let currentPairingSourceRole = 'TRAINEE';
+let pendingPairingsMap = new Map();
+let isPairingSyncing = false;
+let pairingPollInterval = null;
 
 // ==========================================
 // ROBUST DRAG & DROP ENGINE (Mouse + Touch)
@@ -9,13 +12,15 @@ if (!window.dndInitialized) {
  window.dndInitialized = true;
 
  let dndState = {
-     timer: null,
      isDragging: false,
      el: null,
      clone: null,
      startX: 0,
      startY: 0,
-     moved: false
+     offsetX: 0,
+     offsetY: 0,
+     nameNode: null,
+     rect: null
  };
 
  // --- TOUCH EVENTS (MOBILE) ---
@@ -57,26 +62,21 @@ if (!window.dndInitialized) {
      // Prevent interfering with buttons or scrollbars
      if(e.target.closest('.remove-x') || e.target.closest('button')) return;
      
-     const altContainer = document.getElementById('log-pairings-alt');
-     if(!altContainer || altContainer.classList.contains('hidden-force')) return;
+     const pairingContainer = document.getElementById('log-pairings');
+     if(!pairingContainer || pairingContainer.classList.contains('hidden-force')) return;
 
      let draggable = e.target.closest('.dnd-draggable');
      if(!draggable) return;
 
      dndState.el = draggable;
-     
-     // Target specifically the name pill inside the box
-     const nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
-     const rect = nameNode.getBoundingClientRect();
+     dndState.nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
+     dndState.rect = dndState.nameNode.getBoundingClientRect();
      
      dndState.startX = clientX;
      dndState.startY = clientY;
-     dndState.moved = false;
-
-     // Initialize dragging immediately upon sliding
+     dndState.offsetX = clientX - dndState.rect.left;
+     dndState.offsetY = clientY - dndState.rect.top;
      dndState.isDragging = false;
-     dndState.nameNode = nameNode;
-     dndState.rect = rect;
  }
 
  function moveDrag(e, clientX, clientY, isTouch) {
@@ -85,13 +85,13 @@ if (!window.dndInitialized) {
      const deltaX = Math.abs(clientX - dndState.startX);
      const deltaY = Math.abs(clientY - dndState.startY);
 
-     // If the user hasn't moved significantly horizontally, let them scroll vertically
+     // If user hasn't triggered drag, check direction of movement
      if (!dndState.isDragging) {
-         if (deltaX > 10 && deltaX > deltaY) {
-             // Horizontal swipe detected - activate drag
+         if (deltaX > 8 && deltaX > deltaY) {
+             // Horizontal swipe detected - activate drag immediately
              dndState.isDragging = true;
              
-             if(isTouch && navigator.vibrate) navigator.vibrate(50);
+             if(isTouch && navigator.vibrate) navigator.vibrate(20);
              
              dndState.el.classList.add('locked-for-drag');
              
@@ -102,19 +102,17 @@ if (!window.dndInitialized) {
              dndState.clone.style.height = dndState.rect.height + 'px';
              
              document.body.appendChild(dndState.clone);
-         } else if (deltaY > 10) {
-             // Vertical swipe detected - cancel drag to allow scrolling
+         } else if (deltaY > 8) {
+             // Vertical swipe detected - cancel drag to allow native scrolling
              dndState.el = null;
              return;
          }
      }
 
      if (dndState.isDragging && dndState.clone) {
-         e.preventDefault(); // Prevent scrolling while actively dragging horizontally
+         if(e.cancelable) e.preventDefault(); // Stop native scrolling while dragging horizontally
          
-         const w = parseFloat(dndState.clone.style.width);
-         const h = parseFloat(dndState.clone.style.height);
-         updateClonePosition(clientX, clientY, w, h);
+         updateClonePosition(clientX, clientY);
          
          // Highlight valid drop zones
          const elAtPoint = document.elementFromPoint(clientX, clientY);
@@ -156,10 +154,10 @@ if (!window.dndInitialized) {
      dndState.nameNode = null;
  }
 
- function updateClonePosition(x, y, w, h) {
+ function updateClonePosition(x, y) {
      if(dndState.clone) {
-         dndState.clone.style.left = (x - (w / 2)) + 'px';
-         dndState.clone.style.top = (y - (h / 2)) + 'px';
+         dndState.clone.style.left = (x - dndState.offsetX) + 'px';
+         dndState.clone.style.top = (y - dndState.offsetY) + 'px';
      }
  }
 }
@@ -169,6 +167,8 @@ function handleDndDrop(sourceNric, sourceRole, targetNric) {
  let traineeNric = sourceRole === 'TRAINEE' ? sourceNric : targetNric;
  
  if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNric === volNric)) {
+     const key = traineeNric + '_' + volNric;
+     pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric });
      globalLogistics.pairings.push({ traineeNric: traineeNric, volNric: volNric });
      renderPairings(); 
      triggerPairingSync();
@@ -177,20 +177,126 @@ function handleDndDrop(sourceNric, sourceRole, targetNric) {
  }
 }
 
+function unpairTrainee(traineeNric, volNric) {
+ const key = traineeNric + '_' + volNric;
+ pendingPairingsMap.set(key, { action: 'REMOVE', traineeNric, volNric });
+ globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); 
+ renderPairings(); 
+ triggerPairingSync();
+}
+
+// ==========================================
+// DATA SYNC & POLLING LOGIC
+// ==========================================
+function setSyncButtonState(state) {
+const btns = document.querySelectorAll('.btn-sync-pairings');
+if(btns.length === 0) return;
+btns.forEach(btn => {
+ const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
+ btn.className = "btn-sync-pairings text-xs px-2 md:px-3 py-1 md:py-1.5 rounded font-bold transition flex items-center justify-center border shadow-sm focus:outline-none"; 
+ spinner.className = "btn-spinner ml-1 !w-3 !h-3 hidden-force"; 
+ if (state === 'loading') { 
+     btn.classList.add('bg-gray-100', 'text-gray-500', 'border-gray-200', 'dark:bg-gray-800', 'dark:text-gray-400', 'dark:border-gray-700'); 
+     textSpan.textContent = "Loading..."; 
+     spinner.classList.remove('hidden-force'); 
+     spinner.classList.add('spinner-primary'); 
+ } else if(state === 'saving') { 
+     btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); 
+     textSpan.textContent = "Saving..."; 
+     spinner.classList.remove('hidden-force'); 
+     spinner.classList.add('spinner-yellow'); 
+ } else if (state === 'saved') { 
+     btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); 
+     textSpan.textContent = "Saved"; 
+ } else if (state === 'error') { 
+     btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); 
+     textSpan.textContent = "Save Failed"; 
+ }
+});
+}
+
+function triggerPairingSync() {
+setSyncButtonState('saving');
+if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
+pairingSyncTimeout = setTimeout(() => {
+    executePairingSync();
+}, 800); 
+}
+
+async function executePairingSync() {
+if (pendingPairingsMap.size === 0) return;
+
+isPairingSyncing = true;
+setSyncButtonState('saving');
+
+const updates = Array.from(pendingPairingsMap.values());
+const batch = new Map(pendingPairingsMap);
+pendingPairingsMap.clear();
+
+try {
+    const res = await callBackend('syncPairingUpdates', { updates });
+    if(res.pairings) {
+        globalLogistics.pairings = res.pairings;
+    }
+    setSyncButtonState('saved');
+} catch(e) {
+    showToast("Sync failed. Retrying...", true);
+    setSyncButtonState('error');
+    batch.forEach((val, key) => pendingPairingsMap.set(key, val));
+} finally {
+    isPairingSyncing = false;
+}
+}
+
+function startPairingPolling() {
+if (pairingPollInterval) clearInterval(pairingPollInterval);
+
+pairingPollInterval = setInterval(async () => {
+    const logTab = document.getElementById('tab-logistics');
+    if(!logTab || logTab.classList.contains('hidden-force')) return;
+    
+    // Do not poll if pending edits or actively syncing
+    if(pendingPairingsMap.size > 0 || isPairingSyncing) return;
+    
+    try {
+        const res = await callBackend('fetchPairingsOnly');
+        if(res.pairings) {
+            const server = res.pairings;
+            const local = globalLogistics.pairings || [];
+            
+            const serverHash = server.map(p => p.traineeNric+'_'+p.volNric).sort().join('|');
+            const localHash = local.map(p => p.traineeNric+'_'+p.volNric).sort().join('|');
+            
+            if (serverHash !== localHash) {
+                globalLogistics.pairings = server;
+                renderPairings();
+            }
+        }
+    } catch(e) {
+        // Silent fail on polling
+    }
+}, 8000);
+}
+
 // ==========================================
 // UI RENDERERS
 // ==========================================
 function buildLogisticsUI() {
 document.getElementById('tab-logistics').innerHTML = `
 <div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 scrollbar-hide pb-1 shrink-0">
-  <button onclick="switchLogisticsSubTab('pairings-alt')" id="subTab-pairings-alt" class="px-3 py-1 font-semibold border-b-2 border-primary text-primary whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">1. Pairings</button>
+  <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-3 py-1 font-semibold border-b-2 border-primary text-primary whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">1. Pairings</button>
   <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="px-3 py-1 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">2. Rooms</button>
   <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-3 py-1 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">3. Groups</button>
   <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-3 py-1 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">4. Buses</button>
 </div>
 
 <!-- Drag & Drop Pairing UI -->
-<div id="log-pairings-alt" class="flex-1 flex flex-col min-h-0 mt-2">
+<div id="log-pairings" class="flex-1 flex flex-col min-h-0 mt-2 relative">
+  <div id="logLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-10 hidden-force flex flex-col justify-center items-center rounded-xl">
+      <div class="loader !w-10 !h-10 border-primary mb-3"></div>
+      <span class="text-primary dark:text-blue-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-1.5 rounded-full">Loading...</span>
+  </div>
+  
   <div class="bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col flex-1 min-h-0">
     <div class="flex justify-between items-center mb-2 px-1 shrink-0">
       <div class="flex items-center gap-2">
@@ -226,7 +332,7 @@ document.getElementById('tab-logistics').innerHTML = `
 `;
 }
 
-function switchLogisticsSubTab(tabId) {['pairings-alt', 'rooms', 'groups', 'buses'].forEach(id => { 
+function switchLogisticsSubTab(tabId) {['pairings', 'rooms', 'groups', 'buses'].forEach(id => { 
 const el = document.getElementById(`log-${id}`);
 if(el) el.classList.add('hidden-force'); 
 const btn = document.getElementById(`subTab-${id}`); 
@@ -239,6 +345,10 @@ if(targetBtn) { targetBtn.classList.remove('border-transparent', 'text-gray-500'
 }
 
 async function loadLogisticsData() { 
+const overlay = document.getElementById('logLoadingOverlay');
+if (overlay) overlay.classList.remove('hidden-force');
+setSyncButtonState('loading');
+
 try { 
   const res = await callBackend('fetchLogistics'); 
   globalLogistics = res; 
@@ -246,32 +356,17 @@ try {
       globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
   }
   renderPairings(); 
-} catch(e) { showToast("Failed to load logistics.", true); } 
+  setSyncButtonState('saved');
+  startPairingPolling();
+} catch(e) { 
+  showToast("Failed to load logistics.", true); 
+  setSyncButtonState('error');
+} finally {
+  if (overlay) overlay.classList.add('hidden-force');
+}
 }
 
-function setSyncButtonState(state) {
-const btns = document.querySelectorAll('.btn-sync-pairings');
-if(btns.length === 0) return;
-btns.forEach(btn => {
- const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelector('.btn-spinner');
- btn.className = "btn-sync-pairings text-xs px-2 md:px-3 py-1 md:py-1.5 rounded font-bold transition flex items-center justify-center border shadow-sm focus:outline-none"; 
- spinner.className = "btn-spinner ml-1 !w-3 !h-3 hidden-force"; 
- if(state === 'saving') { btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); textSpan.textContent = "Saving..."; spinner.classList.remove('hidden-force'); spinner.classList.add('spinner-yellow'); btn.disabled = true; } 
- else if (state === 'saved') { btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); textSpan.textContent = "Saved"; btn.disabled = false; } 
- else if (state === 'error') { btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); textSpan.textContent = "Save Failed"; btn.disabled = false; }
-});
-}
-
-function triggerPairingSync() {
-setSyncButtonState('saving');
-if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
-pairingSyncTimeout = setTimeout(async () => {
- try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); } 
- catch(e) { showToast("Failed to sync", true); setSyncButtonState('error'); }
-}, 800); 
-}
-
-function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairingsAlt(); }
+function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairings(); }
 
 // Generates the visual paired pill. Uses smaller text, lower opacity.
 function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
@@ -319,7 +414,7 @@ function generateCardHtml(item, familyCounts, pairings, vols, trainees) {
  `;
 }
 
-function renderPairingsAlt() {
+function renderPairings() {
 if(!globalLogistics || !document.getElementById('dnd-source-pool')) return;
 const trainees = globalLogistics.participants.filter(p => p.role === 'TRAINEE');
 const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER');
@@ -358,10 +453,6 @@ document.getElementById('dnd-source-pool').innerHTML = sourceHtml || '<p class="
 let targetHtml = '';
 targetArr.forEach(item => { targetHtml += generateCardHtml(item, familyCounts, pairings, vols, trainees); });
 document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-4">No targets.</p>';
-}
-
-function renderPairings() {
-  renderPairingsAlt();
 }
 
 // === ORIGINAL BOTTOM SHEET UI LOGIC ===
@@ -433,19 +524,28 @@ closeSelectionSheet();
 const traineeNric = currentPairingSourceRole === 'TRAINEE' ? currentPairingTarget : targetNric;
 const volNric = currentPairingSourceRole === 'TRAINEE' ? targetNric : currentPairingTarget;
 
-globalLogistics.pairings.push({ traineeNric: traineeNric, volNric: volNric }); 
-renderPairings(); 
-triggerPairingSync();
+if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNric === volNric)) {
+    const key = traineeNric + '_' + volNric;
+    pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric });
+    globalLogistics.pairings.push({ traineeNric, volNric }); 
+    renderPairings(); 
+    triggerPairingSync();
 }
-
-function unpairTrainee(traineeNric, volNric) {
-globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); renderPairings(); triggerPairingSync();
 }
 
 async function manualSyncPairings(btn) {
-setSyncButtonState('saving');
-try { await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); setSyncButtonState('saved'); showToast("Manual save complete!"); } 
-catch(e) { showToast("Save failed.", true); setSyncButtonState('error'); } 
+setSyncButtonState('loading');
+try { 
+    // Fallback: forcefully wipe and sync all from the local cache, in case delta drops.
+    await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
+    pendingPairingsMap.clear();
+    setSyncButtonState('saved'); 
+    showToast("Manual save complete!"); 
+} 
+catch(e) { 
+    showToast("Save failed.", true); 
+    setSyncButtonState('error'); 
+} 
 }
 
 function closeSelectionSheet() { document.getElementById('selectionBottomSheet').classList.add('hidden-force'); }
