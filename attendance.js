@@ -38,9 +38,9 @@ document.getElementById('tab-attendance').innerHTML = `
    
    <div class="flex flex-row gap-2 flex-1 min-h-0 w-full overflow-hidden mt-1 px-1 relative">
        <!-- Loading Overlay -->
-       <div id="attLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-10 hidden-force flex-col justify-center items-center rounded-xl">
+       <div id="attLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-10 hidden-force flex flex-col justify-center items-center rounded-xl">
            <div class="loader !w-10 !h-10 border-primary mb-3"></div>
-           <span class="text-primary dark:text-blue-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-1.5 rounded-full">Syncing...</span>
+           <span class="text-primary dark:text-blue-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-1.5 rounded-full">Loading...</span>
        </div>
        
        <!-- NOT Checked (Red) -->
