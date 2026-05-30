@@ -14,7 +14,8 @@ if (!window.dndInitialized) {
      el: null,
      clone: null,
      startX: 0,
-     startY: 0
+     startY: 0,
+     moved: false
  };
 
  // --- TOUCH EVENTS (MOBILE) ---
@@ -24,7 +25,7 @@ if (!window.dndInitialized) {
  }, {passive: false});
 
  document.addEventListener('touchmove', (e) => {
-     moveDrag(e, e.touches[0].clientX, e.touches[0].clientY);
+     moveDrag(e, e.touches[0].clientX, e.touches[0].clientY, true);
  }, {passive: false});
 
  document.addEventListener('touchend', (e) => {
@@ -44,7 +45,7 @@ if (!window.dndInitialized) {
  });
 
  document.addEventListener('mousemove', (e) => {
-     moveDrag(e, e.clientX, e.clientY);
+     moveDrag(e, e.clientX, e.clientY, false);
  });
 
  document.addEventListener('mouseup', (e) => {
@@ -68,39 +69,48 @@ if (!window.dndInitialized) {
      const nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
      const rect = nameNode.getBoundingClientRect();
      
-     dndState.startX = clientX - rect.left;
-     dndState.startY = clientY - rect.top;
+     dndState.startX = clientX;
+     dndState.startY = clientY;
+     dndState.moved = false;
 
-     // Mobile requires a brief delay to differentiate dragging from scrolling
-     const delay = isTouch ? 150 : 0;
-
-     dndState.timer = setTimeout(() => {
-         dndState.isDragging = true;
-         if(isTouch && navigator.vibrate) navigator.vibrate(50);
-         
-         dndState.el.classList.add('locked-for-drag');
-         
-         // Generate visually identical clone
-         dndState.clone = nameNode.cloneNode(true);
-         dndState.clone.classList.add('dragging-clone');
-         dndState.clone.style.width = rect.width + 'px';
-         dndState.clone.style.height = rect.height + 'px';
-         
-         document.body.appendChild(dndState.clone);
-         updateClonePosition(clientX, clientY, rect.width, rect.height);
-     }, delay);
+     // Initialize dragging immediately upon sliding
+     dndState.isDragging = false;
+     dndState.nameNode = nameNode;
+     dndState.rect = rect;
  }
 
- function moveDrag(e, clientX, clientY) {
-     // Cancel the long-press if user moves finger early (they are scrolling)
-     if (!dndState.isDragging && dndState.timer) {
-         clearTimeout(dndState.timer);
-         dndState.timer = null;
-         dndState.el = null;
+ function moveDrag(e, clientX, clientY, isTouch) {
+     if (!dndState.el) return;
+
+     const deltaX = Math.abs(clientX - dndState.startX);
+     const deltaY = Math.abs(clientY - dndState.startY);
+
+     // If the user hasn't moved significantly horizontally, let them scroll vertically
+     if (!dndState.isDragging) {
+         if (deltaX > 10 && deltaX > deltaY) {
+             // Horizontal swipe detected - activate drag
+             dndState.isDragging = true;
+             
+             if(isTouch && navigator.vibrate) navigator.vibrate(50);
+             
+             dndState.el.classList.add('locked-for-drag');
+             
+             // Generate visually identical clone
+             dndState.clone = dndState.nameNode.cloneNode(true);
+             dndState.clone.classList.add('dragging-clone');
+             dndState.clone.style.width = dndState.rect.width + 'px';
+             dndState.clone.style.height = dndState.rect.height + 'px';
+             
+             document.body.appendChild(dndState.clone);
+         } else if (deltaY > 10) {
+             // Vertical swipe detected - cancel drag to allow scrolling
+             dndState.el = null;
+             return;
+         }
      }
 
      if (dndState.isDragging && dndState.clone) {
-         e.preventDefault(); 
+         e.preventDefault(); // Prevent scrolling while actively dragging horizontally
          
          const w = parseFloat(dndState.clone.style.width);
          const h = parseFloat(dndState.clone.style.height);
@@ -121,11 +131,6 @@ if (!window.dndInitialized) {
  }
 
  function endDrag(e, clientX, clientY) {
-     if(dndState.timer) {
-         clearTimeout(dndState.timer);
-         dndState.timer = null;
-     }
-
      if(dndState.el) dndState.el.classList.remove('locked-for-drag');
      
      if (dndState.isDragging && dndState.clone) {
@@ -148,6 +153,7 @@ if (!window.dndInitialized) {
          }
      }
      dndState.el = null;
+     dndState.nameNode = null;
  }
 
  function updateClonePosition(x, y, w, h) {
@@ -177,30 +183,14 @@ function handleDndDrop(sourceNric, sourceRole, targetNric) {
 function buildLogisticsUI() {
 document.getElementById('tab-logistics').innerHTML = `
 <div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 scrollbar-hide pb-1 shrink-0">
-  <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-3 py-1 font-semibold border-b-2 border-primary text-primary whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">1. Pairings</button>
-  <button onclick="switchLogisticsSubTab('pairings-alt')" id="subTab-pairings-alt" class="px-3 py-1 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">1. Pairings (Alt)</button>
+  <button onclick="switchLogisticsSubTab('pairings-alt')" id="subTab-pairings-alt" class="px-3 py-1 font-semibold border-b-2 border-primary text-primary whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">1. Pairings</button>
   <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="px-3 py-1 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">2. Rooms</button>
   <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-3 py-1 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">3. Groups</button>
   <button onclick="switchLogisticsSubTab('buses')" id="subTab-buses" class="px-3 py-1 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-sm mb-[-5px] transition focus:outline-none">4. Buses</button>
 </div>
 
-<!-- Standard Pairing UI -->
-<div id="log-pairings" class="flex-1 flex flex-col min-h-0 mt-2 overflow-y-auto pb-10">
-  <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-    <div class="flex justify-between items-center mb-2">
-      <h3 class="text-base font-bold text-gray-900 dark:text-white">Trainee - Vol Pairings</h3>
-      <button onclick="manualSyncPairings(this)" class="btn-sync-pairings text-xs px-2 py-1 rounded font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none">
-        <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
-      </button>
-    </div>
-    <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-3">Tap "+ Add Vol" to assign multiple volunteers per trainee.</p>
-    <div class="space-y-2"><h4 class="font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 pb-1 text-sm">Unassigned (<span id="unpairedCount">0</span>)</h4><div id="unpairedTraineesList" class="space-y-2"></div></div>
-    <div class="space-y-2 mt-4"><h4 class="font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 pb-1 text-sm">Paired (<span id="pairedCount">0</span>)</h4><div id="pairedTraineesList" class="space-y-2"></div></div>
-  </div>
-</div>
-
-<!-- Alternative Drag & Drop Pairing UI -->
-<div id="log-pairings-alt" class="hidden-force flex-1 flex flex-col min-h-0 mt-2">
+<!-- Drag & Drop Pairing UI -->
+<div id="log-pairings-alt" class="flex-1 flex flex-col min-h-0 mt-2">
   <div class="bg-white dark:bg-gray-800 p-2 md:p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col flex-1 min-h-0">
     <div class="flex justify-between items-center mb-2 px-1 shrink-0">
       <div class="flex items-center gap-2">
@@ -213,7 +203,7 @@ document.getElementById('tab-logistics').innerHTML = `
         <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
       </button>
     </div>
-    <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2 px-1 shrink-0">Drag between columns to pair. Tap 'X' to unpair.</p>
+    <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2 px-1 shrink-0">Slide between columns to pair. Tap 'X' to unpair.</p>
     
     <div class="flex flex-row gap-2 flex-1 min-h-0 w-full overflow-hidden">
       <!-- Source Pool (Left Side: 50%) -->
@@ -236,7 +226,7 @@ document.getElementById('tab-logistics').innerHTML = `
 `;
 }
 
-function switchLogisticsSubTab(tabId) {['pairings', 'pairings-alt', 'rooms', 'groups', 'buses'].forEach(id => { 
+function switchLogisticsSubTab(tabId) {['pairings-alt', 'rooms', 'groups', 'buses'].forEach(id => { 
 const el = document.getElementById(`log-${id}`);
 if(el) el.classList.add('hidden-force'); 
 const btn = document.getElementById(`subTab-${id}`); 
@@ -371,45 +361,7 @@ document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="
 }
 
 function renderPairings() {
-if(!globalLogistics || !document.getElementById('unpairedCount')) return;
-const trainees = globalLogistics.participants.filter(p => p.role === 'TRAINEE');
-const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER');
-const pairings = globalLogistics.pairings ||[];
-const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
-
-let unpairedHtml = ''; let pairedHtml = ''; let uCount = 0; let pCount = 0;
-
-trainees.forEach(t => {
-const tPairings = pairings.filter(p => p.traineeNric === t.nric);
-const isFam = familyCounts[t.poc] > 1;
-const famBadge = isFam ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded shrink-0 shadow-sm border border-purple-200 dark:border-purple-700 pointer-events-none whitespace-nowrap">FAM</span>` : '';
-const dynColor = getProjectColor(t.group);
-
-let tagsHtml = '';
-tPairings.forEach(pair => {
-    const vol = vols.find(v => v.nric === pair.volNric);
-    const vDynColor = vol ? getProjectColor(vol.group) : '';
-    tagsHtml += generatePillHtml(vol ? vol.name : 'Unknown', vDynColor, t.nric, pair.volNric);
-});
-
-const cardHtml = `<div class="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-2 transition">
-      <div class="flex justify-between items-start mb-1 gap-2">
-         <div class="font-extrabold text-sm md:text-base px-2 py-1 rounded border shadow-sm ${dynColor} max-w-full inline-flex flex-wrap items-center gap-1.5 min-w-0 leading-tight">
-            <span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: anywhere;">${t.name}</span>
-            ${famBadge}
-         </div>
-         <button onclick="openPairingSheet('${t.nric}', 'TRAINEE')" class="shrink-0 text-[10px] md:text-xs bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-2 py-1 rounded-md border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none">+ Vol</button>
-      </div>
-      <div class="flex flex-wrap min-h-[28px] items-center pt-1">${tagsHtml || '<span class="text-[10px] md:text-xs font-medium text-gray-400">Unassigned</span>'}</div></div>`;
-
-if(tPairings.length > 0) { pCount++; pairedHtml += cardHtml; } else { uCount++; unpairedHtml += cardHtml; }
-});
-
-document.getElementById('unpairedCount').textContent = uCount; document.getElementById('pairedCount').textContent = pCount;
-document.getElementById('unpairedTraineesList').innerHTML = unpairedHtml || '<p class="text-xs text-gray-400">All trainees paired!</p>';
-document.getElementById('pairedTraineesList').innerHTML = pairedHtml || '<p class="text-xs text-gray-400">No pairings yet.</p>';
-
-renderPairingsAlt();
+  renderPairingsAlt();
 }
 
 // === ORIGINAL BOTTOM SHEET UI LOGIC ===
