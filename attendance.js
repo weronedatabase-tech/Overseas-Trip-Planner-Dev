@@ -36,7 +36,13 @@ document.getElementById('tab-attendance').innerHTML = `
       <ul id="attSearchResults" class="absolute z-20 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl mt-1 max-h-56 overflow-y-auto hidden-force custom-scrollbar"></ul>
    </div>
    
-   <div class="flex flex-row gap-2 flex-1 min-h-0 w-full overflow-hidden mt-1 px-1">
+   <div class="flex flex-row gap-2 flex-1 min-h-0 w-full overflow-hidden mt-1 px-1 relative">
+       <!-- Loading Overlay -->
+       <div id="attLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-10 hidden-force flex-col justify-center items-center rounded-xl">
+           <div class="loader !w-10 !h-10 border-primary mb-3"></div>
+           <span class="text-primary dark:text-blue-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-1.5 rounded-full">Syncing...</span>
+       </div>
+       
        <!-- NOT Checked (Red) -->
        <div class="flex-1 min-w-0 flex flex-col rounded-xl border border-red-300 dark:border-red-800 bg-red-50/60 dark:bg-red-900/20 h-full overflow-hidden transition-colors">
           <h4 class="font-extrabold text-[11px] md:text-sm py-2 shrink-0 text-center uppercase tracking-widest bg-red-600 dark:bg-red-700 text-white shadow-sm rounded-t-md border-b-2 border-red-700 dark:border-red-900">NOT Checked (<span id="attNotCheckedCount">0</span>)</h4>
@@ -90,7 +96,10 @@ if(!juncture) {
     return;
 }
 
+const overlay = document.getElementById('attLoadingOverlay');
+if (overlay) overlay.classList.remove('hidden-force');
 setAttSyncButtonState('loading');
+
 try {
     const res = await callBackend('fetchAttendanceData', { juncture });
     attendanceState = res.data || {};
@@ -100,6 +109,8 @@ try {
 } catch(e) {
     showToast("Failed to load attendance", true);
     setAttSyncButtonState('error');
+} finally {
+    if (overlay) overlay.classList.add('hidden-force');
 }
 }
 
