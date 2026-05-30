@@ -89,6 +89,8 @@ try {
    case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
    case 'fetchLogistics': result = fetchLogistics(); break;
    case 'syncAllPairings': result = syncAllPairings(data.pairings); break;
+   case 'syncPairingUpdates': result = syncPairingUpdates(data.updates); break;
+   case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
    case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
    case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
    case 'archiveAndReset': result = archiveAndReset(); break;
@@ -230,6 +232,19 @@ if(pairSheet) {
 return { status: 'success', participants, pairings, roomConfigs:[], rooms: [], groups: [], buses:[] };
 }
 
+function fetchPairingsOnly() {
+const ss = getDatabase(); 
+const pairSheet = ss.getSheetByName("Pairings"); 
+let pairings = [];
+if(pairSheet) {
+  const pairData = pairSheet.getDataRange().getValues();
+  for(let i=1; i<pairData.length; i++) {
+    if(pairData[i][0]) pairings.push({ traineeNric: String(pairData[i][0]).trim().toUpperCase(), volNric: String(pairData[i][1]).trim().toUpperCase() });
+  }
+}
+return { status: 'success', pairings };
+}
+
 function syncAllPairings(pairings) {
 const sheet = getDatabase().getSheetByName("Pairings"); const lastRow = sheet.getLastRow();
 if(lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
@@ -238,6 +253,48 @@ if(pairings && pairings.length > 0) {
  sheet.getRange(2, 1, rows.length, 2).setValues(rows);
 }
 return fetchLogistics();
+}
+
+function syncPairingUpdates(updates) {
+const lock = LockService.getScriptLock();
+try {
+  lock.waitLock(10000);
+  const ss = getDatabase();
+  const sheet = ss.getSheetByName("Pairings");
+  if(!sheet) return { status: 'error', message: 'Sheet not found.' };
+
+  // Read current state
+  const data = sheet.getDataRange().getValues();
+  let currentPairings = [];
+  for(let i=1; i<data.length; i++) {
+    if(data[i][0]) currentPairings.push({ traineeNric: String(data[i][0]).trim().toUpperCase(), volNric: String(data[i][1]).trim().toUpperCase() });
+  }
+
+  // Apply delta updates
+  updates.forEach(u => {
+    if (u.action === 'ADD') {
+      if (!currentPairings.some(p => p.traineeNric === u.traineeNric && p.volNric === u.volNric)) {
+        currentPairings.push({ traineeNric: u.traineeNric, volNric: u.volNric });
+      }
+    } else if (u.action === 'REMOVE') {
+      currentPairings = currentPairings.filter(p => !(p.traineeNric === u.traineeNric && p.volNric === u.volNric));
+    }
+  });
+
+  // Write back
+  const lastRow = sheet.getLastRow();
+  if(lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
+  if(currentPairings.length > 0) {
+    const rows = currentPairings.map(p => [p.traineeNric, p.volNric]);
+    sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+  }
+
+  return { status: 'success', pairings: currentPairings };
+} catch (e) {
+  return { status: 'error', message: e.message };
+} finally {
+  lock.releaseLock();
+}
 }
 
 function toggleRegistration(status, tripTitle, tripYear) {
