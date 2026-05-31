@@ -154,7 +154,7 @@ const roleColor = p.role === 'TRAINEE' ? 'text-blue-500 dark:text-blue-400' : (p
 const roleShort = p.role.substring(0,3).toUpperCase();
 
 return `
- <div class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm transition flex items-center justify-between gap-2 select-none hover:border-primary dark:hover:border-primary">
+ <div id="att-card-${p.nric}" class="relative bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm transition-all duration-300 flex items-center justify-between gap-2 select-none hover:border-primary dark:hover:border-primary">
      <div class="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer" onclick="toggleAttendanceStatus('${p.nric}', ${!isChecked})">
          <span class="font-extrabold text-[12px] md:text-[13px] px-2 py-1 rounded-md border shadow-sm ${dynColor} max-w-full break-words whitespace-normal leading-tight text-left" style="overflow-wrap: anywhere;">${p.name}</span>
          <span class="text-[9px] font-black ${roleColor} shrink-0 bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded border border-gray-200 dark:border-gray-600">${roleShort}</span>
@@ -200,6 +200,17 @@ function selectFromSearch(nric) {
 document.getElementById('attSearchInput').value = '';
 document.getElementById('attSearchResults').classList.add('hidden-force');
 toggleAttendanceStatus(nric, true);
+
+setTimeout(() => {
+    const card = document.getElementById(`att-card-${nric}`);
+    if(card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('ring-4', 'ring-green-400', 'scale-[1.03]', 'bg-green-50', 'dark:bg-green-900/50', 'z-10');
+        setTimeout(() => {
+            card.classList.remove('ring-4', 'ring-green-400', 'scale-[1.03]', 'bg-green-50', 'dark:bg-green-900/50', 'z-10');
+        }, 1200);
+    }
+}, 50);
 }
 
 function toggleAttendanceStatus(nric, forceState) {
