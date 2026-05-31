@@ -200,17 +200,6 @@ function selectFromSearch(nric) {
 document.getElementById('attSearchInput').value = '';
 document.getElementById('attSearchResults').classList.add('hidden-force');
 toggleAttendanceStatus(nric, true);
-
-setTimeout(() => {
-    const card = document.getElementById(`att-card-${nric}`);
-    if(card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.classList.add('ring-4', 'ring-green-400', 'scale-[1.03]', 'bg-green-50', 'dark:bg-green-900/50', 'z-10');
-        setTimeout(() => {
-            card.classList.remove('ring-4', 'ring-green-400', 'scale-[1.03]', 'bg-green-50', 'dark:bg-green-900/50', 'z-10');
-        }, 1200);
-    }
-}, 50);
 }
 
 function toggleAttendanceStatus(nric, forceState) {
@@ -222,6 +211,26 @@ if (attSyncTimeout) clearTimeout(attSyncTimeout);
 attSyncTimeout = setTimeout(() => {
     executeAttendanceSync();
 }, 800);
+
+triggerPulseFeedback(nric, forceState);
+}
+
+function triggerPulseFeedback(nric, isChecked) {
+setTimeout(() => {
+    const card = document.getElementById(`att-card-${nric}`);
+    if(card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        const ringColor = isChecked ? 'ring-green-400' : 'ring-red-400';
+        const bgColor = isChecked ? 'bg-green-50' : 'bg-red-50';
+        const darkBgColor = isChecked ? 'dark:bg-green-900/50' : 'dark:bg-red-900/50';
+        
+        card.classList.add('ring-4', ringColor, 'scale-[1.03]', bgColor, darkBgColor, 'z-10');
+        setTimeout(() => {
+            card.classList.remove('ring-4', ringColor, 'scale-[1.03]', bgColor, darkBgColor, 'z-10');
+        }, 1200);
+    }
+}, 50);
 }
 
 async function executeAttendanceSync() {
