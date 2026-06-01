@@ -360,6 +360,11 @@ try {
      globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
  }
  renderPairings(); 
+ 
+ if (typeof renderAttendanceLists === "function" && document.getElementById('attAssignmentSelect')) {
+     renderAttendanceLists();
+ }
+
  setSyncButtonState('saved');
  startPairingPolling();
 } catch(e) { 

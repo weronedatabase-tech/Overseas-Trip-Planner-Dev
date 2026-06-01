@@ -4,6 +4,10 @@ let attSyncTimeout = null;
 let isAttendanceSyncing = false;
 let attendancePollInterval = null;
 
+// State persistence variables for UX
+let savedAttJuncture = null;
+let savedAttAssignment = 'ALL';
+
 function buildAttendanceUI() {
 document.getElementById('tab-attendance').innerHTML = `
 <div class="admin-only flex flex-col h-full min-h-0 w-full relative">
@@ -67,8 +71,9 @@ document.addEventListener('click', (e) => {
 }
 
 async function renderAttendanceChecklist() {
-if(!globalLogistics || !document.getElementById('attJunctureSelect')) return;
+if(!document.getElementById('attJunctureSelect')) return;
 
+// 1. Populate Junctures immediately from settings
 const juncSel = document.getElementById('attJunctureSelect');
 juncSel.innerHTML = '';
 if(appSettings.junctures && appSettings.junctures.length > 0) {
@@ -77,17 +82,31 @@ if(appSettings.junctures && appSettings.junctures.length > 0) {
    juncSel.innerHTML = `<option value="">No Junctures Defined</option>`;
 }
 
+// Restore saved juncture if it exists
+if(savedAttJuncture && appSettings.junctures && appSettings.junctures.includes(savedAttJuncture)) {
+   juncSel.value = savedAttJuncture;
+}
+
+// 2. Populate Assignments immediately from settings
 const asgnSel = document.getElementById('attAssignmentSelect');
 asgnSel.innerHTML = `<option value="ALL">All Participants</option>`;
 if(appSettings.activeProjects && appSettings.activeProjects.length > 0) {
    appSettings.activeProjects.forEach(g => asgnSel.innerHTML += `<option value="${g}">${g}</option>`);
 }
 
+// Restore saved assignment if valid
+if(savedAttAssignment && (savedAttAssignment === 'ALL' || (appSettings.activeProjects && appSettings.activeProjects.includes(savedAttAssignment)))) {
+   asgnSel.value = savedAttAssignment;
+}
+
+// 3. Trigger network sync for the newly populated context
 await changeAttendanceContext();
 }
 
 async function changeAttendanceContext() {
 const juncture = document.getElementById('attJunctureSelect').value;
+savedAttJuncture = juncture; // Persist state
+
 if(!juncture) {
    attendanceState = {};
    renderAttendanceLists();
@@ -113,11 +132,26 @@ try {
 }
 
 function renderAttendanceLists() {
-if(!globalLogistics) return;
+// Capture and persist assignment state
+const assignmentEl = document.getElementById('attAssignmentSelect');
+if(assignmentEl) {
+   savedAttAssignment = assignmentEl.value;
+}
+const assignment = savedAttAssignment;
 
-const assignment = document.getElementById('attAssignmentSelect').value;
 const notCheckedList = document.getElementById('attNotCheckedList');
 const checkedList = document.getElementById('attCheckedList');
+
+if(!notCheckedList || !checkedList) return;
+
+// If lists aren't ready yet, show loader and bail cleanly
+if(!globalLogistics) {
+   notCheckedList.innerHTML = '<div class="flex justify-center p-6"><div class="loader !w-6 !h-6 border-gray-400"></div></div>';
+   checkedList.innerHTML = '<div class="flex justify-center p-6"><div class="loader !w-6 !h-6 border-gray-400"></div></div>';
+   document.getElementById('attNotCheckedCount').textContent = '0';
+   document.getElementById('attCheckedCount').textContent = '0';
+   return;
+}
 
 let notCheckedHtml = '';
 let checkedHtml = '';
