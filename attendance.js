@@ -1,4 +1,4 @@
-let attendanceState = {}; // { nric: boolean }
+let attendanceState = {}; // Now stores objects: { status: boolean, ts: number }
 let pendingAttendanceUpdates = new Set();
 let attSyncTimeout = null;
 let isAttendanceSyncing = false;
@@ -119,7 +119,7 @@ setAttSyncButtonState('loading');
 
 try {
    const res = await callBackend('fetchAttendanceData', { juncture });
-   attendanceState = res.data || {};
+   attendanceState = res.data || {}; // Now stores `{ status, ts }`
    renderAttendanceLists();
    setAttSyncButtonState('saved');
    startAttendancePolling();
@@ -161,7 +161,8 @@ let checkedCount = 0;
 const participants = globalLogistics.participants.filter(p => assignment === 'ALL' || p.group === assignment);
 
 participants.forEach(p => {
-   const isChecked = attendanceState[p.nric] || false;
+   const stateObj = attendanceState[p.nric];
+   const isChecked = stateObj ? stateObj.status : false;
    const cardHtml = generateAttCard(p, isChecked);
    
    if(isChecked) {
@@ -220,7 +221,8 @@ const participants = globalLogistics.participants.filter(p => {
 
 let html = '';
 participants.forEach(p => {
-   const isChecked = attendanceState[p.nric] || false;
+   const stateObj = attendanceState[p.nric];
+   const isChecked = stateObj ? stateObj.status : false;
    const dynColor = getProjectColor(p.group);
    const dName = p.displayName || p.name;
    
@@ -242,7 +244,7 @@ toggleAttendanceStatus(nric, true);
 }
 
 function toggleAttendanceStatus(nric, forceState) {
-attendanceState[nric] = forceState;
+attendanceState[nric] = { status: forceState, ts: Date.now() }; // Attach exact timestamp
 pendingAttendanceUpdates.add(nric);
 renderAttendanceLists();
 
@@ -281,14 +283,15 @@ if(!juncture) return;
 isAttendanceSyncing = true;
 setAttSyncButtonState('saving');
 
-const updates = Array.from(pendingAttendanceUpdates).map(nric => ({
-   nric: nric,
-   status: attendanceState[nric] || false
-}));
-
 // Capture the current batch and clear the pending set immediately to allow concurrent local edits
 const batch = new Set(pendingAttendanceUpdates);
 pendingAttendanceUpdates.clear();
+
+const updates = Array.from(batch).map(nric => ({
+   nric: nric,
+   status: attendanceState[nric]?.status || false,
+   ts: attendanceState[nric]?.ts || Date.now()
+}));
 
 try {
    await callBackend('syncAttendanceUpdate', { 
@@ -314,9 +317,6 @@ attendancePollInterval = setInterval(async () => {
    const attTab = document.getElementById('tab-attendance');
    if(!attTab || attTab.classList.contains('hidden-force')) return;
    
-   // Do not poll if there are pending local changes or active network sync to avoid race condition visual glitches
-   if(pendingAttendanceUpdates.size > 0 || isAttendanceSyncing) return;
-   
    const juncture = document.getElementById('attJunctureSelect').value;
    if(!juncture) return;
 
@@ -326,16 +326,25 @@ attendancePollInterval = setInterval(async () => {
        let hasChanges = false;
        
        globalLogistics.participants.forEach(p => {
-           const rState = remoteData[p.nric] || false;
-           const lState = attendanceState[p.nric] || false;
-           if(rState !== lState) {
-               attendanceState[p.nric] = rState;
+           const rEntry = remoteData[p.nric] || { status: false, ts: 0 };
+           const lEntry = attendanceState[p.nric] || { status: false, ts: 0 };
+           
+           // LAST-WRITE-WINS: Only apply remote change if its timestamp is strictly newer
+           if(rEntry.ts > lEntry.ts) {
+               attendanceState[p.nric] = { status: rEntry.status, ts: rEntry.ts };
                hasChanges = true;
            }
        });
 
        if(hasChanges) {
            renderAttendanceLists();
+           
+           // Update search results if currently open
+           const searchInput = document.getElementById('attSearchInput');
+           const searchResults = document.getElementById('attSearchResults');
+           if (searchInput && searchInput.value && searchResults && !searchResults.classList.contains('hidden-force')) {
+               handleAttendanceSearch();
+           }
        }
    } catch(e) {
        // Silent fail on polling
