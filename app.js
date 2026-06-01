@@ -28,35 +28,35 @@ if(currentUser) renderDashboard(); else goHome();
 
 async function callBackend(action, payload = {}) {
 try {
-  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
-  if(!res.ok) throw new Error("Network error."); 
-  const data = await res.json();
-  if(data.status === 'error') throw new Error(data.message); 
-  return data;
+ const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+ if(!res.ok) throw new Error("Network error."); 
+ const data = await res.json();
+ if(data.status === 'error') throw new Error(data.message); 
+ return data;
 } catch (err) {
-  if(err.message.includes('Failed to fetch')) { showToast("Auth required.", true); setTimeout(() => window.open(API_URL, '_blank'), 2000); }
-  else { throw err; }
+ if(err.message.includes('Failed to fetch')) { showToast("Auth required.", true); setTimeout(() => window.open(API_URL, '_blank'), 2000); }
+ else { throw err; }
 }
 }
 
 async function fetchConfig() {
 try {
-  const config = await callBackend('getSettings'); appSettings = config;
-  const regBox = document.getElementById('landingRegBox');
-  if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
-  
-  const tripStr = (appSettings.tripTitle && appSettings.tripYear) ? `${appSettings.tripTitle} ${appSettings.tripYear}` : '';
-  const titleEls = ['deskTripName', 'mobTripName', 'unauthTripName'];
-  titleEls.forEach(id => {
-      const el = document.getElementById(id);
-      if(el) {
-          if(tripStr) { el.textContent = tripStr; el.classList.remove('hidden-force'); } 
-          else { el.classList.add('hidden-force'); }
-      }
-  });
-  
-  renderHeaderLegend();
-  if(currentUser && currentUser.role === 'admin') applyAdminVisuals(); 
+ const config = await callBackend('getSettings'); appSettings = config;
+ const regBox = document.getElementById('landingRegBox');
+ if(appSettings.registrationOpen) regBox.classList.remove('hidden-force'); else regBox.classList.add('hidden-force');
+ 
+ const tripStr = (appSettings.tripTitle && appSettings.tripYear) ? `${appSettings.tripTitle} ${appSettings.tripYear}` : '';
+ const titleEls = ['deskTripName', 'mobTripName', 'unauthTripName'];
+ titleEls.forEach(id => {
+     const el = document.getElementById(id);
+     if(el) {
+         if(tripStr) { el.textContent = tripStr; el.classList.remove('hidden-force'); } 
+         else { el.classList.add('hidden-force'); }
+     }
+ });
+ 
+ renderHeaderLegend();
+ if(currentUser && currentUser.role === 'admin') applyAdminVisuals(); 
 } catch (e) { showToast("Error syncing settings.", true); } finally { document.getElementById('viewLoading').classList.add('hidden-force'); }
 }
 
@@ -68,35 +68,94 @@ setTimeout(() => location.reload(true), 1000);
 
 // Global Sorting Logic (Applies to all lists across the App)
 function applyGlobalSorting(participants) {
- const rules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
- const familyCounts = {};
- participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
+const rules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
+const familyCounts = {};
+participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
 
- return participants.sort((a, b) => {
-     for (let rule of rules) {
-         if (rule === 'none') continue;
-         if (rule === 'project') {
-             const aG = a.group || 'ZZZ';
-             const bG = b.group || 'ZZZ';
-             const cmp = aG.localeCompare(bG);
-             if (cmp !== 0) return cmp;
-         }
-         if (rule === 'family') {
-             const aFam = familyCounts[a.poc] > 1 ? 1 : 0;
-             const bFam = familyCounts[b.poc] > 1 ? 1 : 0;
-             if (aFam !== bFam) return bFam - aFam; // 1 before 0
-         }
-         if (rule === 'role') {
-             const rW = { 'CAREGIVER': 1, 'TRAINEE': 2, 'VOLUNTEER': 3 };
-             const aR = rW[a.role] || 9;
-             const bR = rW[b.role] || 9;
-             if (aR !== bR) return aR - bR;
-         }
-         if (rule === 'name') {
-             const cmp = (a.name || '').localeCompare(b.name || '');
-             if (cmp !== 0) return cmp;
-         }
-     }
-     return 0;
- });
+return participants.sort((a, b) => {
+    for (let rule of rules) {
+        if (rule === 'none') continue;
+        if (rule === 'project') {
+            const aG = a.group || 'ZZZ';
+            const bG = b.group || 'ZZZ';
+            const cmp = aG.localeCompare(bG);
+            if (cmp !== 0) return cmp;
+        }
+        if (rule === 'family') {
+            const aFam = familyCounts[a.poc] > 1 ? 1 : 0;
+            const bFam = familyCounts[b.poc] > 1 ? 1 : 0;
+            if (aFam !== bFam) return bFam - aFam; 
+        }
+        if (rule === 'role') {
+            const rW = { 'CAREGIVER': 1, 'TRAINEE': 2, 'VOLUNTEER': 3 };
+            const aR = rW[a.role] || 9;
+            const bR = rW[b.role] || 9;
+            if (aR !== bR) return aR - bR;
+        }
+        if (rule === 'name') {
+            const cmp = (a.displayName || a.name || '').localeCompare(b.displayName || b.name || '');
+            if (cmp !== 0) return cmp;
+        }
+    }
+    return 0;
+});
+}
+
+// Global function to resolve Short Name conflicts dynamically
+function processDisplayNames(participants) {
+    if(!participants) return;
+    const nameCounts = {};
+    
+    // First pass: Count occurrences of short names
+    participants.forEach(p => {
+        p.shortName = p.shortName ? p.shortName.trim() : '';
+        p.name = p.name ? p.name.trim() : '';
+        const sName = p.shortName || p.name; 
+        nameCounts[sName] = (nameCounts[sName] || 0) + 1;
+    });
+
+    // Second pass: Apply primary disambiguation if duplicated
+    participants.forEach(p => {
+        const sName = p.shortName || p.name;
+        if (nameCounts[sName] > 1) {
+            const roleChar = p.role ? p.role.charAt(0).toUpperCase() : 'U';
+            const projAcr = p.group ? (typeof getProjectAbbreviation === 'function' ? getProjectAbbreviation(p.group) : p.group.substring(0,3)) : 'N/A';
+            p.displayName = `${sName} (${roleChar}) (${projAcr})`;
+        } else {
+            p.displayName = sName;
+        }
+    });
+
+    // Third pass: Check if the primary disambiguation STILL causes a clash
+    const displayCounts = {};
+    participants.forEach(p => { displayCounts[p.displayName] = (displayCounts[p.displayName] || 0) + 1; });
+
+    participants.forEach(p => {
+        if (displayCounts[p.displayName] > 1) {
+            const sName = p.shortName || p.name;
+            const roleChar = p.role ? p.role.charAt(0).toUpperCase() : 'U';
+            const projAcr = p.group ? (typeof getProjectAbbreviation === 'function' ? getProjectAbbreviation(p.group) : p.group.substring(0,3)) : 'N/A';
+            
+            const words = p.name.split(' ');
+            let extraChar = '';
+            if (words.length > 1) {
+                // Try to find a word that is not the exact short name
+                const diffWord = words.find(w => w.toLowerCase() !== sName.toLowerCase());
+                if(diffWord) extraChar = diffWord.charAt(0).toUpperCase() + '.';
+                else extraChar = words[1].charAt(0).toUpperCase() + '.';
+            } else {
+                extraChar = p.name.charAt(0).toUpperCase() + '.';
+            }
+            p.displayName = `${sName} ${extraChar} (${roleChar}) (${projAcr})`;
+        }
+    });
+
+    // Final safety pass: If somehow even the full name initial matches, append NRIC last 4
+    const finalCounts = {};
+    participants.forEach(p => { finalCounts[p.displayName] = (finalCounts[p.displayName] || 0) + 1; });
+    participants.forEach(p => {
+        if (finalCounts[p.displayName] > 1 && p.nric) {
+            p.displayName = `${p.displayName} [${p.nric.slice(-4)}]`;
+        }
+    });
 }

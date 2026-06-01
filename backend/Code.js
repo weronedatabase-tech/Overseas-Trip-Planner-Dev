@@ -41,26 +41,26 @@ return SpreadsheetApp.openById(dbId);
 function setupSheets(ss) {
 const requiredSheets =["Raw Data", "Finance", "Rooms", "Buses", "Groups", "Pairings", "Attendance", "Minutes"];
 requiredSheets.forEach(name => {
- if (!ss.getSheetByName(name)) {
-   let sheet = ss.insertSheet(name);
-   if (name === "Raw Data") {
-     sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC"]);
-     sheet.setFrozenRows(1);
-   } else if (name === "Finance") {
-     sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
-     sheet.appendRow(["Timestamp", "NRIC", "Name", "Total Amount (SGD)", "PayNow Serial", "Payment Status", "CSV Match Date"]);
-     sheet.setFrozenRows(2);
-   } else if (name === "Attendance") {
-     sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
-     sheet.setFrozenRows(1);
-   } else if (name === "Pairings") {
-     sheet.appendRow(["Trainee NRIC", "Volunteer NRIC"]);
-     sheet.setFrozenRows(1);
-   } else if (name === "Minutes") {
-     sheet.appendRow(["Timestamp", "Meeting Date", "Salient Points", "Follow-up Actions", "Recorded By"]);
-     sheet.setFrozenRows(1);
-   }
- }
+if (!ss.getSheetByName(name)) {
+  let sheet = ss.insertSheet(name);
+  if (name === "Raw Data") {
+    sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC", "Short Name / Nickname"]);
+    sheet.setFrozenRows(1);
+  } else if (name === "Finance") {
+    sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
+    sheet.appendRow(["Timestamp", "NRIC", "Name", "Total Amount (SGD)", "PayNow Serial", "Payment Status", "CSV Match Date"]);
+    sheet.setFrozenRows(2);
+  } else if (name === "Attendance") {
+    sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
+    sheet.setFrozenRows(1);
+  } else if (name === "Pairings") {
+    sheet.appendRow(["Trainee NRIC", "Volunteer NRIC"]);
+    sheet.setFrozenRows(1);
+  } else if (name === "Minutes") {
+    sheet.appendRow(["Timestamp", "Meeting Date", "Salient Points", "Follow-up Actions", "Recorded By"]);
+    sheet.setFrozenRows(1);
+  }
+}
 });
 const defaultSheet = ss.getSheetByName("Sheet1");
 if (defaultSheet && ss.getSheets().length > 1) ss.deleteSheet(defaultSheet);
@@ -68,37 +68,37 @@ if (defaultSheet && ss.getSheets().length > 1) ss.deleteSheet(defaultSheet);
 
 function doPost(e) {
 try {
- const data = JSON.parse(e.postData.contents);
- let result = {};
- switch(data.action) {
-   case 'getSettings': result = getAppConfig(); break;
-   case 'login': result = handleLogin(data.nric, data.password); break;
-   case 'getProfile': result = getProfile(data.nric); break;
-   case 'updateProfile': result = updateProfile(data.member); break;
-   case 'submitRegistration': result = submitRegistration(data.payload); break;
-   case 'toggleRegistration': result = toggleRegistration(data.status, data.tripTitle, data.tripYear); break;
-   case 'toggleEdits': result = toggleEdits(data.status); break;
-   case 'getCommittee': result = getCommitteeList(); break;
-   case 'addCommittee': result = modifyCommitteeList(data.nric, true, data.name, data.phone); break;
-   case 'removeCommittee': result = modifyCommitteeList(data.nric, false); break;
-   case 'addProjectGroup': result = modifyProjectGroups(data.groupName, true, data.callerNric, data.colorClass); break;
-   case 'removeProjectGroup': result = modifyProjectGroups(data.groupName, false, data.callerNric); break;
-   case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, data.newName); break;
-   case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
-   case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
-   case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
-   case 'fetchLogistics': result = fetchLogistics(); break;
-   case 'syncAllPairings': result = syncAllPairings(data.pairings); break;
-   case 'syncPairingUpdates': result = syncPairingUpdates(data.updates); break;
-   case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
-   case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
-   case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
-   case 'archiveAndReset': result = archiveAndReset(); break;
-   default: throw new Error("Unknown action.");
- }
- return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+const data = JSON.parse(e.postData.contents);
+let result = {};
+switch(data.action) {
+  case 'getSettings': result = getAppConfig(); break;
+  case 'login': result = handleLogin(data.nric, data.password); break;
+  case 'getProfile': result = getProfile(data.nric); break;
+  case 'updateProfile': result = updateProfile(data.member); break;
+  case 'submitRegistration': result = submitRegistration(data.payload); break;
+  case 'toggleRegistration': result = toggleRegistration(data.status, data.tripTitle, data.tripYear); break;
+  case 'toggleEdits': result = toggleEdits(data.status); break;
+  case 'getCommittee': result = getCommitteeList(); break;
+  case 'addCommittee': result = modifyCommitteeList(data.nric, true, data.name, data.phone); break;
+  case 'removeCommittee': result = modifyCommitteeList(data.nric, false); break;
+  case 'addProjectGroup': result = modifyProjectGroups(data.groupName, true, data.callerNric, data.colorClass); break;
+  case 'removeProjectGroup': result = modifyProjectGroups(data.groupName, false, data.callerNric); break;
+  case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, data.newName); break;
+  case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
+  case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
+  case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
+  case 'fetchLogistics': result = fetchLogistics(); break;
+  case 'syncAllPairings': result = syncAllPairings(data.pairings); break;
+  case 'syncPairingUpdates': result = syncPairingUpdates(data.updates); break;
+  case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
+  case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
+  case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
+  case 'archiveAndReset': result = archiveAndReset(); break;
+  default: throw new Error("Unknown action.");
+}
+return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 } catch (error) {
- return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
+return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
 }
 }
 
@@ -114,22 +114,22 @@ const driveAccessList = rawAccess ? JSON.parse(rawAccess) : {};
 
 let activeProjects =[];
 try {
- const dbId = props.getProperty('DB_SHEET_ID');
- if (dbId) {
-   const data = SpreadsheetApp.openById(dbId).getSheetByName("Raw Data").getDataRange().getValues();
-   const projSet = new Set();
-   for (let i = 1; i < data.length; i++) {
-     let pName = String(data[i][6]).trim();
-     if (pName) projSet.add(pName);
-   }
-   activeProjects = Array.from(projSet);
- }
+const dbId = props.getProperty('DB_SHEET_ID');
+if (dbId) {
+  const data = SpreadsheetApp.openById(dbId).getSheetByName("Raw Data").getDataRange().getValues();
+  const projSet = new Set();
+  for (let i = 1; i < data.length; i++) {
+    let pName = String(data[i][6]).trim();
+    if (pName) projSet.add(pName);
+  }
+  activeProjects = Array.from(projSet);
+}
 } catch(e) {}
 
 return {
- status: 'success', registrationOpen: props.getProperty('REGISTRATION_OPEN') === 'true', allowEdits: props.getProperty('ALLOW_EDITS') === 'true',
- committee: commList, projectGroups: groupList, projectColors: projColors, activeProjects: activeProjects, junctures: juncList,
- sortingRules: sortingRules, driveAccessList: driveAccessList, tripTitle: props.getProperty('TRIP_TITLE') || '', tripYear: props.getProperty('TRIP_YEAR') || ''
+status: 'success', registrationOpen: props.getProperty('REGISTRATION_OPEN') === 'true', allowEdits: props.getProperty('ALLOW_EDITS') === 'true',
+committee: commList, projectGroups: groupList, projectColors: projColors, activeProjects: activeProjects, junctures: juncList,
+sortingRules: sortingRules, driveAccessList: driveAccessList, tripTitle: props.getProperty('TRIP_TITLE') || '', tripYear: props.getProperty('TRIP_YEAR') || ''
 };
 }
 
@@ -143,17 +143,17 @@ if (nric === 'ADMIN' && password === adminPassPrefix) return { status: 'success'
 const committeeList = props.getProperty('COMMITTEE_LIST') ? JSON.parse(props.getProperty('COMMITTEE_LIST')) :[];
 const commMember = committeeList.find(c => c.nric === nric);
 if (commMember) {
- if (password === (adminPassPrefix + nric)) return { status: 'success', role: 'admin', name: commMember.name };
- else return { status: 'error', message: 'Incorrect committee password.' };
+if (password === (adminPassPrefix + nric)) return { status: 'success', role: 'admin', name: commMember.name };
+else return { status: 'error', message: 'Incorrect committee password.' };
 }
 
 const ss = getDatabase();
 const data = ss.getSheetByName("Raw Data").getDataRange().getValues();
 for (let i = 1; i < data.length; i++) {
- if (String(data[i][11]).trim().toUpperCase() === nric) {
-   if (password === genPass) return { status: 'success', role: 'user', name: data[i][3] };
-   else return { status: 'error', message: 'Incorrect password.' };
- }
+if (String(data[i][11]).trim().toUpperCase() === nric) {
+  if (password === genPass) return { status: 'success', role: 'user', name: data[i][3] };
+  else return { status: 'error', message: 'Incorrect password.' };
+}
 }
 return { status: 'error', message: 'NRIC not found. Please register first.' };
 }
@@ -166,16 +166,17 @@ if (!pocNric) return {status: 'error', message: 'Profile not found.'};
 
 let family =[];
 for (let i = 1; i < data.length; i++) {
- if (String(data[i][21]).trim().toUpperCase() === pocNric || String(data[i][11]).trim().toUpperCase() === pocNric) {
-   let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
-   let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
-   family.push({
-     email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
-     group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
-     nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
-     emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20]
-   });
- }
+if (String(data[i][21]).trim().toUpperCase() === pocNric || String(data[i][11]).trim().toUpperCase() === pocNric) {
+  let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
+  let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
+  family.push({
+    email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+    group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
+    nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
+    emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
+    shortName: data[i][22] || ''
+  });
+}
 }
 return { status: 'success', family: family };
 }
@@ -185,19 +186,20 @@ const props = PropertiesService.getScriptProperties();
 if (props.getProperty('ALLOW_EDITS') !== 'true') return { status: 'error', message: 'Editing is locked by the committee.' };
 const sheet = getDatabase().getSheetByName("Raw Data"); const data = sheet.getDataRange().getValues();
 for (let i = 1; i < data.length; i++) {
- if (String(data[i][11]).trim().toUpperCase() === member.nric.trim().toUpperCase()) {
-   sheet.getRange(i+1, 2).setValue(member.email); sheet.getRange(i+1, 3).setValue(member.role); sheet.getRange(i+1, 4).setValue(member.fullName);
-   sheet.getRange(i+1, 5).setValue(member.relatedTrainee || ''); sheet.getRange(i+1, 6).setValue(member.relationship || '');
-   sheet.getRange(i+1, 7).setValue(member.group || ''); sheet.getRange(i+1, 8).setValue(member.gender);
-   sheet.getRange(i+1, 9).setValue(member.contact); sheet.getRange(i+1, 10).setValue(member.address || '');
-   sheet.getRange(i+1, 11).setValue(member.nationality); sheet.getRange(i+1, 13).setValue(member.passportNo);
-   sheet.getRange(i+1, 14).setValue(member.passportExpiry ? "'" + member.passportExpiry : '');
-   sheet.getRange(i+1, 15).setValue(member.dob ? "'" + member.dob : '');                      
-   sheet.getRange(i+1, 16).setValue(member.diet || ''); sheet.getRange(i+1, 17).setValue(member.emergencyName || '');
-   sheet.getRange(i+1, 18).setValue(member.emergencyContact || ''); sheet.getRange(i+1, 19).setValue(member.emergencyRelation || '');
-   sheet.getRange(i+1, 20).setValue(member.sleeping || ''); sheet.getRange(i+1, 21).setValue(member.otherPoints || '');
-   return { status: 'success' };
- }
+if (String(data[i][11]).trim().toUpperCase() === member.nric.trim().toUpperCase()) {
+  sheet.getRange(i+1, 2).setValue(member.email); sheet.getRange(i+1, 3).setValue(member.role); sheet.getRange(i+1, 4).setValue(member.fullName);
+  sheet.getRange(i+1, 5).setValue(member.relatedTrainee || ''); sheet.getRange(i+1, 6).setValue(member.relationship || '');
+  sheet.getRange(i+1, 7).setValue(member.group || ''); sheet.getRange(i+1, 8).setValue(member.gender);
+  sheet.getRange(i+1, 9).setValue(member.contact); sheet.getRange(i+1, 10).setValue(member.address || '');
+  sheet.getRange(i+1, 11).setValue(member.nationality); sheet.getRange(i+1, 13).setValue(member.passportNo);
+  sheet.getRange(i+1, 14).setValue(member.passportExpiry ? "'" + member.passportExpiry : '');
+  sheet.getRange(i+1, 15).setValue(member.dob ? "'" + member.dob : '');                      
+  sheet.getRange(i+1, 16).setValue(member.diet || ''); sheet.getRange(i+1, 17).setValue(member.emergencyName || '');
+  sheet.getRange(i+1, 18).setValue(member.emergencyContact || ''); sheet.getRange(i+1, 19).setValue(member.emergencyRelation || '');
+  sheet.getRange(i+1, 20).setValue(member.sleeping || ''); sheet.getRange(i+1, 21).setValue(member.otherPoints || '');
+  sheet.getRange(i+1, 23).setValue(member.shortName || '');
+  return { status: 'success' };
+}
 }
 return { status: 'error', message: 'Record not found.' };
 }
@@ -206,11 +208,11 @@ function submitRegistration(payloadArray) {
 if (PropertiesService.getScriptProperties().getProperty('REGISTRATION_OPEN') !== 'true') return { status: 'error', message: 'Registration is closed.' };
 const sheet = getDatabase().getSheetByName("Raw Data"); const pocNric = payloadArray[0].nric.toUpperCase();
 payloadArray.forEach(p => {
- sheet.appendRow([
-   new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
-   p.nric.toUpperCase(), p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
-   p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric
- ]);
+sheet.appendRow([
+  new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
+  p.nric.toUpperCase(), p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
+  p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric, p.shortName||''
+]);
 });
 return { status: 'success' };
 }
@@ -218,16 +220,23 @@ return { status: 'success' };
 function fetchLogistics() {
 const ss = getDatabase(); const pData = ss.getSheetByName("Raw Data").getDataRange().getValues(); const participants =[];
 for(let i=1; i<pData.length; i++) {
- if(pData[i][11]) {
-   participants.push({ role: String(pData[i][2]).trim().toUpperCase(), name: pData[i][3], group: String(pData[i][6]).trim(), nric: String(pData[i][11]).trim().toUpperCase(), poc: String(pData[i][21]).trim().toUpperCase() || String(pData[i][11]).trim().toUpperCase() });
- }
+if(pData[i][11]) {
+  participants.push({ 
+    role: String(pData[i][2]).trim().toUpperCase(), 
+    name: pData[i][3], 
+    shortName: pData[i][22] ? String(pData[i][22]).trim() : '',
+    group: String(pData[i][6]).trim(), 
+    nric: String(pData[i][11]).trim().toUpperCase(), 
+    poc: String(pData[i][21]).trim().toUpperCase() || String(pData[i][11]).trim().toUpperCase() 
+  });
+}
 }
 const pairSheet = ss.getSheetByName("Pairings"); let pairings =[];
 if(pairSheet) {
- const pairData = pairSheet.getDataRange().getValues();
- for(let i=1; i<pairData.length; i++) {
-   if(pairData[i][0]) pairings.push({ traineeNric: String(pairData[i][0]).trim().toUpperCase(), volNric: String(pairData[i][1]).trim().toUpperCase() });
- }
+const pairData = pairSheet.getDataRange().getValues();
+for(let i=1; i<pairData.length; i++) {
+  if(pairData[i][0]) pairings.push({ traineeNric: String(pairData[i][0]).trim().toUpperCase(), volNric: String(pairData[i][1]).trim().toUpperCase() });
+}
 }
 return { status: 'success', participants, pairings, roomConfigs:[], rooms: [], groups: [], buses:[] };
 }
@@ -237,10 +246,10 @@ const ss = getDatabase();
 const pairSheet = ss.getSheetByName("Pairings"); 
 let pairings = [];
 if(pairSheet) {
-  const pairData = pairSheet.getDataRange().getValues();
-  for(let i=1; i<pairData.length; i++) {
-    if(pairData[i][0]) pairings.push({ traineeNric: String(pairData[i][0]).trim().toUpperCase(), volNric: String(pairData[i][1]).trim().toUpperCase() });
-  }
+ const pairData = pairSheet.getDataRange().getValues();
+ for(let i=1; i<pairData.length; i++) {
+   if(pairData[i][0]) pairings.push({ traineeNric: String(pairData[i][0]).trim().toUpperCase(), volNric: String(pairData[i][1]).trim().toUpperCase() });
+ }
 }
 return { status: 'success', pairings };
 }
@@ -249,8 +258,8 @@ function syncAllPairings(pairings) {
 const sheet = getDatabase().getSheetByName("Pairings"); const lastRow = sheet.getLastRow();
 if(lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
 if(pairings && pairings.length > 0) {
- const rows = pairings.map(p =>[p.traineeNric, p.volNric]);
- sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+const rows = pairings.map(p =>[p.traineeNric, p.volNric]);
+sheet.getRange(2, 1, rows.length, 2).setValues(rows);
 }
 return fetchLogistics();
 }
@@ -258,56 +267,53 @@ return fetchLogistics();
 function syncPairingUpdates(updates) {
 const lock = LockService.getScriptLock();
 try {
-  lock.waitLock(10000);
-  const ss = getDatabase();
-  const sheet = ss.getSheetByName("Pairings");
-  if(!sheet) return { status: 'error', message: 'Sheet not found.' };
+ lock.waitLock(10000);
+ const ss = getDatabase();
+ const sheet = ss.getSheetByName("Pairings");
+ if(!sheet) return { status: 'error', message: 'Sheet not found.' };
 
-  // Read current state
-  const data = sheet.getDataRange().getValues();
-  let currentPairings = [];
-  for(let i=1; i<data.length; i++) {
-    if(data[i][0]) currentPairings.push({ traineeNric: String(data[i][0]).trim().toUpperCase(), volNric: String(data[i][1]).trim().toUpperCase() });
-  }
+ const data = sheet.getDataRange().getValues();
+ let currentPairings = [];
+ for(let i=1; i<data.length; i++) {
+   if(data[i][0]) currentPairings.push({ traineeNric: String(data[i][0]).trim().toUpperCase(), volNric: String(data[i][1]).trim().toUpperCase() });
+ }
 
-  // Apply delta updates
-  updates.forEach(u => {
-    if (u.action === 'ADD') {
-      if (!currentPairings.some(p => p.traineeNric === u.traineeNric && p.volNric === u.volNric)) {
-        currentPairings.push({ traineeNric: u.traineeNric, volNric: u.volNric });
-      }
-    } else if (u.action === 'REMOVE') {
-      currentPairings = currentPairings.filter(p => !(p.traineeNric === u.traineeNric && p.volNric === u.volNric));
-    }
-  });
+ updates.forEach(u => {
+   if (u.action === 'ADD') {
+     if (!currentPairings.some(p => p.traineeNric === u.traineeNric && p.volNric === u.volNric)) {
+       currentPairings.push({ traineeNric: u.traineeNric, volNric: u.volNric });
+     }
+   } else if (u.action === 'REMOVE') {
+     currentPairings = currentPairings.filter(p => !(p.traineeNric === u.traineeNric && p.volNric === u.volNric));
+   }
+ });
 
-  // Write back
-  const lastRow = sheet.getLastRow();
-  if(lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
-  if(currentPairings.length > 0) {
-    const rows = currentPairings.map(p => [p.traineeNric, p.volNric]);
-    sheet.getRange(2, 1, rows.length, 2).setValues(rows);
-  }
+ const lastRow = sheet.getLastRow();
+ if(lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
+ if(currentPairings.length > 0) {
+   const rows = currentPairings.map(p => [p.traineeNric, p.volNric]);
+   sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+ }
 
-  return { status: 'success', pairings: currentPairings };
+ return { status: 'success', pairings: currentPairings };
 } catch (e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 } finally {
-  lock.releaseLock();
+ lock.releaseLock();
 }
 }
 
 function toggleRegistration(status, tripTitle, tripYear) {
 const props = PropertiesService.getScriptProperties();
 if (status) {
- tripTitle = tripTitle || 'Overseas Trip'; tripYear = tripYear || new Date().getFullYear().toString();
- const mainFolder = DriveApp.getFolderById(DRIVE_FOLDERS[APP_ENV]);
- let subFolders = mainFolder.getFoldersByName(tripYear);
- let yearFolder = subFolders.hasNext() ? subFolders.next() : mainFolder.createFolder(tripYear);
- let files = yearFolder.getFilesByName("Active Database"); let dbId;
- if (files.hasNext()) { dbId = files.next().getId(); }
- else { let ss = SpreadsheetApp.create("Active Database"); dbId = ss.getId(); DriveApp.getFileById(dbId).moveTo(yearFolder); setupSheets(ss); }
- props.setProperty('TRIP_TITLE', tripTitle); props.setProperty('TRIP_YEAR', tripYear); props.setProperty('DB_SHEET_ID', dbId);
+tripTitle = tripTitle || 'Overseas Trip'; tripYear = tripYear || new Date().getFullYear().toString();
+const mainFolder = DriveApp.getFolderById(DRIVE_FOLDERS[APP_ENV]);
+let subFolders = mainFolder.getFoldersByName(tripYear);
+let yearFolder = subFolders.hasNext() ? subFolders.next() : mainFolder.createFolder(tripYear);
+let files = yearFolder.getFilesByName("Active Database"); let dbId;
+if (files.hasNext()) { dbId = files.next().getId(); }
+else { let ss = SpreadsheetApp.create("Active Database"); dbId = ss.getId(); DriveApp.getFileById(dbId).moveTo(yearFolder); setupSheets(ss); }
+props.setProperty('TRIP_TITLE', tripTitle); props.setProperty('TRIP_YEAR', tripYear); props.setProperty('DB_SHEET_ID', dbId);
 }
 props.setProperty('REGISTRATION_OPEN', status ? 'true' : 'false');
 return { status: 'success', tripTitle, tripYear };
@@ -334,11 +340,11 @@ const rawGroups = props.getProperty('PROJECT_GROUPS'); let list = rawGroups ? JS
 const rawColors = props.getProperty('PROJECT_COLORS'); let colors = rawColors ? JSON.parse(rawColors) : {};
 
 if (isAdding) {
- if (groupName && !list.includes(groupName)) list.push(groupName);
- if (colorClass) colors[groupName] = colorClass;
+if (groupName && !list.includes(groupName)) list.push(groupName);
+if (colorClass) colors[groupName] = colorClass;
 } else {
- list = list.filter(g => g !== groupName);
- delete colors[groupName];
+list = list.filter(g => g !== groupName);
+delete colors[groupName];
 }
 props.setProperty('PROJECT_GROUPS', JSON.stringify(list));
 props.setProperty('PROJECT_COLORS', JSON.stringify(colors));
@@ -356,66 +362,66 @@ props.setProperty('ATTENDANCE_JUNCTURES', JSON.stringify(list)); return { status
 
 function saveSortingRules(rules, callerNric) {
 if (callerNric !== 'ADMIN' && !JSON.parse(PropertiesService.getScriptProperties().getProperty('COMMITTEE_LIST') || '[]').some(c => c.nric === callerNric)) {
-    return { status: 'error', message: 'Unauthorized' };
+   return { status: 'error', message: 'Unauthorized' };
 }
 PropertiesService.getScriptProperties().setProperty('SORTING_RULES', JSON.stringify(rules));
 return { status: 'success', sortingRules: rules };
 }
 
 function getTripFolder() {
- const dbId = PropertiesService.getScriptProperties().getProperty('DB_SHEET_ID');
- if (!dbId) throw new Error("No active trip folder found. Ensure registration has been opened.");
- const file = DriveApp.getFileById(dbId);
- const parents = file.getParents();
- if (parents.hasNext()) return parents.next();
- throw new Error("Trip parent folder not found.");
+const dbId = PropertiesService.getScriptProperties().getProperty('DB_SHEET_ID');
+if (!dbId) throw new Error("No active trip folder found. Ensure registration has been opened.");
+const file = DriveApp.getFileById(dbId);
+const parents = file.getParents();
+if (parents.hasNext()) return parents.next();
+throw new Error("Trip parent folder not found.");
 }
 
 function addDriveAccess(email, role) {
- if (!email) return { status: 'error', message: 'Email is required.' };
- email = email.trim().toLowerCase();
- try {
-   const folder = getTripFolder();
-   if (role === 'editor') {
-     folder.addEditor(email);
-   } else {
-     folder.addViewer(email);
-   }
-   const props = PropertiesService.getScriptProperties();
-   const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
-   const access = rawAccess ? JSON.parse(rawAccess) : {};
-   access[email] = role;
-   props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access));
-   return { status: 'success', driveAccessList: access };
- } catch (error) {
-   return { status: 'error', message: "Failed to grant access. Make sure the email is a valid Google Account. (" + error.message + ")" };
- }
+if (!email) return { status: 'error', message: 'Email is required.' };
+email = email.trim().toLowerCase();
+try {
+  const folder = getTripFolder();
+  if (role === 'editor') {
+    folder.addEditor(email);
+  } else {
+    folder.addViewer(email);
+  }
+  const props = PropertiesService.getScriptProperties();
+  const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
+  const access = rawAccess ? JSON.parse(rawAccess) : {};
+  access[email] = role;
+  props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access));
+  return { status: 'success', driveAccessList: access };
+} catch (error) {
+  return { status: 'error', message: "Failed to grant access. Make sure the email is a valid Google Account. (" + error.message + ")" };
+}
 }
 
 function removeDriveAccess(email) {
- if (!email) return { status: 'error', message: 'Email is required.' };
- email = email.trim().toLowerCase();
- const props = PropertiesService.getScriptProperties();
- const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
- const access = rawAccess ? JSON.parse(rawAccess) : {};
- 
- if (!access[email]) {
-   return { status: 'error', message: 'You can only remove access for users who were added via this app interface.' };
- }
+if (!email) return { status: 'error', message: 'Email is required.' };
+email = email.trim().toLowerCase();
+const props = PropertiesService.getScriptProperties();
+const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
+const access = rawAccess ? JSON.parse(rawAccess) : {};
 
- try {
-   const folder = getTripFolder();
-   if (access[email] === 'editor') {
-     folder.removeEditor(email);
-   } else {
-     folder.removeViewer(email);
-   }
-   delete access[email];
-   props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access));
-   return { status: 'success', driveAccessList: access };
- } catch (error) {
-   return { status: 'error', message: "Failed to remove access. (" + error.message + ")" };
- }
+if (!access[email]) {
+  return { status: 'error', message: 'You can only remove access for users who were added via this app interface.' };
+}
+
+try {
+  const folder = getTripFolder();
+  if (access[email] === 'editor') {
+    folder.removeEditor(email);
+  } else {
+    folder.removeViewer(email);
+  }
+  delete access[email];
+  props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access));
+  return { status: 'success', driveAccessList: access };
+} catch (error) {
+  return { status: 'error', message: "Failed to remove access. (" + error.message + ")" };
+}
 }
 
 function fetchAttendanceData(juncture) {
@@ -426,13 +432,12 @@ if(!sheet) return { status: 'success', data: {} };
 const data = sheet.getDataRange().getValues();
 const result = {};
 
-// Find all rows matching the juncture and determine their boolean status
 for (let i = 1; i < data.length; i++) {
-  if (data[i][0] === juncture) {
-    const nric = String(data[i][1]).trim().toUpperCase();
-    const status = (String(data[i][2]).trim() === 'true');
-    result[nric] = status;
-  }
+ if (data[i][0] === juncture) {
+   const nric = String(data[i][1]).trim().toUpperCase();
+   const status = (String(data[i][2]).trim() === 'true');
+   result[nric] = status;
+ }
 }
 
 return { status: 'success', data: result };
@@ -447,41 +452,32 @@ const data = sheet.getDataRange().getValues();
 const lock = LockService.getScriptLock();
 
 try {
-  // Wait up to 10 seconds for other concurrent processes to finish
-  lock.waitLock(10000);
-  
-  // Create a map of row indices for existing records
-  const existingMap = {};
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === juncture) {
-      const nric = String(data[i][1]).trim().toUpperCase();
-      existingMap[nric] = i + 1; // 1-based index for getRange
-    }
-  }
+ lock.waitLock(10000);
+ const existingMap = {};
+ for (let i = 1; i < data.length; i++) {
+   if (data[i][0] === juncture) {
+     const nric = String(data[i][1]).trim().toUpperCase();
+     existingMap[nric] = i + 1; 
+   }
+ }
 
-  const timestamp = new Date();
-  
-  // Process each update
-  updates.forEach(u => {
-    const nric = String(u.nric).trim().toUpperCase();
-    const status = u.status ? 'true' : 'false';
-    
-    if (existingMap[nric]) {
-      // Update existing row (Row, Col, NumRows, NumCols)
-      const rowIndex = existingMap[nric];
-      sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, timestamp, takenBy]]);
-    } else {
-      // Append new row
-      sheet.appendRow([juncture, nric, status, timestamp, takenBy]);
-    }
-  });
-  
-  return { status: 'success' };
-  
+ const timestamp = new Date();
+ updates.forEach(u => {
+   const nric = String(u.nric).trim().toUpperCase();
+   const status = u.status ? 'true' : 'false';
+   
+   if (existingMap[nric]) {
+     const rowIndex = existingMap[nric];
+     sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, timestamp, takenBy]]);
+   } else {
+     sheet.appendRow([juncture, nric, status, timestamp, takenBy]);
+   }
+ });
+ return { status: 'success' };
 } catch (e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 } finally {
-  lock.releaseLock();
+ lock.releaseLock();
 }
 }
 
@@ -489,34 +485,29 @@ function archiveAndReset() {
 const props = PropertiesService.getScriptProperties(); 
 const dbId = props.getProperty('DB_SHEET_ID');
 
-// Step 1: Auto-revoke all drive permissions granted via the app interface
 try {
- if (dbId) {
-   const folder = getTripFolder();
-   const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
-   if (rawAccess) {
-     const accessObj = JSON.parse(rawAccess);
-     for (let email in accessObj) {
-       try {
-         if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
-         else { folder.removeViewer(email); }
-       } catch(e) { /* Ignore individual removal errors if user manually unshared it */ }
-     }
-   }
- }
-} catch (e) {
- console.log("Could not auto-revoke access: " + e.message);
-}
-
-// Step 2: Archive the Database File
 if (dbId) {
- const t = props.getProperty('TRIP_TITLE') || 'Archived Trip'; 
- const y = props.getProperty('TRIP_YEAR') || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy");
- const d = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
- try { DriveApp.getFileById(dbId).setName(`${t} ${y} (Archived ${d})`); } catch(e){}
+  const folder = getTripFolder();
+  const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
+  if (rawAccess) {
+    const accessObj = JSON.parse(rawAccess);
+    for (let email in accessObj) {
+      try {
+        if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
+        else { folder.removeViewer(email); }
+      } catch(e) { }
+    }
+  }
+}
+} catch (e) { console.log("Could not auto-revoke access: " + e.message); }
+
+if (dbId) {
+const t = props.getProperty('TRIP_TITLE') || 'Archived Trip'; 
+const y = props.getProperty('TRIP_YEAR') || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy");
+const d = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+try { DriveApp.getFileById(dbId).setName(`${t} ${y} (Archived ${d})`); } catch(e){}
 }
 
-// Step 3: Wipe System Data completely
 props.deleteProperty('DB_SHEET_ID'); 
 props.setProperty('REGISTRATION_OPEN', 'false'); 
 props.setProperty('ALLOW_EDITS', 'false');
