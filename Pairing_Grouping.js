@@ -352,6 +352,10 @@ setSyncButtonState('loading');
 try { 
  const res = await callBackend('fetchLogistics'); 
  globalLogistics = res; 
+ 
+ if (typeof processDisplayNames === "function") {
+     processDisplayNames(globalLogistics.participants);
+ }
  if (typeof applyGlobalSorting === "function") {
      globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
  }
@@ -391,18 +395,19 @@ myPairings.forEach(pair => {
     const pairedPerson = item.role === 'TRAINEE' ? vols.find(v => v.nric === pair.volNric) : trainees.find(t => t.nric === pair.traineeNric);
     if(pairedPerson) {
         const pColor = getProjectColor(pairedPerson.group);
-        pairedPills += generatePillHtml(pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
+        pairedPills += generatePillHtml(pairedPerson.displayName || pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
     }
 });
 
 const btnLabel = item.role === 'TRAINEE' ? '+ Vol' : '+ Trn';
+const displayName = item.displayName || item.name;
 
 return `
   <div class="dnd-draggable dnd-dropzone bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-md border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col min-h-[60px] gap-1" data-nric="${item.nric}" data-role="${item.role}">
     <!-- Unique Targetable class for cloning -->
     <div class="flex justify-between items-start w-full gap-1">
       <div class="main-name-pill font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full inline-flex flex-wrap items-center gap-1 self-start min-w-0 leading-[1.1]">
-        <span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: break-word;">${item.name}</span>
+        <span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: break-word;">${displayName}</span>
         ${famBadge}
       </div>
       <button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-1 rounded border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
@@ -465,7 +470,8 @@ let titleHtml = sourceRole === 'TRAINEE' ? "Select Volunteer" : "Select Trainee"
 
 if (sourcePerson) {
  const dynColor = getProjectColor(sourcePerson.group);
- titleHtml = `Pair with <span class="ml-1 font-bold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${dynColor}">${sourcePerson.name}</span>`;
+ const dName = sourcePerson.displayName || sourcePerson.name;
+ titleHtml = `Pair with <span class="ml-1 font-bold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${dynColor}">${dName}</span>`;
 }
 
 document.getElementById('sheetTitle').innerHTML = titleHtml;
@@ -493,10 +499,11 @@ targets.forEach(t => {
  const tDynColor = getProjectColor(t.group);
  const roleLabel = t.role === 'VOLUNTEER' ? 'Volunteer' : 'Trainee';
  const roleColor = t.role === 'VOLUNTEER' ? 'text-green-700 bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800' : 'text-blue-700 bg-blue-100 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800';
+ const dName = t.displayName || t.name;
  
- html += `<div onclick="confirmPairing('${t.nric}')" class="pairing-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary dark:hover:border-primary transition mb-1.5" data-name="${t.name.toLowerCase()}">
+ html += `<div onclick="confirmPairing('${t.nric}')" class="pairing-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary dark:hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">
      <div class="flex justify-between items-start w-full gap-2">
-       <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]" style="overflow-wrap: break-word;">${t.name}</span>
+       <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]" style="overflow-wrap: break-word;">${dName}</span>
        <span class="text-[9px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${roleLabel}</span>
      </div>
    </div>`;
