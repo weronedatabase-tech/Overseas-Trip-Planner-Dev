@@ -54,7 +54,7 @@ if (!ss.getSheetByName(name)) {
     sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
     sheet.setFrozenRows(1);
   } else if (name === "Pairings") {
-    sheet.appendRow(["Trainee NRIC", "Volunteer NRIC"]);
+    sheet.appendRow(["Trainee NRIC", "Volunteer NRIC", "Status", "Last Updated", "Updated By"]);
     sheet.setFrozenRows(1);
   } else if (name === "Minutes") {
     sheet.appendRow(["Timestamp", "Meeting Date", "Salient Points", "Follow-up Actions", "Recorded By"]);
@@ -88,8 +88,8 @@ switch(data.action) {
   case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
   case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
   case 'fetchLogistics': result = fetchLogistics(); break;
-  case 'syncAllPairings': result = syncAllPairings(data.pairings); break;
-  case 'syncPairingUpdates': result = syncPairingUpdates(data.updates); break;
+  case 'syncAllPairings': result = fetchPairingsOnly(); break; // Deprecated, redirects to fetch to refresh
+  case 'syncPairingUpdates': result = syncPairingUpdates(data.updates, data.takenBy || 'Admin'); break;
   case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
   case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
   case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
@@ -231,11 +231,19 @@ if(pData[i][11]) {
   });
 }
 }
+
 const pairSheet = ss.getSheetByName("Pairings"); let pairings =[];
 if(pairSheet) {
 const pairData = pairSheet.getDataRange().getValues();
 for(let i=1; i<pairData.length; i++) {
-  if(pairData[i][0]) pairings.push({ traineeNric: String(pairData[i][0]).trim().toUpperCase(), volNric: String(pairData[i][1]).trim().toUpperCase() });
+  const t = String(pairData[i][0]).trim().toUpperCase();
+  const v = String(pairData[i][1]).trim().toUpperCase();
+  if(t && v) {
+    const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
+    const tsVal = new Date(pairData[i][3]).getTime();
+    const ts = isNaN(tsVal) ? 0 : tsVal;
+    pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
+  }
 }
 }
 return { status: 'success', participants, pairings, roomConfigs:[], rooms: [], groups: [], buses:[] };
@@ -248,23 +256,20 @@ let pairings = [];
 if(pairSheet) {
  const pairData = pairSheet.getDataRange().getValues();
  for(let i=1; i<pairData.length; i++) {
-   if(pairData[i][0]) pairings.push({ traineeNric: String(pairData[i][0]).trim().toUpperCase(), volNric: String(pairData[i][1]).trim().toUpperCase() });
+   const t = String(pairData[i][0]).trim().toUpperCase();
+   const v = String(pairData[i][1]).trim().toUpperCase();
+   if(t && v) {
+     const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
+     const tsVal = new Date(pairData[i][3]).getTime();
+     const ts = isNaN(tsVal) ? 0 : tsVal;
+     pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
+   }
  }
 }
 return { status: 'success', pairings };
 }
 
-function syncAllPairings(pairings) {
-const sheet = getDatabase().getSheetByName("Pairings"); const lastRow = sheet.getLastRow();
-if(lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
-if(pairings && pairings.length > 0) {
-const rows = pairings.map(p =>[p.traineeNric, p.volNric]);
-sheet.getRange(2, 1, rows.length, 2).setValues(rows);
-}
-return fetchLogistics();
-}
-
-function syncPairingUpdates(updates) {
+function syncPairingUpdates(updates, takenBy) {
 const lock = LockService.getScriptLock();
 try {
  lock.waitLock(10000);
@@ -273,29 +278,38 @@ try {
  if(!sheet) return { status: 'error', message: 'Sheet not found.' };
 
  const data = sheet.getDataRange().getValues();
- let currentPairings = [];
+ const existingMap = {};
  for(let i=1; i<data.length; i++) {
-   if(data[i][0]) currentPairings.push({ traineeNric: String(data[i][0]).trim().toUpperCase(), volNric: String(data[i][1]).trim().toUpperCase() });
+   const t = String(data[i][0]).trim().toUpperCase();
+   const v = String(data[i][1]).trim().toUpperCase();
+   if(t && v) existingMap[`${t}_${v}`] = i + 1;
  }
 
  updates.forEach(u => {
-   if (u.action === 'ADD') {
-     if (!currentPairings.some(p => p.traineeNric === u.traineeNric && p.volNric === u.volNric)) {
-       currentPairings.push({ traineeNric: u.traineeNric, volNric: u.volNric });
+   const t = String(u.traineeNric).trim().toUpperCase();
+   const v = String(u.volNric).trim().toUpperCase();
+   const status = u.action === 'ADD' ? 'ACTIVE' : 'UNPAIRED';
+   const ts = u.ts || Date.now();
+   const tsDate = new Date(ts);
+   const key = `${t}_${v}`;
+
+   if(existingMap[key]) {
+     const rowIndex = existingMap[key];
+     const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+     const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+     
+     // Only overwrite if incoming timestamp is strictly newer
+     if (ts > existingTs) {
+       sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
      }
-   } else if (u.action === 'REMOVE') {
-     currentPairings = currentPairings.filter(p => !(p.traineeNric === u.traineeNric && p.volNric === u.volNric));
+   } else {
+     // Append new record
+     sheet.appendRow([t, v, status, tsDate, takenBy]);
+     existingMap[key] = sheet.getLastRow(); // Optimistic mapping for identical consecutive appends
    }
  });
 
- const lastRow = sheet.getLastRow();
- if(lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
- if(currentPairings.length > 0) {
-   const rows = currentPairings.map(p => [p.traineeNric, p.volNric]);
-   sheet.getRange(2, 1, rows.length, 2).setValues(rows);
- }
-
- return { status: 'success', pairings: currentPairings };
+ return fetchPairingsOnly();
 } catch (e) {
  return { status: 'error', message: e.message };
 } finally {
@@ -436,7 +450,9 @@ for (let i = 1; i < data.length; i++) {
  if (data[i][0] === juncture) {
    const nric = String(data[i][1]).trim().toUpperCase();
    const status = (String(data[i][2]).trim() === 'true');
-   result[nric] = status;
+   const tsVal = new Date(data[i][3]).getTime();
+   const ts = isNaN(tsVal) ? 0 : tsVal;
+   result[nric] = { status: status, ts: ts };
  }
 }
 
@@ -461,16 +477,24 @@ try {
    }
  }
 
- const timestamp = new Date();
  updates.forEach(u => {
    const nric = String(u.nric).trim().toUpperCase();
    const status = u.status ? 'true' : 'false';
+   const ts = u.ts || Date.now();
+   const tsDate = new Date(ts);
    
    if (existingMap[nric]) {
      const rowIndex = existingMap[nric];
-     sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, timestamp, takenBy]]);
+     const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+     const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+     
+     // Only update if incoming timestamp is strictly newer
+     if (ts > existingTs) {
+       sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
+     }
    } else {
-     sheet.appendRow([juncture, nric, status, timestamp, takenBy]);
+     sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
+     existingMap[nric] = sheet.getLastRow(); // Optimistic mapping
    }
  });
  return { status: 'success' };
