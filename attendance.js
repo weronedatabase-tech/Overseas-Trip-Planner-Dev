@@ -150,12 +150,13 @@ function generateAttCard(p, isChecked) {
 const dynColor = getProjectColor(p.group);
 const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
 const roleShort = p.role.substring(0,3).toUpperCase();
+const dName = p.displayName || p.name;
 
 return `
 <div id="att-card-${p.nric}" class="relative bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all duration-300 flex items-center justify-between gap-1 select-none active:scale-95 cursor-pointer hover:border-primary dark:hover:border-primary" onclick="toggleAttendanceStatus('${p.nric}', ${!isChecked})">
     <div class="flex items-start min-w-0 flex-1">
         <div class="flex flex-col min-w-0 flex-1 gap-1">
-            <span class="font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full break-words whitespace-normal leading-[1.1] text-left inline-block self-start" style="overflow-wrap: break-word;">${p.name}</span>
+            <span class="font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full break-words whitespace-normal leading-[1.1] text-left inline-block self-start" style="overflow-wrap: break-word;">${dName}</span>
             <span class="text-[8px] font-black ${roleColor} w-max bg-gray-50 dark:bg-gray-700 px-1 py-0.5 rounded uppercase tracking-wider border border-gray-100 dark:border-gray-600">${roleShort}</span>
         </div>
     </div>
@@ -179,17 +180,19 @@ if(!query) {
 const assignment = document.getElementById('attAssignmentSelect').value;
 const participants = globalLogistics.participants.filter(p => {
    if(assignment !== 'ALL' && p.group !== assignment) return false;
-   return p.name.toLowerCase().includes(query);
+   const dName = p.displayName || p.name || '';
+   return dName.toLowerCase().includes(query);
 });
 
 let html = '';
 participants.forEach(p => {
    const isChecked = attendanceState[p.nric] || false;
    const dynColor = getProjectColor(p.group);
+   const dName = p.displayName || p.name;
    
    html += `
    <li class="px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-gray-700 last:border-0 transition" onclick="selectFromSearch('${p.nric}')">
-       <span class="font-bold text-[11px] md:text-xs ${dynColor} px-1.5 py-0.5 rounded-md border shadow-sm leading-tight max-w-[70%] break-words whitespace-normal" style="overflow-wrap: anywhere;">${p.name}</span>
+       <span class="font-bold text-[11px] md:text-xs ${dynColor} px-1.5 py-0.5 rounded-md border shadow-sm leading-tight max-w-[70%] break-words whitespace-normal" style="overflow-wrap: anywhere;">${dName}</span>
        ${isChecked ? '<span class="text-[9px] bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-1 py-0.5 rounded font-black uppercase">Checked</span>' : '<span class="text-[9px] bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 px-1 py-0.5 rounded font-black uppercase">NOT Checked</span>'}
    </li>`;
 });
