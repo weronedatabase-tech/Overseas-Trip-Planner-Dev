@@ -166,10 +166,20 @@ function handleDndDrop(sourceNric, sourceRole, targetNric) {
 let volNric = sourceRole === 'VOLUNTEER' ? sourceNric : targetNric;
 let traineeNric = sourceRole === 'TRAINEE' ? sourceNric : targetNric;
 
-if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNric === volNric)) {
+let existing = globalLogistics.pairings.find(p => p.traineeNric === traineeNric && p.volNric === volNric);
+
+if(!existing || existing.status !== 'ACTIVE') {
+    const ts = Date.now();
     const key = traineeNric + '_' + volNric;
-    pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric });
-    globalLogistics.pairings.push({ traineeNric: traineeNric, volNric: volNric });
+    pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric, ts });
+    
+    if(existing) {
+        existing.status = 'ACTIVE';
+        existing.ts = ts;
+    } else {
+        globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
+    }
+    
     renderPairings(); 
     triggerPairingSync();
 } else {
@@ -178,9 +188,16 @@ if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNri
 }
 
 function unpairTrainee(traineeNric, volNric) {
+const ts = Date.now();
 const key = traineeNric + '_' + volNric;
-pendingPairingsMap.set(key, { action: 'REMOVE', traineeNric, volNric });
-globalLogistics.pairings = globalLogistics.pairings.filter(p => !(p.traineeNric === traineeNric && p.volNric === volNric)); 
+pendingPairingsMap.set(key, { action: 'REMOVE', traineeNric, volNric, ts });
+
+let existing = globalLogistics.pairings.find(p => p.traineeNric === traineeNric && p.volNric === volNric);
+if (existing) {
+    existing.status = 'UNPAIRED';
+    existing.ts = ts;
+}
+
 renderPairings(); 
 triggerPairingSync();
 }
@@ -229,19 +246,33 @@ if (pendingPairingsMap.size === 0) return;
 isPairingSyncing = true;
 setSyncButtonState('saving');
 
-const updates = Array.from(pendingPairingsMap.values());
 const batch = new Map(pendingPairingsMap);
+const updates = Array.from(batch.values());
 pendingPairingsMap.clear();
 
 try {
-   const res = await callBackend('syncPairingUpdates', { updates });
+   const res = await callBackend('syncPairingUpdates', { updates: updates, takenBy: currentUser.name });
+   
+   // LAST-WRITE-WINS Merge
    if(res.pairings) {
-       globalLogistics.pairings = res.pairings;
+       res.pairings.forEach(sPair => {
+           let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+           if (lPair) {
+               if (sPair.ts > lPair.ts) {
+                   lPair.status = sPair.status;
+                   lPair.ts = sPair.ts;
+               }
+           } else {
+               globalLogistics.pairings.push(sPair);
+           }
+       });
+       renderPairings();
    }
    setSyncButtonState('saved');
 } catch(e) {
    showToast("Sync failed. Retrying...", true);
    setSyncButtonState('error');
+   // Re-add to pending if failed
    batch.forEach((val, key) => pendingPairingsMap.set(key, val));
 } finally {
    isPairingSyncing = false;
@@ -255,21 +286,33 @@ pairingPollInterval = setInterval(async () => {
    const logTab = document.getElementById('tab-logistics');
    if(!logTab || logTab.classList.contains('hidden-force')) return;
    
-   // Do not poll if pending edits or actively syncing
-   if(pendingPairingsMap.size > 0 || isPairingSyncing) return;
-   
    try {
        const res = await callBackend('fetchPairingsOnly');
        if(res.pairings) {
            const server = res.pairings;
-           const local = globalLogistics.pairings || [];
+           let hasChanges = false;
            
-           const serverHash = server.map(p => p.traineeNric+'_'+p.volNric).sort().join('|');
-           const localHash = local.map(p => p.traineeNric+'_'+p.volNric).sort().join('|');
+           // LAST-WRITE-WINS Background Merge
+           server.forEach(sPair => {
+               let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+               if (lPair) {
+                   if (sPair.ts > lPair.ts) {
+                       lPair.status = sPair.status;
+                       lPair.ts = sPair.ts;
+                       hasChanges = true;
+                   }
+               } else {
+                   globalLogistics.pairings.push(sPair);
+                   hasChanges = true;
+               }
+           });
            
-           if (serverHash !== localHash) {
-               globalLogistics.pairings = server;
+           if (hasChanges) {
                renderPairings();
+               // Re-filter bottom sheet if open
+               if(!document.getElementById('selectionBottomSheet').classList.contains('hidden-force')) {
+                   openPairingSheet(currentPairingTarget, currentPairingSourceRole);
+               }
            }
        }
    } catch(e) {
@@ -388,12 +431,12 @@ return `<div class="relative inline-block m-1 align-top pointer-events-auto">
 }
 
 // Generates the main drag/drop cards. Emphasizes Main Name via text sizing and boldness.
-function generateCardHtml(item, familyCounts, pairings, vols, trainees) {
+function generateCardHtml(item, familyCounts, activePairings, vols, trainees) {
 const dynColor = getProjectColor(item.group);
 const isFam = familyCounts[item.poc] > 1;
 const famBadge = isFam && item.role === 'TRAINEE' ? `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-[8px] uppercase font-black tracking-wider px-1 py-0.5 rounded shrink-0 shadow-sm border border-purple-200 dark:border-purple-700 pointer-events-none whitespace-nowrap">FAM</span>` : '';
 
-const myPairings = item.role === 'TRAINEE' ? pairings.filter(p => p.traineeNric === item.nric) : pairings.filter(p => p.volNric === item.nric);
+const myPairings = item.role === 'TRAINEE' ? activePairings.filter(p => p.traineeNric === item.nric) : activePairings.filter(p => p.volNric === item.nric);
 
 let pairedPills = '';
 myPairings.forEach(pair => {
@@ -428,7 +471,9 @@ function renderPairings() {
 if(!globalLogistics || !document.getElementById('dnd-source-pool')) return;
 const trainees = globalLogistics.participants.filter(p => p.role === 'TRAINEE');
 const vols = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER');
-const pairings = globalLogistics.pairings ||[];
+
+// Filter active pairings only for visual rendering
+const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status || p.status === 'ACTIVE'));
 const familyCounts = {}; globalLogistics.participants.forEach(p => { familyCounts[p.poc] = (familyCounts[p.poc] || 0) + 1; });
 
 const isSourceVol = !altSwapMode;
@@ -457,11 +502,11 @@ sourceTitle.className = `font-black text-[10px] py-1.5 shrink-0 text-center uppe
 targetTitle.className = `font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b ${!isSourceVol ? volTitleClass : traineeTitleClass}`;
 
 let sourceHtml = '';
-sourceArr.forEach(item => { sourceHtml += generateCardHtml(item, familyCounts, pairings, vols, trainees); });
+sourceArr.forEach(item => { sourceHtml += generateCardHtml(item, familyCounts, activePairings, vols, trainees); });
 document.getElementById('dnd-source-pool').innerHTML = sourceHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-2">No items.</p>';
 
 let targetHtml = '';
-targetArr.forEach(item => { targetHtml += generateCardHtml(item, familyCounts, pairings, vols, trainees); });
+targetArr.forEach(item => { targetHtml += generateCardHtml(item, familyCounts, activePairings, vols, trainees); });
 document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-2">No items.</p>';
 }
 
@@ -490,14 +535,14 @@ document.getElementById('selectionBottomSheet').classList.remove('hidden-force')
 
 const targetRole = sourceRole === 'TRAINEE' ? 'VOLUNTEER' : 'TRAINEE';
 const targets = globalLogistics.participants.filter(p => p.role === targetRole);
-const pairings = globalLogistics.pairings ||[];
+const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status || p.status === 'ACTIVE'));
 let html = '';
 
 targets.forEach(t => {
  // Check if already paired
  const isPaired = sourceRole === 'TRAINEE' 
-   ? pairings.some(p => p.volNric === t.nric && p.traineeNric === sourceNric)
-   : pairings.some(p => p.traineeNric === t.nric && p.volNric === sourceNric);
+   ? activePairings.some(p => p.volNric === t.nric && p.traineeNric === sourceNric)
+   : activePairings.some(p => p.traineeNric === t.nric && p.volNric === sourceNric);
    
  if(isPaired) return; 
 
@@ -536,10 +581,20 @@ closeSelectionSheet();
 const traineeNric = currentPairingSourceRole === 'TRAINEE' ? currentPairingTarget : targetNric;
 const volNric = currentPairingSourceRole === 'TRAINEE' ? targetNric : currentPairingTarget;
 
-if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNric === volNric)) {
+let existing = globalLogistics.pairings.find(p => p.traineeNric === traineeNric && p.volNric === volNric);
+
+if(!existing || existing.status !== 'ACTIVE') {
+   const ts = Date.now();
    const key = traineeNric + '_' + volNric;
-   pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric });
-   globalLogistics.pairings.push({ traineeNric, volNric }); 
+   pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric, ts });
+   
+   if(existing) {
+       existing.status = 'ACTIVE';
+       existing.ts = ts;
+   } else {
+       globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
+   }
+   
    renderPairings(); 
    triggerPairingSync();
 }
@@ -548,14 +603,27 @@ if(!globalLogistics.pairings.some(p => p.traineeNric === traineeNric && p.volNri
 async function manualSyncPairings(btn) {
 setSyncButtonState('loading');
 try { 
-   // Fallback: forcefully wipe and sync all from the local cache, in case delta drops.
-   await callBackend('syncAllPairings', { pairings: globalLogistics.pairings }); 
+   const res = await callBackend('fetchPairingsOnly'); 
+   if(res.pairings) {
+       res.pairings.forEach(sPair => {
+           let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+           if (lPair) {
+               if (sPair.ts > lPair.ts) {
+                   lPair.status = sPair.status;
+                   lPair.ts = sPair.ts;
+               }
+           } else {
+               globalLogistics.pairings.push(sPair);
+           }
+       });
+       renderPairings();
+   }
    pendingPairingsMap.clear();
    setSyncButtonState('saved'); 
-   showToast("Manual save complete!"); 
+   showToast("Refreshed from server!"); 
 } 
 catch(e) { 
-   showToast("Save failed.", true); 
+   showToast("Sync failed.", true); 
    setSyncButtonState('error'); 
 } 
 }
