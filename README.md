@@ -13,9 +13,8 @@ The repository is modularized for long-term scalability and parallel development
 
 ## Environment Configurations
 The application natively supports three environments: **Prod**, **Dev**, and **Exp**.
-To change the active environment, update the `ENV` variable in **both**:
+To change the active environment, update the `ENV` variable in:
 1. `/backend/config.js`
-2. `/frontend/js/config.js`
 
 The frontend will automatically render a red "Testing" banner for Dev, and a purple "Experimentation" banner for Exp.
 
