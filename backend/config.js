@@ -1,6 +1,9 @@
 // ==========================================
-// config.js - Application Configuration
+// config.js - Application Configuration (SHARED)
 // ==========================================
+// This file is used by both the Google Apps Script backend and the GitHub Pages frontend.
+// Change the ENV variable below to switch environments across the entire app.
+
 // ENVIRONMENT TOGGLE
 // Options: 'Exp' (Experimental) | 'Dev' (Development) | 'Prod' (Production)
 const ENV = 'Exp';

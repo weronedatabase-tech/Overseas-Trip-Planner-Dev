@@ -1,11 +1,11 @@
-const CACHE_NAME = 'myg-trip-v3';
+const CACHE_NAME = 'myg-trip-v4';
 const urlsToCache =[
 './',
 './index.html',
 './manifest.json',
 './frontend/css/styles.css',
 './frontend/js/tailwind.config.js',
-'./frontend/js/config.js',
+'./backend/config.js',
 './frontend/js/app.js',
 './frontend/js/auth.js',
 './frontend/js/ui.js',
@@ -24,7 +24,7 @@ event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
 });
 
 self.addEventListener('activate', event => {
-// Delete old caches (like v1 and v2) so the new folder structure takes over
+// Delete old caches (like v1, v2, v3) so the new folder structure and config takes over
 event.waitUntil(
   caches.keys().then(cacheNames => {
     return Promise.all(
