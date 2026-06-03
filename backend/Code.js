@@ -37,21 +37,21 @@ requiredSheets.forEach(name => {
 if (!ss.getSheetByName(name)) {
 let sheet = ss.insertSheet(name);
 if (name === "Raw Data") {
-  sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC", "Short Name / Nickname"]);
-  sheet.setFrozenRows(1);
+ sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC", "Short Name / Nickname"]);
+ sheet.setFrozenRows(1);
 } else if (name === "Finance") {
-  sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
-  sheet.appendRow(["Timestamp", "NRIC", "Name", "Total Amount (SGD)", "PayNow Serial", "Payment Status", "CSV Match Date"]);
-  sheet.setFrozenRows(2);
+ sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
+ sheet.appendRow(["Timestamp", "NRIC", "Name", "Total Amount (SGD)", "PayNow Serial", "Payment Status", "CSV Match Date"]);
+ sheet.setFrozenRows(2);
 } else if (name === "Attendance") {
-  sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
-  sheet.setFrozenRows(1);
+ sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
+ sheet.setFrozenRows(1);
 } else if (name === "Pairings") {
-  sheet.appendRow(["Trainee NRIC", "Volunteer NRIC", "Status", "Last Updated", "Updated By"]);
-  sheet.setFrozenRows(1);
+ sheet.appendRow(["Trainee NRIC", "Volunteer NRIC", "Status", "Last Updated", "Updated By"]);
+ sheet.setFrozenRows(1);
 } else if (name === "Minutes") {
-  sheet.appendRow(["Timestamp", "Meeting Date", "Salient Points", "Follow-up Actions", "Recorded By"]);
-  sheet.setFrozenRows(1);
+ sheet.appendRow(["Timestamp", "Meeting Date", "Salient Points", "Follow-up Actions", "Recorded By"]);
+ sheet.setFrozenRows(1);
 }
 }
 });
@@ -117,8 +117,8 @@ if (dbId) {
 const data = SpreadsheetApp.openById(dbId).getSheetByName("Raw Data").getDataRange().getValues();
 const projSet = new Set();
 for (let i = 1; i < data.length; i++) {
-  let pName = String(data[i][6]).trim();
-  if (pName) projSet.add(pName);
+ let pName = String(data[i][6]).trim();
+ if (pName) projSet.add(pName);
 }
 activeProjects = Array.from(projSet);
 }
@@ -168,11 +168,11 @@ if (String(data[i][21]).trim().toUpperCase() === pocNric || String(data[i][11]).
 let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 family.push({
-  email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
-  group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
-  nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
-  emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
-  shortName: data[i][22] || ''
+ email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+ group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
+ nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
+ emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
+ shortName: data[i][22] || ''
 });
 }
 }
@@ -220,12 +220,12 @@ const ss = getDatabase(); const pData = ss.getSheetByName("Raw Data").getDataRan
 for(let i=1; i<pData.length; i++) {
 if(pData[i][11]) {
 participants.push({ 
-  role: String(pData[i][2]).trim().toUpperCase(), 
-  name: pData[i][3], 
-  shortName: pData[i][22] ? String(pData[i][22]).trim() : '',
-  group: String(pData[i][6]).trim(), 
-  nric: String(pData[i][11]).trim().toUpperCase(), 
-  poc: String(pData[i][21]).trim().toUpperCase() || String(pData[i][11]).trim().toUpperCase() 
+ role: String(pData[i][2]).trim().toUpperCase(), 
+ name: pData[i][3], 
+ shortName: pData[i][22] ? String(pData[i][22]).trim() : '',
+ group: String(pData[i][6]).trim(), 
+ nric: String(pData[i][11]).trim().toUpperCase(), 
+ poc: String(pData[i][21]).trim().toUpperCase() || String(pData[i][11]).trim().toUpperCase() 
 });
 }
 }
@@ -237,10 +237,10 @@ for(let i=1; i<pairData.length; i++) {
 const t = String(pairData[i][0]).trim().toUpperCase();
 const v = String(pairData[i][1]).trim().toUpperCase();
 if(t && v) {
-  const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
-  const tsVal = new Date(pairData[i][3]).getTime();
-  const ts = isNaN(tsVal) ? 0 : tsVal;
-  pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
+ const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
+ const tsVal = new Date(pairData[i][3]).getTime();
+ const ts = isNaN(tsVal) ? 0 : tsVal;
+ pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
 }
 }
 }
@@ -254,14 +254,14 @@ let pairings = [];
 if(pairSheet) {
 const pairData = pairSheet.getDataRange().getValues();
 for(let i=1; i<pairData.length; i++) {
- const t = String(pairData[i][0]).trim().toUpperCase();
- const v = String(pairData[i][1]).trim().toUpperCase();
- if(t && v) {
-   const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
-   const tsVal = new Date(pairData[i][3]).getTime();
-   const ts = isNaN(tsVal) ? 0 : tsVal;
-   pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
- }
+const t = String(pairData[i][0]).trim().toUpperCase();
+const v = String(pairData[i][1]).trim().toUpperCase();
+if(t && v) {
+  const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
+  const tsVal = new Date(pairData[i][3]).getTime();
+  const ts = isNaN(tsVal) ? 0 : tsVal;
+  pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
+}
 }
 }
 return { status: 'success', pairings };
@@ -278,31 +278,31 @@ if(!sheet) return { status: 'error', message: 'Sheet not found.' };
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for(let i=1; i<data.length; i++) {
- const t = String(data[i][0]).trim().toUpperCase();
- const v = String(data[i][1]).trim().toUpperCase();
- if(t && v) existingMap[`${t}_${v}`] = i + 1;
+const t = String(data[i][0]).trim().toUpperCase();
+const v = String(data[i][1]).trim().toUpperCase();
+if(t && v) existingMap[`${t}_${v}`] = i + 1;
 }
 
 updates.forEach(u => {
- const t = String(u.traineeNric).trim().toUpperCase();
- const v = String(u.volNric).trim().toUpperCase();
- const status = u.action === 'ADD' ? 'ACTIVE' : 'UNPAIRED';
- const ts = u.ts || Date.now();
- const tsDate = new Date(ts);
- const key = `${t}_${v}`;
+const t = String(u.traineeNric).trim().toUpperCase();
+const v = String(u.volNric).trim().toUpperCase();
+const status = u.action === 'ADD' ? 'ACTIVE' : 'UNPAIRED';
+const ts = u.ts || Date.now();
+const tsDate = new Date(ts);
+const key = `${t}_${v}`;
 
- if(existingMap[key]) {
-   const rowIndex = existingMap[key];
-   const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
-   
-   if (ts > existingTs) {
-     sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
-   }
- } else {
-   sheet.appendRow([t, v, status, tsDate, takenBy]);
-   existingMap[key] = sheet.getLastRow();
- }
+if(existingMap[key]) {
+  const rowIndex = existingMap[key];
+  const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+  
+  if (ts > existingTs) {
+    sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
+  }
+} else {
+  sheet.appendRow([t, v, status, tsDate, takenBy]);
+  existingMap[key] = sheet.getLastRow();
+}
 });
 
 return fetchPairingsOnly();
@@ -372,7 +372,7 @@ props.setProperty('ATTENDANCE_JUNCTURES', JSON.stringify(list)); return { status
 
 function saveSortingRules(rules, callerNric) {
 if (callerNric !== 'ADMIN' && !JSON.parse(PropertiesService.getScriptProperties().getProperty('COMMITTEE_LIST') || '[]').some(c => c.nric === callerNric)) {
- return { status: 'error', message: 'Unauthorized' };
+return { status: 'error', message: 'Unauthorized' };
 }
 PropertiesService.getScriptProperties().setProperty('SORTING_RULES', JSON.stringify(rules));
 return { status: 'success', sortingRules: rules };
@@ -389,77 +389,97 @@ throw new Error("Trip parent folder not found.");
 
 function getDriveContents(targetFolderId) {
 try {
-  let folder;
-  if (!targetFolderId || targetFolderId === 'root') {
-    folder = getTripFolder(); 
-  } else {
-    folder = DriveApp.getFolderById(targetFolderId);
-  }
+ let folder;
+ if (!targetFolderId || targetFolderId === 'root') {
+   folder = getTripFolder(); 
+ } else {
+   folder = DriveApp.getFolderById(targetFolderId);
+ }
 
-  const files = [];
-  const fileIter = folder.getFiles();
-  while(fileIter.hasNext()) {
-    const f = fileIter.next();
-    files.push({
-      id: f.getId(),
-      name: f.getName(),
-      mimeType: f.getMimeType(),
-      url: f.getUrl()
-    });
-  }
-  files.sort((a,b) => a.name.localeCompare(b.name));
+ const files = [];
+ const fileIter = folder.getFiles();
+ while(fileIter.hasNext()) {
+   const f = fileIter.next();
+   let mime = f.getMimeType();
+   let url = f.getUrl();
+   let isShortcut = false;
 
-  const folders = [];
-  const folderIter = folder.getFolders();
-  while(folderIter.hasNext()) {
-    const f = folderIter.next();
-    folders.push({
-      id: f.getId(),
-      name: f.getName()
-    });
-  }
-  folders.sort((a,b) => a.name.localeCompare(b.name));
+   if (mime === 'application/vnd.google-apps.shortcut') {
+     isShortcut = true;
+     try {
+       const tId = f.getTargetId();
+       const tMime = f.getTargetMimeType();
+       // Generate direct access URL to force native App intent handling on mobile
+       if (tMime === 'application/vnd.google-apps.folder') {
+         url = `https://drive.google.com/drive/folders/${tId}`;
+       } else {
+         url = `https://drive.google.com/open?id=${tId}`;
+       }
+       mime = tMime; // Masquerade as target mime to fetch correct icon in UI
+     } catch(e) { } // Silent fail if lacking permissions to target
+   }
 
-  return { status: 'success', currentFolderId: folder.getId(), currentFolderName: folder.getName(), files: files, folders: folders };
+   files.push({
+     id: f.getId(),
+     name: f.getName(),
+     mimeType: mime,
+     url: url,
+     isShortcut: isShortcut
+   });
+ }
+ files.sort((a,b) => a.name.localeCompare(b.name));
+
+ const folders = [];
+ const folderIter = folder.getFolders();
+ while(folderIter.hasNext()) {
+   const f = folderIter.next();
+   folders.push({
+     id: f.getId(),
+     name: f.getName()
+   });
+ }
+ folders.sort((a,b) => a.name.localeCompare(b.name));
+
+ return { status: 'success', currentFolderId: folder.getId(), currentFolderName: folder.getName(), files: files, folders: folders };
 } catch (e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 }
 }
 
 function uploadDriveFile(folderId, fileName, mimeType, fileData) {
 try {
-  let folder = folderId === 'root' ? getTripFolder() : DriveApp.getFolderById(folderId);
-  let blob = Utilities.newBlob(Utilities.base64Decode(fileData), mimeType, fileName);
-  folder.createFile(blob);
-  
-  return getDriveContents(folderId);
+ let folder = folderId === 'root' ? getTripFolder() : DriveApp.getFolderById(folderId);
+ let blob = Utilities.newBlob(Utilities.base64Decode(fileData), mimeType, fileName);
+ folder.createFile(blob);
+ 
+ return getDriveContents(folderId);
 } catch (e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 }
 }
 
 function createDriveFolder(parentFolderId, folderName) {
 try {
-  let parent = parentFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(parentFolderId);
-  parent.createFolder(folderName);
-  
-  return getDriveContents(parentFolderId);
+ let parent = parentFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(parentFolderId);
+ parent.createFolder(folderName);
+ 
+ return getDriveContents(parentFolderId);
 } catch (e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 }
 }
 
 function deleteDriveItem(itemId, isFolder, currentFolderId) {
 try {
-  if (isFolder) {
-    DriveApp.getFolderById(itemId).setTrashed(true);
-  } else {
-    DriveApp.getFileById(itemId).setTrashed(true);
-  }
-  
-  return getDriveContents(currentFolderId);
+ if (isFolder) {
+   DriveApp.getFolderById(itemId).setTrashed(true);
+ } else {
+   DriveApp.getFileById(itemId).setTrashed(true);
+ }
+ 
+ return getDriveContents(currentFolderId);
 } catch (e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 }
 }
 
@@ -469,9 +489,9 @@ email = email.trim().toLowerCase();
 try {
 const folder = getTripFolder();
 if (role === 'editor') {
-  folder.addEditor(email);
+ folder.addEditor(email);
 } else {
-  folder.addViewer(email);
+ folder.addViewer(email);
 }
 const props = PropertiesService.getScriptProperties();
 const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
@@ -498,9 +518,9 @@ return { status: 'error', message: 'You can only remove access for users who wer
 try {
 const folder = getTripFolder();
 if (access[email] === 'editor') {
-  folder.removeEditor(email);
+ folder.removeEditor(email);
 } else {
-  folder.removeViewer(email);
+ folder.removeViewer(email);
 }
 delete access[email];
 props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access));
@@ -521,34 +541,34 @@ const access = rawAccess ? JSON.parse(rawAccess) : {};
 const results = { success: [], failed: [] };
 
 emails.forEach(email => {
-  email = email.trim().toLowerCase();
-  if (!email) return;
-  
-  try {
-    if (actionType === 'add') {
-      if (role === 'editor') {
-        folder.addEditor(email);
-      } else {
-        folder.addViewer(email);
-      }
-      access[email] = role;
-      results.success.push(email);
-    } else if (actionType === 'remove') {
-      if (access[email]) {
-        if (access[email] === 'editor') {
-          folder.removeEditor(email);
-        } else {
-          folder.removeViewer(email);
-        }
-        delete access[email];
-        results.success.push(email);
-      } else {
-        results.failed.push({ email: email, reason: 'Not granted via app' });
-      }
-    }
-  } catch (error) {
-    results.failed.push({ email: email, reason: error.message });
-  }
+ email = email.trim().toLowerCase();
+ if (!email) return;
+ 
+ try {
+   if (actionType === 'add') {
+     if (role === 'editor') {
+       folder.addEditor(email);
+     } else {
+       folder.addViewer(email);
+     }
+     access[email] = role;
+     results.success.push(email);
+   } else if (actionType === 'remove') {
+     if (access[email]) {
+       if (access[email] === 'editor') {
+         folder.removeEditor(email);
+       } else {
+         folder.removeViewer(email);
+       }
+       delete access[email];
+       results.success.push(email);
+     } else {
+       results.failed.push({ email: email, reason: 'Not granted via app' });
+     }
+   }
+ } catch (error) {
+   results.failed.push({ email: email, reason: error.message });
+ }
 });
 
 props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access));
@@ -565,11 +585,11 @@ const result = {};
 
 for (let i = 1; i < data.length; i++) {
 if (data[i][0] === juncture) {
- const nric = String(data[i][1]).trim().toUpperCase();
- const status = (String(data[i][2]).trim() === 'true');
- const tsVal = new Date(data[i][3]).getTime();
- const ts = isNaN(tsVal) ? 0 : tsVal;
- result[nric] = { status: status, ts: ts };
+const nric = String(data[i][1]).trim().toUpperCase();
+const status = (String(data[i][2]).trim() === 'true');
+const tsVal = new Date(data[i][3]).getTime();
+const ts = isNaN(tsVal) ? 0 : tsVal;
+result[nric] = { status: status, ts: ts };
 }
 }
 
@@ -588,30 +608,30 @@ try {
 lock.waitLock(10000);
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
- if (data[i][0] === juncture) {
-   const nric = String(data[i][1]).trim().toUpperCase();
-   existingMap[nric] = i + 1; 
- }
+if (data[i][0] === juncture) {
+  const nric = String(data[i][1]).trim().toUpperCase();
+  existingMap[nric] = i + 1; 
+}
 }
 
 updates.forEach(u => {
- const nric = String(u.nric).trim().toUpperCase();
- const status = u.status ? 'true' : 'false';
- const ts = u.ts || Date.now();
- const tsDate = new Date(ts);
- 
- if (existingMap[nric]) {
-   const rowIndex = existingMap[nric];
-   const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
-   
-   if (ts > existingTs) {
-     sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
-   }
- } else {
-   sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
-   existingMap[nric] = sheet.getLastRow();
- }
+const nric = String(u.nric).trim().toUpperCase();
+const status = u.status ? 'true' : 'false';
+const ts = u.ts || Date.now();
+const tsDate = new Date(ts);
+
+if (existingMap[nric]) {
+  const rowIndex = existingMap[nric];
+  const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+  
+  if (ts > existingTs) {
+    sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
+  }
+} else {
+  sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
+  existingMap[nric] = sheet.getLastRow();
+}
 });
 return { status: 'success' };
 } catch (e) {
@@ -630,13 +650,13 @@ if (dbId) {
 const folder = getTripFolder();
 const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
 if (rawAccess) {
-  const accessObj = JSON.parse(rawAccess);
-  for (let email in accessObj) {
-    try {
-      if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
-      else { folder.removeViewer(email); }
-    } catch(e) { }
-  }
+ const accessObj = JSON.parse(rawAccess);
+ for (let email in accessObj) {
+   try {
+     if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
+     else { folder.removeViewer(email); }
+   } catch(e) { }
+ }
 }
 }
 } catch (e) { console.log("Could not auto-revoke access: " + e.message); }
