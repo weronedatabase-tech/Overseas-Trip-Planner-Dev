@@ -13,6 +13,10 @@ function buildFilesUI() {
         </button>
         <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1">Trip Folder</h3>
         
+        <button onclick="promptCreateFolder()" class="p-1.5 rounded-lg text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0" title="Create Folder">
+           <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
+        </button>
+
         <input type="file" id="driveFileInput" class="hidden-force" onchange="handleFileSelect(event)">
         <button onclick="triggerFileUpload()" class="p-1.5 rounded-lg text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0" title="Upload File">
            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
@@ -35,6 +39,31 @@ function buildFilesUI() {
       </div>
     </div>
   `;
+}
+
+async function promptCreateFolder() {
+  const folderName = prompt("Enter new folder name:");
+  if (!folderName || !folderName.trim()) return;
+  
+  const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
+  const overlay = document.getElementById('driveLoadingOverlay');
+  const loadText = document.getElementById('driveLoadingText');
+  
+  if (overlay) {
+      overlay.classList.remove('hidden-force');
+      loadText.textContent = "Creating folder...";
+  }
+  
+  try {
+      const res = await callBackend('createDriveFolder', { parentFolderId: current.id, folderName: folderName.trim() });
+      if (res.status === 'error') throw new Error(res.message);
+      renderDriveContents(res.folders, res.files);
+      showToast("Folder created.");
+  } catch(e) {
+      showToast("Failed to create folder.", true);
+  } finally {
+      if (overlay) overlay.classList.add('hidden-force');
+  }
 }
 
 function triggerFileUpload() {
