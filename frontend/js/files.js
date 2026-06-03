@@ -155,6 +155,31 @@ async function handleFileSelect(event) {
  }
 }
 
+async function promptRenameDriveItem(id, isFolder, oldName) {
+ const newName = prompt(`Enter new name for the ${isFolder ? 'folder' : 'file'}:`, oldName);
+ if (!newName || !newName.trim() || newName.trim() === oldName) return;
+ 
+ const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
+ const overlay = document.getElementById('driveLoadingOverlay');
+ const loadText = document.getElementById('driveLoadingText');
+ 
+ if (overlay) {
+     overlay.classList.remove('hidden-force');
+     loadText.textContent = "Renaming item...";
+ }
+ 
+ try {
+     const res = await callBackend('renameDriveItem', { itemId: id, isFolder: isFolder, newName: newName.trim(), currentFolderId: current.id });
+     if (res.status === 'error') throw new Error(res.message);
+     renderDriveContents(res.folders, res.files);
+     showToast("Item renamed successfully.");
+ } catch(e) {
+     showToast("Failed to rename item.", true);
+ } finally {
+     if (overlay) overlay.classList.add('hidden-force');
+ }
+}
+
 async function promptDeleteDriveItem(id, isFolder, name) {
  if (!confirm(`Are you sure you want to delete the ${isFolder ? 'folder' : 'file'} "${name}"?\nThis will move it to the Drive Trash.`)) return;
  
@@ -270,6 +295,7 @@ function renderDriveContents(folders, files) {
  }
  
  const trashIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+ const pencilIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
  
  // Render Folders
  folders.forEach(f => {
@@ -282,9 +308,14 @@ function renderDriveContents(folders, files) {
               </div>
               <span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>
           </div>
-          <button onclick="promptDeleteDriveItem('${f.id}', true, '${safeName}')" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete Folder">
-             ${trashIcon}
-          </button>
+          <div class="flex items-center gap-0.5 shrink-0">
+              <button onclick="promptRenameDriveItem('${f.id}', true, '${safeName}')" class="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Rename Folder">
+                 ${pencilIcon}
+              </button>
+              <button onclick="promptDeleteDriveItem('${f.id}', true, '${safeName}')" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete Folder">
+                 ${trashIcon}
+              </button>
+          </div>
        </div>
      `;
  });
@@ -325,9 +356,14 @@ function renderDriveContents(folders, files) {
               </div>
               ${nameHtml}
           </div>
-          <button onclick="promptDeleteDriveItem('${f.id}', false, '${safeName}')" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete File">
-             ${trashIcon}
-          </button>
+          <div class="flex items-center gap-0.5 shrink-0">
+              <button onclick="promptRenameDriveItem('${f.id}', false, '${safeName}')" class="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Rename File">
+                 ${pencilIcon}
+              </button>
+              <button onclick="promptDeleteDriveItem('${f.id}', false, '${safeName}')" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete File">
+                 ${trashIcon}
+              </button>
+          </div>
        </div>
      `;
  });
