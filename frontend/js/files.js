@@ -250,7 +250,14 @@ function refreshCurrentDriveFolder(btn) {
 }
 
 function openDriveFile(url) {
- window.open(url, '_blank');
+ // Inject an anchor tag to cleanly trigger native intent handling (opens Google Drive App natively on iOS/Android)
+ const a = document.createElement('a');
+ a.href = url;
+ a.target = '_blank';
+ a.rel = 'noopener noreferrer';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
 }
 
 function renderDriveContents(folders, files) {
@@ -282,13 +289,16 @@ function renderDriveContents(folders, files) {
      `;
  });
  
- // Render Files
+ // Render Files & Shortcuts
  files.forEach(f => {
      const safeName = f.name.replace(/'/g, "\\'");
      let iconHtml = '';
      let bgClass = 'bg-gray-50 dark:bg-gray-700';
      
-     if (f.mimeType.includes('spreadsheet')) {
+     if (f.mimeType.includes('folder')) {
+         bgClass = 'bg-yellow-50 dark:bg-yellow-900/30';
+         iconHtml = `<svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
+     } else if (f.mimeType.includes('spreadsheet')) {
          bgClass = 'bg-green-50 dark:bg-green-900/30';
          iconHtml = `<svg class="w-5 h-5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
      } else if (f.mimeType.includes('document')) {
@@ -301,13 +311,19 @@ function renderDriveContents(folders, files) {
          iconHtml = `<svg class="w-5 h-5 text-gray-500 dark:text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm6 1.5L18.5 9H12V3.5z"/></svg>`;
      }
 
+     const shortcutBadge = f.isShortcut ? `<div class="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full shadow-sm p-0.5"><svg class="w-3 h-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg></div>` : '';
+     const nameHtml = f.isShortcut 
+        ? `<div class="flex flex-col min-w-0"><span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span><span class="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black">Shortcut</span></div>`
+        : `<span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>`;
+
      html += `
        <div class="flex items-center gap-1 bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-300 dark:hover:border-gray-500 transition group">
           <div onclick="openDriveFile('${f.url}')" class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none active:scale-[0.98] px-2 py-1">
-              <div class="w-8 h-8 rounded ${bgClass} flex items-center justify-center shrink-0">
+              <div class="relative w-8 h-8 rounded ${bgClass} flex items-center justify-center shrink-0">
                 ${iconHtml}
+                ${shortcutBadge}
               </div>
-              <span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>
+              ${nameHtml}
           </div>
           <button onclick="promptDeleteDriveItem('${f.id}', false, '${safeName}')" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete File">
              ${trashIcon}
