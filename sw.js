@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myg-trip-v13';
+const CACHE_NAME = 'myg-trip-v14';
 const urlsToCache =[
 './',
 './index.html',
