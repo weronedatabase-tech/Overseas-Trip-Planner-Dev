@@ -84,6 +84,7 @@ case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, d
 case 'getDriveContents': result = getDriveContents(data.folderId); break;
 case 'uploadDriveFile': result = uploadDriveFile(data.folderId, data.fileName, data.mimeType, data.fileData); break;
 case 'createDriveFolder': result = createDriveFolder(data.parentFolderId, data.folderName); break;
+case 'renameDriveItem': result = renameDriveItem(data.itemId, data.isFolder, data.newName, data.currentFolderId); break;
 case 'deleteDriveItem': result = deleteDriveItem(data.itemId, data.isFolder, data.currentFolderId); break;
 case 'fetchLogistics': result = fetchLogistics(); break;
 case 'syncAllPairings': result = fetchPairingsOnly(); break; 
@@ -464,6 +465,20 @@ try {
  parent.createFolder(folderName);
  
  return getDriveContents(parentFolderId);
+} catch (e) {
+ return { status: 'error', message: e.message };
+}
+}
+
+function renameDriveItem(itemId, isFolder, newName, currentFolderId) {
+try {
+ if (!newName || !newName.trim()) throw new Error("New name is required.");
+ if (isFolder) {
+   DriveApp.getFolderById(itemId).setName(newName.trim());
+ } else {
+   DriveApp.getFileById(itemId).setName(newName.trim());
+ }
+ return getDriveContents(currentFolderId);
 } catch (e) {
  return { status: 'error', message: e.message };
 }
