@@ -83,6 +83,7 @@ case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
 case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
 case 'getDriveContents': result = getDriveContents(data.folderId); break;
 case 'uploadDriveFile': result = uploadDriveFile(data.folderId, data.fileName, data.mimeType, data.fileData); break;
+case 'createDriveFolder': result = createDriveFolder(data.parentFolderId, data.folderName); break;
 case 'deleteDriveItem': result = deleteDriveItem(data.itemId, data.isFolder, data.currentFolderId); break;
 case 'fetchLogistics': result = fetchLogistics(); break;
 case 'syncAllPairings': result = fetchPairingsOnly(); break; 
@@ -432,6 +433,17 @@ try {
   folder.createFile(blob);
   
   return getDriveContents(folderId);
+} catch (e) {
+  return { status: 'error', message: e.message };
+}
+}
+
+function createDriveFolder(parentFolderId, folderName) {
+try {
+  let parent = parentFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(parentFolderId);
+  parent.createFolder(folderName);
+  
+  return getDriveContents(parentFolderId);
 } catch (e) {
   return { status: 'error', message: e.message };
 }
