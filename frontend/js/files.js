@@ -17,7 +17,7 @@ function buildFilesUI() {
           <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
        </button>
 
-       <input type="file" id="driveFileInput" class="hidden-force" onchange="handleFileSelect(event)">
+       <input type="file" id="driveFileInput" multiple class="hidden-force" onchange="handleFileSelect(event)">
        <button onclick="triggerFileUpload()" class="p-1.5 rounded-lg text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0" title="Upload File">
           <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
        </button>
@@ -70,30 +70,60 @@ function triggerFileUpload() {
  document.getElementById('driveFileInput').click();
 }
 
+function readFileAsBase64(file) {
+ return new Promise((resolve, reject) => {
+     const reader = new FileReader();
+     reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+     reader.onerror = () => reject(new Error("Error reading file"));
+     reader.readAsDataURL(file);
+ });
+}
+
 async function handleFileSelect(event) {
- const file = event.target.files[0];
- if (!file) return;
+ const selectedFiles = Array.from(event.target.files);
+ if (selectedFiles.length === 0) return;
+ 
+ let validFiles = [];
+ let skippedFiles = [];
  
  // 4MB limit (Google Apps Script Payload Safety Limit)
- if (file.size > 4194304) {
-     showToast("File is too large. Max allowed is 4MB.", true);
+ for (let f of selectedFiles) {
+     if (f.size > 4194304) {
+         skippedFiles.push(f.name);
+     } else {
+         validFiles.push(f);
+     }
+ }
+ 
+ if (skippedFiles.length > 0) {
+     showToast(`Skipped ${skippedFiles.length} file(s) larger than 4MB.`, true);
+ }
+ 
+ if (validFiles.length === 0) {
      event.target.value = '';
      return;
  }
  
- const reader = new FileReader();
- reader.onload = async (e) => {
-     const base64Data = e.target.result.split(',')[1];
-     const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
-     
-     const overlay = document.getElementById('driveLoadingOverlay');
-     const loadText = document.getElementById('driveLoadingText');
-     if (overlay) {
-         overlay.classList.remove('hidden-force');
-         loadText.textContent = "Uploading file...";
+ const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
+ const overlay = document.getElementById('driveLoadingOverlay');
+ const loadText = document.getElementById('driveLoadingText');
+ 
+ if (overlay) {
+     overlay.classList.remove('hidden-force');
+ }
+ 
+ let successCount = 0;
+ let lastRes = null;
+ 
+ // Upload files sequentially to avoid rate limiting and payload collision
+ for (let i = 0; i < validFiles.length; i++) {
+     const file = validFiles[i];
+     if (loadText) {
+         loadText.textContent = `Uploading file ${i + 1} of ${validFiles.length}...`;
      }
      
      try {
+         const base64Data = await readFileAsBase64(file);
          const res = await callBackend('uploadDriveFile', { 
              folderId: current.id, 
              fileName: file.name, 
@@ -102,22 +132,27 @@ async function handleFileSelect(event) {
          });
          
          if (res.status === 'error') throw new Error(res.message);
-         renderDriveContents(res.folders, res.files);
-         showToast("File uploaded successfully.");
+         lastRes = res;
+         successCount++;
      } catch(err) {
-         showToast(err.message, true);
-     } finally {
-         if (overlay) overlay.classList.add('hidden-force');
-         event.target.value = '';
+         showToast(`Failed to upload ${file.name}: ${err.message}`, true);
      }
- };
+ }
  
- reader.onerror = () => {
-     showToast("Error reading file.", true);
-     event.target.value = '';
- };
+ // Refresh the UI with the final folder contents state
+ if (lastRes) {
+     renderDriveContents(lastRes.folders, lastRes.files);
+ }
  
- reader.readAsDataURL(file);
+ if (overlay) {
+     overlay.classList.add('hidden-force');
+ }
+ 
+ event.target.value = '';
+ 
+ if (successCount > 0) {
+     showToast(`Successfully uploaded ${successCount} file(s).`);
+ }
 }
 
 async function promptDeleteDriveItem(id, isFolder, name) {
