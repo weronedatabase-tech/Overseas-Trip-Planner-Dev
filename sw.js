@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myg-trip-v6';
+const CACHE_NAME = 'myg-trip-v7';
 const urlsToCache =[
 './',
 './index.html',
@@ -14,6 +14,7 @@ const urlsToCache =[
 './frontend/js/profile.js',
 './frontend/js/Pairing_Grouping.js',
 './frontend/js/attendance.js',
+'./frontend/js/files.js',
 './frontend/js/settings.js'
 ];
 
