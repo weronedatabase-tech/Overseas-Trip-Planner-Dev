@@ -83,6 +83,7 @@ case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric);
 case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
 case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
 case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
+case 'getDriveContents': result = getDriveContents(data.folderId); break;
 case 'fetchLogistics': result = fetchLogistics(); break;
 case 'syncAllPairings': result = fetchPairingsOnly(); break; // Deprecated, redirects to fetch to refresh
 case 'syncPairingUpdates': result = syncPairingUpdates(data.updates, data.takenBy || 'Admin'); break;
@@ -385,6 +386,45 @@ const file = DriveApp.getFileById(dbId);
 const parents = file.getParents();
 if (parents.hasNext()) return parents.next();
 throw new Error("Trip parent folder not found.");
+}
+
+function getDriveContents(targetFolderId) {
+try {
+  let folder;
+  if (!targetFolderId || targetFolderId === 'root') {
+    folder = getTripFolder(); 
+  } else {
+    folder = DriveApp.getFolderById(targetFolderId);
+  }
+
+  const files = [];
+  const fileIter = folder.getFiles();
+  while(fileIter.hasNext()) {
+    const f = fileIter.next();
+    files.push({
+      id: f.getId(),
+      name: f.getName(),
+      mimeType: f.getMimeType(),
+      url: f.getUrl() // Using standard URL allows native apps on mobile OS to intercept it
+    });
+  }
+  files.sort((a,b) => a.name.localeCompare(b.name));
+
+  const folders = [];
+  const folderIter = folder.getFolders();
+  while(folderIter.hasNext()) {
+    const f = folderIter.next();
+    folders.push({
+      id: f.getId(),
+      name: f.getName()
+    });
+  }
+  folders.sort((a,b) => a.name.localeCompare(b.name));
+
+  return { status: 'success', currentFolderId: folder.getId(), currentFolderName: folder.getName(), files: files, folders: folders };
+} catch (e) {
+  return { status: 'error', message: e.message };
+}
 }
 
 function addDriveAccess(email, role) {
