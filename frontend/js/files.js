@@ -26,9 +26,10 @@ document.getElementById('tab-files').innerHTML = `
      <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1">Trip Folder</h3>
      
      <!-- Paste Button (Visible when clipboard is not null) -->
-     <button id="btnDrivePaste" onclick="pasteDriveItem()" class="hidden-force p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 flex items-center gap-1 font-bold text-xs" title="Paste">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-        Paste
+     <button id="btnDrivePaste" onclick="pasteDriveItem(this)" class="hidden-force p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Paste">
+        <svg class="w-5 h-5 btn-icon transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+        <span class="btn-text ml-1 font-bold text-xs transition-opacity">Paste</span>
+        <div class="btn-spinner spinner-emerald hidden-force !w-4 !h-4 border-2 absolute"></div>
      </button>
 
      <input type="file" id="driveFileInput" multiple class="hidden-force" onchange="handleFileSelect(event)">
@@ -63,13 +64,13 @@ document.getElementById('tab-files').innerHTML = `
      </div>
      
      <button onclick="refreshCurrentDriveFolder(this)" class="p-1.5 rounded-lg text-primary hover:bg-blue-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Refresh">
-        <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+        <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
         <div class="btn-spinner spinner-primary hidden-force !w-3 !h-3 md:!w-4 md:!h-4 border-2 absolute"></div>
      </button>
    </div>
    
-   <!-- Loading Overlay -->
-   <div id="driveLoadingOverlay" class="absolute inset-0 top-[50px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 hidden-force flex flex-col justify-center items-center">
+   <!-- Loading Overlay (Now covers the entire tab safely) -->
+   <div id="driveLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-[50] hidden-force flex flex-col justify-center items-center rounded-xl md:rounded-none">
       <div class="loader !w-8 !h-8 border-primary mb-2"></div>
       <span id="driveLoadingText" class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading folder...</span>
    </div>
@@ -245,13 +246,12 @@ function copyDriveItemToClipboard(id, isFolder, name) {
  updateDriveHeader(); 
 }
 
-async function pasteDriveItem() {
- if (!driveClipboard) {
-     console.warn("pasteDriveItem called but driveClipboard is null.");
-     return;
- }
+async function pasteDriveItem(btn) {
+ if (!driveClipboard) return;
+ 
  const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
  
+ if (btn) setBtnLoading(btn, true);
  const overlay = document.getElementById('driveLoadingOverlay');
  const loadText = document.getElementById('driveLoadingText');
 
@@ -259,8 +259,6 @@ async function pasteDriveItem() {
      overlay.classList.remove('hidden-force');
      if(loadText) loadText.textContent = `Pasting ${driveClipboard.name}...`;
  }
-
- console.log(`Attempting to paste: ${driveClipboard.name} (${driveClipboard.id}) into folder: ${current.id}`);
 
  try {
      const res = await callBackend('copyDriveItem', { 
@@ -271,13 +269,15 @@ async function pasteDriveItem() {
      if (res.status === 'error') throw new Error(res.message);
      renderDriveContents(res.folders, res.files);
      showToast(`Pasted "${driveClipboard.name}" successfully.`);
-     console.log("Paste successful.");
+     
+     // Consume clipboard after paste to clear UI clutter
+     driveClipboard = null;
+     updateDriveHeader();
  } catch(e) {
-     console.error("Paste operation failed:", e);
      showToast("Failed to paste item: " + e.message, true);
  } finally {
      if (overlay) overlay.classList.add('hidden-force');
-     // Clipboard intentionally kept active for OS-like multiple pasting behavior.
+     if (btn) setBtnLoading(btn, false);
  }
 }
 
@@ -403,10 +403,10 @@ if (currentDrivePath.length > 1) {
 }
 
 function refreshCurrentDriveFolder(btn) {
-setBtnLoading(btn, true);
+if (btn) setBtnLoading(btn, true);
 const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root', name: 'Trip Folder' };
 loadDriveFolder(current.id, current.name, true).finally(() => {
- setBtnLoading(btn, false);
+ if (btn) setBtnLoading(btn, false);
 });
 }
 
