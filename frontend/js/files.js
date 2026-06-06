@@ -2,7 +2,7 @@
 // Google Drive File & Folder Manager
 // ==========================================
 let currentDrivePath = []; // Stores { id: 'folderId', name: 'Folder Name' }
-let driveClipboard = null; // Stores { id: 'itemId', isFolder: boolean, name: 'Item Name' }
+let activeClipboard = null; // Stores { id: 'itemId', isFolder: boolean, name: 'Item Name' }
 
 // Close add menu if clicked outside
 document.addEventListener('click', (e) => {
@@ -26,7 +26,7 @@ document.getElementById('tab-files').innerHTML = `
      <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1">Trip Folder</h3>
      
      <!-- Paste Button (Visible when clipboard is not null) -->
-     <button id="btnDrivePaste" onclick="pasteDriveItem(this)" class="hidden-force p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Paste">
+     <button id="btnDrivePaste" onclick="executePasteAction(this)" class="hidden-force p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Paste">
         <svg class="w-5 h-5 btn-icon transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
         <span class="btn-text ml-1 font-bold text-xs transition-opacity">Paste</span>
         <div class="btn-spinner spinner-emerald hidden-force !w-4 !h-4 border-2 absolute"></div>
@@ -241,13 +241,16 @@ if (successCount > 0) {
 }
 
 function copyDriveItemToClipboard(id, isFolder, name) {
- driveClipboard = { id, isFolder, name };
+ activeClipboard = { id, isFolder, name };
  showToast(`Copied "${name}" to clipboard. Navigate to your destination and click Paste.`);
  updateDriveHeader(); 
 }
 
-async function pasteDriveItem(btn) {
- if (!driveClipboard) return;
+async function executePasteAction(btn) {
+ if (!activeClipboard) {
+     console.warn("executePasteAction called but activeClipboard is null.");
+     return;
+ }
  
  const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
  
@@ -257,23 +260,27 @@ async function pasteDriveItem(btn) {
 
  if (overlay) {
      overlay.classList.remove('hidden-force');
-     if(loadText) loadText.textContent = `Pasting ${driveClipboard.name}...`;
+     if(loadText) loadText.textContent = `Pasting ${activeClipboard.name}...`;
  }
+
+ console.log(`Attempting to paste: ${activeClipboard.name} (${activeClipboard.id}) into folder: ${current.id}`);
 
  try {
      const res = await callBackend('copyDriveItem', { 
-         itemId: driveClipboard.id, 
-         isFolder: driveClipboard.isFolder, 
+         itemId: activeClipboard.id, 
+         isFolder: activeClipboard.isFolder, 
          targetFolderId: current.id 
      });
      if (res.status === 'error') throw new Error(res.message);
      renderDriveContents(res.folders, res.files);
-     showToast(`Pasted "${driveClipboard.name}" successfully.`);
+     showToast(`Pasted "${activeClipboard.name}" successfully. (Refresh if missing)`);
+     console.log("Paste successful.");
      
      // Consume clipboard after paste to clear UI clutter
-     driveClipboard = null;
+     activeClipboard = null;
      updateDriveHeader();
  } catch(e) {
+     console.error("Paste operation failed:", e);
      showToast("Failed to paste item: " + e.message, true);
  } finally {
      if (overlay) overlay.classList.add('hidden-force');
@@ -386,7 +393,7 @@ const current = currentDrivePath[currentDrivePath.length - 1];
 title.textContent = current ? current.name : "Trip Folder";
 
 if (pasteBtn) {
-   if (driveClipboard) {
+   if (activeClipboard) {
        pasteBtn.classList.remove('hidden-force');
    } else {
        pasteBtn.classList.add('hidden-force');
