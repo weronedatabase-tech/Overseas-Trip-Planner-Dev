@@ -10,9 +10,9 @@ if(!props.getProperty('ALLOW_EDITS')) props.setProperty('ALLOW_EDITS', 'false');
 
 DriveApp.getRootFolder(); // Triggers the Drive permission prompt
 try {
-  DocumentApp.create('Auth Setup').setTrashed(true);
-  SpreadsheetApp.create('Auth Setup').setTrashed(true);
-  SlidesApp.create('Auth Setup').setTrashed(true);
+ DocumentApp.create('Auth Setup').setTrashed(true);
+ SpreadsheetApp.create('Auth Setup').setTrashed(true);
+ SlidesApp.create('Auth Setup').setTrashed(true);
 } catch(e) {}
 console.log(`Safe setup complete for ${ENV} environment.`);
 }
@@ -265,10 +265,10 @@ for(let i=1; i<pairData.length; i++) {
 const t = String(pairData[i][0]).trim().toUpperCase();
 const v = String(pairData[i][1]).trim().toUpperCase();
 if(t && v) {
- const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
- const tsVal = new Date(pairData[i][3]).getTime();
- const ts = isNaN(tsVal) ? 0 : tsVal;
- pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
+const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
+const tsVal = new Date(pairData[i][3]).getTime();
+const ts = isNaN(tsVal) ? 0 : tsVal;
+pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
 }
 }
 }
@@ -300,16 +300,16 @@ const tsDate = new Date(ts);
 const key = `${t}_${v}`;
 
 if(existingMap[key]) {
- const rowIndex = existingMap[key];
- const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
- const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
- 
- if (ts > existingTs) {
-   sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
- }
+const rowIndex = existingMap[key];
+const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+
+if (ts > existingTs) {
+  sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
+}
 } else {
- sheet.appendRow([t, v, status, tsDate, takenBy]);
- existingMap[key] = sheet.getLastRow();
+sheet.appendRow([t, v, status, tsDate, takenBy]);
+existingMap[key] = sheet.getLastRow();
 }
 });
 
@@ -399,51 +399,51 @@ function getDriveContents(targetFolderId) {
 try {
 let folder;
 if (!targetFolderId || targetFolderId === 'root') {
-  folder = getTripFolder(); 
+ folder = getTripFolder(); 
 } else {
-  folder = DriveApp.getFolderById(targetFolderId);
+ folder = DriveApp.getFolderById(targetFolderId);
 }
 
 const files = [];
 const fileIter = folder.getFiles();
 while(fileIter.hasNext()) {
-  const f = fileIter.next();
-  let mime = f.getMimeType();
-  let url = f.getUrl();
-  let isShortcut = false;
+ const f = fileIter.next();
+ let mime = f.getMimeType();
+ let url = f.getUrl();
+ let isShortcut = false;
 
-  if (mime === 'application/vnd.google-apps.shortcut') {
-    isShortcut = true;
-    try {
-      const tId = f.getTargetId();
-      const tMime = f.getTargetMimeType();
-      if (tMime === 'application/vnd.google-apps.folder') {
-        url = `https://drive.google.com/drive/folders/${tId}`;
-      } else {
-        url = `https://drive.google.com/open?id=${tId}`;
-      }
-      mime = tMime; 
-    } catch(e) { } 
-  }
+ if (mime === 'application/vnd.google-apps.shortcut') {
+   isShortcut = true;
+   try {
+     const tId = f.getTargetId();
+     const tMime = f.getTargetMimeType();
+     if (tMime === 'application/vnd.google-apps.folder') {
+       url = `https://drive.google.com/drive/folders/${tId}`;
+     } else {
+       url = `https://drive.google.com/open?id=${tId}`;
+     }
+     mime = tMime; 
+   } catch(e) { } 
+ }
 
-  files.push({
-    id: f.getId(),
-    name: f.getName(),
-    mimeType: mime,
-    url: url,
-    isShortcut: isShortcut
-  });
+ files.push({
+   id: f.getId(),
+   name: f.getName(),
+   mimeType: mime,
+   url: url,
+   isShortcut: isShortcut
+ });
 }
 files.sort((a,b) => a.name.localeCompare(b.name));
 
 const folders = [];
 const folderIter = folder.getFolders();
 while(folderIter.hasNext()) {
-  const f = folderIter.next();
-  folders.push({
-    id: f.getId(),
-    name: f.getName()
-  });
+ const f = folderIter.next();
+ folders.push({
+   id: f.getId(),
+   name: f.getName()
+ });
 }
 folders.sort((a,b) => a.name.localeCompare(b.name));
 
@@ -458,6 +458,7 @@ try {
 let folder = folderId === 'root' ? getTripFolder() : DriveApp.getFolderById(folderId);
 let blob = Utilities.newBlob(Utilities.base64Decode(fileData), mimeType, fileName);
 folder.createFile(blob);
+Utilities.sleep(1500);
 return getDriveContents(folderId);
 } catch (e) {
 return { status: 'error', message: e.message };
@@ -468,6 +469,7 @@ function createDriveFolder(parentFolderId, folderName) {
 try {
 let parent = parentFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(parentFolderId);
 parent.createFolder(folderName);
+Utilities.sleep(1500);
 return getDriveContents(parentFolderId);
 } catch (e) {
 return { status: 'error', message: e.message };
@@ -476,68 +478,89 @@ return { status: 'error', message: e.message };
 
 function createGoogleDoc(folderId, fileName, docType) {
 try {
-  let folder = folderId === 'root' ? getTripFolder() : DriveApp.getFolderById(folderId);
-  let fileId;
-  
-  if (docType === 'doc') {
-    let doc = DocumentApp.create(fileName);
-    fileId = doc.getId();
-  } else if (docType === 'sheet') {
-    let sheet = SpreadsheetApp.create(fileName);
-    fileId = sheet.getId();
-  } else if (docType === 'slide') {
-    let slide = SlidesApp.create(fileName);
-    fileId = slide.getId();
-  } else {
-    throw new Error("Invalid document type.");
-  }
-  
-  let file = DriveApp.getFileById(fileId);
-  file.moveTo(folder);
-  
-  return getDriveContents(folderId);
+ let folder = folderId === 'root' ? getTripFolder() : DriveApp.getFolderById(folderId);
+ let fileId;
+ 
+ if (docType === 'doc') {
+   let doc = DocumentApp.create(fileName);
+   fileId = doc.getId();
+ } else if (docType === 'sheet') {
+   let sheet = SpreadsheetApp.create(fileName);
+   fileId = sheet.getId();
+ } else if (docType === 'slide') {
+   let slide = SlidesApp.create(fileName);
+   fileId = slide.getId();
+ } else {
+   throw new Error("Invalid document type.");
+ }
+ 
+ let file = DriveApp.getFileById(fileId);
+ file.moveTo(folder);
+ Utilities.sleep(1500);
+ return getDriveContents(folderId);
 } catch (e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 }
 }
 
 function copyDriveItem(itemId, isFolder, targetFolderId) {
 try {
-  let targetFolder = targetFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(targetFolderId);
-  let originalName;
-  
-  if (isFolder) {
-    originalName = DriveApp.getFolderById(itemId).getName();
-  } else {
-    originalName = DriveApp.getFileById(itemId).getName();
-  }
+ let targetFolder = targetFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(targetFolderId);
+ let originalName;
+ 
+ if (isFolder) {
+   originalName = DriveApp.getFolderById(itemId).getName();
+ } else {
+   originalName = DriveApp.getFileById(itemId).getName();
+ }
 
-  let newName = originalName;
-  let conflict = true;
-  
-  while (conflict) {
-    conflict = false;
-    if (isFolder) {
-      if (targetFolder.getFoldersByName(newName).hasNext()) conflict = true;
-    } else {
-      if (targetFolder.getFilesByName(newName).hasNext()) conflict = true;
-    }
-    if (conflict) {
-       newName = "Copy of_" + newName;
-    }
-  }
+ let newName = originalName;
+ let conflict = true;
+ 
+ while (conflict) {
+   conflict = false;
+   if (isFolder) {
+     if (targetFolder.getFoldersByName(newName).hasNext()) conflict = true;
+   } else {
+     if (targetFolder.getFilesByName(newName).hasNext()) conflict = true;
+   }
+   if (conflict) {
+      newName = "Copy of_" + newName;
+   }
+ }
 
-  if (isFolder) {
-    let sourceFolder = DriveApp.getFolderById(itemId);
-    copyFolderRecursively(sourceFolder, targetFolder, newName);
-  } else {
-    let sourceFile = DriveApp.getFileById(itemId);
-    sourceFile.makeCopy(newName, targetFolder);
-  }
-  
-  return getDriveContents(targetFolderId);
+ if (isFolder) {
+   let sourceFolder = DriveApp.getFolderById(itemId);
+   
+   // Prevent pasting a folder into itself or its subdirectories to avoid infinite recursion
+   let curr = targetFolder;
+   while (curr) {
+       if (curr.getId() === sourceFolder.getId()) {
+           throw new Error("Cannot paste a folder into itself or its subdirectories.");
+       }
+       let parents = curr.getParents();
+       curr = parents.hasNext() ? parents.next() : null;
+   }
+   
+   copyFolderRecursively(sourceFolder, targetFolder, newName);
+ } else {
+   let sourceFile = DriveApp.getFileById(itemId);
+   let parents = sourceFile.getParents();
+   let currentParentId = parents.hasNext() ? parents.next().getId() : null;
+   
+   // If duplicating in the exact same directory, Drive API strictly prefers .makeCopy(newName)
+   // Providing the destination argument when it's the exact same parent fails in Shared Drives
+   if (currentParentId === targetFolder.getId()) {
+       sourceFile.makeCopy(newName);
+   } else {
+       sourceFile.makeCopy(newName, targetFolder);
+   }
+ }
+ 
+ Utilities.sleep(2500); // Give Google Drive search index time to update before listing
+ return getDriveContents(targetFolderId);
 } catch(e) {
-  return { status: 'error', message: e.message };
+ return { status: 'error', message: e.message };
 }
 }
 
@@ -546,14 +569,14 @@ let newFolder = destination.createFolder(newName);
 
 let files = source.getFiles();
 while (files.hasNext()) {
-  let file = files.next();
-  file.makeCopy(file.getName(), newFolder);
+ let file = files.next();
+ file.makeCopy(file.getName(), newFolder);
 }
 
 let folders = source.getFolders();
 while (folders.hasNext()) {
-  let subFolder = folders.next();
-  copyFolderRecursively(subFolder, newFolder, subFolder.getName());
+ let subFolder = folders.next();
+ copyFolderRecursively(subFolder, newFolder, subFolder.getName());
 }
 }
 
@@ -561,10 +584,11 @@ function renameDriveItem(itemId, isFolder, newName, currentFolderId) {
 try {
 if (!newName || !newName.trim()) throw new Error("New name is required.");
 if (isFolder) {
-  DriveApp.getFolderById(itemId).setName(newName.trim());
+ DriveApp.getFolderById(itemId).setName(newName.trim());
 } else {
-  DriveApp.getFileById(itemId).setName(newName.trim());
+ DriveApp.getFileById(itemId).setName(newName.trim());
 }
+Utilities.sleep(1000);
 return getDriveContents(currentFolderId);
 } catch (e) {
 return { status: 'error', message: e.message };
@@ -574,10 +598,11 @@ return { status: 'error', message: e.message };
 function deleteDriveItem(itemId, isFolder, currentFolderId) {
 try {
 if (isFolder) {
-  DriveApp.getFolderById(itemId).setTrashed(true);
+ DriveApp.getFolderById(itemId).setTrashed(true);
 } else {
-  DriveApp.getFileById(itemId).setTrashed(true);
+ DriveApp.getFileById(itemId).setTrashed(true);
 }
+Utilities.sleep(1000);
 return getDriveContents(currentFolderId);
 } catch (e) {
 return { status: 'error', message: e.message };
@@ -646,29 +671,29 @@ email = email.trim().toLowerCase();
 if (!email) return;
 
 try {
-  if (actionType === 'add') {
-    if (role === 'editor') {
-      folder.addEditor(email);
-    } else {
-      folder.addViewer(email);
-    }
-    access[email] = role;
-    results.success.push(email);
-  } else if (actionType === 'remove') {
-    if (access[email]) {
-      if (access[email] === 'editor') {
-        folder.removeEditor(email);
-      } else {
-        folder.removeViewer(email);
-      }
-      delete access[email];
-      results.success.push(email);
-    } else {
-      results.failed.push({ email: email, reason: 'Not granted via app' });
-    }
-  }
+ if (actionType === 'add') {
+   if (role === 'editor') {
+     folder.addEditor(email);
+   } else {
+     folder.addViewer(email);
+   }
+   access[email] = role;
+   results.success.push(email);
+ } else if (actionType === 'remove') {
+   if (access[email]) {
+     if (access[email] === 'editor') {
+       folder.removeEditor(email);
+     } else {
+       folder.removeViewer(email);
+     }
+     delete access[email];
+     results.success.push(email);
+   } else {
+     results.failed.push({ email: email, reason: 'Not granted via app' });
+   }
+ }
 } catch (error) {
-  results.failed.push({ email: email, reason: error.message });
+ results.failed.push({ email: email, reason: error.message });
 }
 });
 
@@ -709,8 +734,8 @@ lock.waitLock(10000);
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
 if (data[i][0] === juncture) {
- const nric = String(data[i][1]).trim().toUpperCase();
- existingMap[nric] = i + 1; 
+const nric = String(data[i][1]).trim().toUpperCase();
+existingMap[nric] = i + 1; 
 }
 }
 
@@ -721,16 +746,16 @@ const ts = u.ts || Date.now();
 const tsDate = new Date(ts);
 
 if (existingMap[nric]) {
- const rowIndex = existingMap[nric];
- const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
- const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
- 
- if (ts > existingTs) {
-   sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
- }
+const rowIndex = existingMap[nric];
+const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+
+if (ts > existingTs) {
+  sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
+}
 } else {
- sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
- existingMap[nric] = sheet.getLastRow();
+sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
+existingMap[nric] = sheet.getLastRow();
 }
 });
 return { status: 'success' };
@@ -752,10 +777,10 @@ const rawAccess = props.getProperty('APP_GRANTED_ACCESS');
 if (rawAccess) {
 const accessObj = JSON.parse(rawAccess);
 for (let email in accessObj) {
-  try {
-    if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
-    else { folder.removeViewer(email); }
-  } catch(e) { }
+ try {
+   if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
+   else { folder.removeViewer(email); }
+ } catch(e) { }
 }
 }
 }
