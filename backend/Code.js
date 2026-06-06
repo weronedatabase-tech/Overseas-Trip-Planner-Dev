@@ -506,81 +506,28 @@ try {
 function copyDriveItem(itemId, isFolder, targetFolderId) {
 try {
  let targetFolder = targetFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(targetFolderId);
- let originalName;
- 
- if (isFolder) {
-   originalName = DriveApp.getFolderById(itemId).getName();
- } else {
-   originalName = DriveApp.getFileById(itemId).getName();
- }
-
- let newName = originalName;
- let conflict = true;
- let loopGuard = 0;
- 
- while (conflict && loopGuard < 50) {
-   conflict = false;
-   loopGuard++;
-   if (isFolder) {
-     if (targetFolder.getFoldersByName(newName).hasNext()) conflict = true;
-   } else {
-     if (targetFolder.getFilesByName(newName).hasNext()) conflict = true;
-   }
-   if (conflict) {
-      newName = "Copy of_" + newName;
-   }
- }
+ let originalName = isFolder ? DriveApp.getFolderById(itemId).getName() : DriveApp.getFileById(itemId).getName();
+ let newName = "Copy of " + originalName;
 
  if (isFolder) {
    let sourceFolder = DriveApp.getFolderById(itemId);
    
-   // Prevent pasting a folder into itself or its subdirectories to avoid infinite recursion
-   // Added depth guard & try-catch to prevent Shared Drive permission crashes
-   let curr = targetFolder;
-   let depth = 0;
-   while (curr && depth < 20) {
-       if (curr.getId() === sourceFolder.getId()) {
-           throw new Error("Cannot paste a folder into itself or its subdirectories.");
-       }
-       try {
-           let parents = curr.getParents();
-           curr = parents.hasNext() ? parents.next() : null;
-       } catch (e) {
-           curr = null; // Reached boundary we cannot cross
-       }
-       depth++;
+   // Safety: Prevent pasting a folder into itself
+   if (sourceFolder.getId() === targetFolder.getId()) {
+       throw new Error("Cannot paste a folder inside itself.");
    }
    
    copyFolderRecursively(sourceFolder, targetFolder, newName);
  } else {
    let sourceFile = DriveApp.getFileById(itemId);
-   let currentParentId = null;
    
-   try {
-       let parents = sourceFile.getParents();
-       currentParentId = parents.hasNext() ? parents.next().getId() : null;
-   } catch (e) {
-       // Ignore parent fetch failures (rare for files)
-   }
-   
-   // If duplicating in the exact same directory, Drive API strictly prefers .makeCopy(newName)
-   // Providing the destination argument when it's the exact same parent fails in Shared Drives
-   if (currentParentId === targetFolder.getId()) {
-       let copied = sourceFile.makeCopy(newName);
-       // Optional fallback if makeCopy defaults to root in this context
-       try { copied.moveTo(targetFolder); } catch(e) {}
-   } else {
-       try {
-           sourceFile.makeCopy(newName, targetFolder);
-       } catch(e) {
-           // Fallback if destination specification fails (Shared Drive strictness)
-           let copied = sourceFile.makeCopy(newName);
-           try { copied.moveTo(targetFolder); } catch(err) {}
-       }
-   }
+   // Directly execute copy into targetFolder.
+   // This naturally handles same-directory duplication without needing moveTo()
+   sourceFile.makeCopy(newName, targetFolder);
  }
  
- Utilities.sleep(2500); // Give Google Drive search index time to update before listing
+ // Wait 3 seconds to ensure Google Drive's search index is updated before fetching the new list
+ Utilities.sleep(3000); 
  return getDriveContents(targetFolderId);
 } catch(e) {
  return { status: 'error', message: e.message };
@@ -593,14 +540,7 @@ let newFolder = destination.createFolder(newName);
 let files = source.getFiles();
 while (files.hasNext()) {
  let file = files.next();
- try {
-     file.makeCopy(file.getName(), newFolder);
- } catch(e) {
-     try {
-         let copied = file.makeCopy(file.getName());
-         copied.moveTo(newFolder);
-     } catch(err) {}
- }
+ file.makeCopy(file.getName(), newFolder);
 }
 
 let folders = source.getFolders();
