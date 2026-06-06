@@ -516,9 +516,11 @@ try {
 
  let newName = originalName;
  let conflict = true;
+ let loopGuard = 0;
  
- while (conflict) {
+ while (conflict && loopGuard < 50) {
    conflict = false;
+   loopGuard++;
    if (isFolder) {
      if (targetFolder.getFoldersByName(newName).hasNext()) conflict = true;
    } else {
@@ -533,27 +535,48 @@ try {
    let sourceFolder = DriveApp.getFolderById(itemId);
    
    // Prevent pasting a folder into itself or its subdirectories to avoid infinite recursion
+   // Added depth guard & try-catch to prevent Shared Drive permission crashes
    let curr = targetFolder;
-   while (curr) {
+   let depth = 0;
+   while (curr && depth < 20) {
        if (curr.getId() === sourceFolder.getId()) {
            throw new Error("Cannot paste a folder into itself or its subdirectories.");
        }
-       let parents = curr.getParents();
-       curr = parents.hasNext() ? parents.next() : null;
+       try {
+           let parents = curr.getParents();
+           curr = parents.hasNext() ? parents.next() : null;
+       } catch (e) {
+           curr = null; // Reached boundary we cannot cross
+       }
+       depth++;
    }
    
    copyFolderRecursively(sourceFolder, targetFolder, newName);
  } else {
    let sourceFile = DriveApp.getFileById(itemId);
-   let parents = sourceFile.getParents();
-   let currentParentId = parents.hasNext() ? parents.next().getId() : null;
+   let currentParentId = null;
+   
+   try {
+       let parents = sourceFile.getParents();
+       currentParentId = parents.hasNext() ? parents.next().getId() : null;
+   } catch (e) {
+       // Ignore parent fetch failures (rare for files)
+   }
    
    // If duplicating in the exact same directory, Drive API strictly prefers .makeCopy(newName)
    // Providing the destination argument when it's the exact same parent fails in Shared Drives
    if (currentParentId === targetFolder.getId()) {
-       sourceFile.makeCopy(newName);
+       let copied = sourceFile.makeCopy(newName);
+       // Optional fallback if makeCopy defaults to root in this context
+       try { copied.moveTo(targetFolder); } catch(e) {}
    } else {
-       sourceFile.makeCopy(newName, targetFolder);
+       try {
+           sourceFile.makeCopy(newName, targetFolder);
+       } catch(e) {
+           // Fallback if destination specification fails (Shared Drive strictness)
+           let copied = sourceFile.makeCopy(newName);
+           try { copied.moveTo(targetFolder); } catch(err) {}
+       }
    }
  }
  
@@ -570,7 +593,14 @@ let newFolder = destination.createFolder(newName);
 let files = source.getFiles();
 while (files.hasNext()) {
  let file = files.next();
- file.makeCopy(file.getName(), newFolder);
+ try {
+     file.makeCopy(file.getName(), newFolder);
+ } catch(e) {
+     try {
+         let copied = file.makeCopy(file.getName());
+         copied.moveTo(newFolder);
+     } catch(err) {}
+ }
 }
 
 let folders = source.getFolders();
