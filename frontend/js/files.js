@@ -23,20 +23,22 @@ document.getElementById('tab-files').innerHTML = `
      <button id="btnDriveBack" onclick="navigateDriveBack()" class="hidden-force p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none shrink-0">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
      </button>
-     <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1">Trip Folder</h3>
      
-     <!-- Paste Button (Visible when clipboard is not null) -->
-     <button id="btnDrivePaste" onclick="executePasteAction(this)" class="hidden-force p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Paste">
-        <svg class="w-5 h-5 btn-icon transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-        <span class="btn-text ml-1 font-bold text-xs transition-opacity">Paste</span>
-        <div class="btn-spinner spinner-emerald hidden-force !w-4 !h-4 border-2 absolute"></div>
+     <!-- Added min-w-0 to prevent invisible flex overlap on mobile -->
+     <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1 min-w-0">Trip Folder</h3>
+     
+     <!-- Rebuilt Paste Button (Large touch target, isolated pointer events, prominent style) -->
+     <button id="btnDrivePaste" onclick="executePasteAction(this)" class="hidden-force relative flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-lg font-bold text-[11px] md:text-sm shadow-md transition-all cursor-pointer z-[60] shrink-0 select-none touch-manipulation focus:outline-none">
+        <svg class="w-4 h-4 md:w-5 md:h-5 btn-icon pointer-events-none transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+        <span class="btn-text pointer-events-none transition-opacity tracking-wide">Paste Here</span>
+        <div class="btn-spinner hidden-force absolute !w-4 !h-4 md:!w-5 md:!h-5 border-2 border-white/30 border-t-white rounded-full animate-spin pointer-events-none"></div>
      </button>
 
      <input type="file" id="driveFileInput" multiple class="hidden-force" onchange="handleFileSelect(event)">
      
      <!-- Add Menu Dropdown -->
-     <div class="relative inline-block text-left">
-       <button id="btnDriveAdd" onclick="toggleDriveAddMenu(event)" class="p-1.5 rounded-lg text-primary hover:bg-blue-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 flex items-center gap-1 font-bold text-xs md:text-sm" title="Add New">
+     <div class="relative inline-block text-left shrink-0">
+       <button id="btnDriveAdd" onclick="toggleDriveAddMenu(event)" class="p-1.5 rounded-lg text-primary hover:bg-blue-50 dark:hover:bg-gray-800 transition focus:outline-none flex items-center gap-1 font-bold text-xs md:text-sm" title="Add New">
           <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
           <span class="hidden md:inline">Add</span>
        </button>
@@ -65,11 +67,11 @@ document.getElementById('tab-files').innerHTML = `
      
      <button onclick="refreshCurrentDriveFolder(this)" class="p-1.5 rounded-lg text-primary hover:bg-blue-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Refresh">
         <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-        <div class="btn-spinner spinner-primary hidden-force !w-3 !h-3 md:!w-4 md:!h-4 border-2 absolute"></div>
+        <div class="btn-spinner spinner-primary hidden-force !w-3 !h-3 md:!w-4 md:!h-4 border-2 absolute pointer-events-none"></div>
      </button>
    </div>
    
-   <!-- Loading Overlay (Now covers the entire tab safely) -->
+   <!-- Loading Overlay -->
    <div id="driveLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-[50] hidden-force flex flex-col justify-center items-center rounded-xl md:rounded-none">
       <div class="loader !w-8 !h-8 border-primary mb-2"></div>
       <span id="driveLoadingText" class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading folder...</span>
@@ -242,7 +244,7 @@ if (successCount > 0) {
 
 function copyDriveItemToClipboard(id, isFolder, name) {
  activeClipboard = { id, isFolder, name };
- showToast(`Copied "${name}" to clipboard. Navigate to your destination and click Paste.`);
+ showToast(`Copied "${name}" to clipboard. Navigate to your destination and click "Paste Here".`);
  updateDriveHeader(); 
 }
 
@@ -437,9 +439,9 @@ if (folders.length === 0 && files.length === 0) {
    return;
 }
 
-const duplicateIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>`;
-const trashIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
-const pencilIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
+const duplicateIcon = `<svg class="w-4 h-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>`;
+const trashIcon = `<svg class="w-4 h-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+const pencilIcon = `<svg class="w-4 h-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
 
 // Render Folders
 folders.forEach(f => {
@@ -448,9 +450,9 @@ folders.forEach(f => {
      <div class="flex items-center gap-1 bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:border-primary transition group">
         <div onclick="loadDriveFolder('${f.id}', '${safeName}')" class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none active:scale-[0.98] px-2 py-1">
             <div class="w-8 h-8 rounded bg-yellow-50 dark:bg-yellow-900/30 flex items-center justify-center shrink-0">
-              <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+              <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
             </div>
-            <span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>
+            <span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors pointer-events-none">${f.name}</span>
         </div>
         <div class="flex items-center gap-0.5 shrink-0">
             <button onclick="copyDriveItemToClipboard('${f.id}', true, '${safeName}')" class="p-2.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Copy Folder">
@@ -475,32 +477,32 @@ files.forEach(f => {
    
    if (f.mimeType.includes('folder')) {
        bgClass = 'bg-yellow-50 dark:bg-yellow-900/30';
-       iconHtml = `<svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
+       iconHtml = `<svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
    } else if (f.mimeType.includes('spreadsheet')) {
        bgClass = 'bg-green-50 dark:bg-green-900/30';
-       iconHtml = `<svg class="w-5 h-5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
+       iconHtml = `<svg class="w-5 h-5 text-green-600 dark:text-green-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
    } else if (f.mimeType.includes('document')) {
        bgClass = 'bg-blue-50 dark:bg-blue-900/30';
-       iconHtml = `<svg class="w-5 h-5 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
+       iconHtml = `<svg class="w-5 h-5 text-blue-600 dark:text-blue-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
    } else if (f.mimeType.includes('presentation')) {
        bgClass = 'bg-yellow-50 dark:bg-yellow-900/30';
-       iconHtml = `<svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 12l-4-3 4-3v6zm7-1V8h-5v6h5z"/></svg>`;
+       iconHtml = `<svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 12l-4-3 4-3v6zm7-1V8h-5v6h5z"/></svg>`;
    } else if (f.mimeType.includes('pdf')) {
        bgClass = 'bg-red-50 dark:bg-red-900/30';
-       iconHtml = `<svg class="w-5 h-5 text-red-600 dark:text-red-400" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM16.5 9h-1v2h1V9z"/><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg>`;
+       iconHtml = `<svg class="w-5 h-5 text-red-600 dark:text-red-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM16.5 9h-1v2h1V9z"/><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg>`;
    } else {
-       iconHtml = `<svg class="w-5 h-5 text-gray-500 dark:text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm6 1.5L18.5 9H12V3.5z"/></svg>`;
+       iconHtml = `<svg class="w-5 h-5 text-gray-500 dark:text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm6 1.5L18.5 9H12V3.5z"/></svg>`;
    }
 
-   const shortcutBadge = f.isShortcut ? `<div class="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full shadow-sm p-0.5"><svg class="w-3 h-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg></div>` : '';
+   const shortcutBadge = f.isShortcut ? `<div class="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full shadow-sm p-0.5 pointer-events-none"><svg class="w-3 h-3 text-blue-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg></div>` : '';
    const nameHtml = f.isShortcut 
-      ? `<div class="flex flex-col min-w-0"><span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span><span class="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black">Shortcut</span></div>`
-      : `<span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>`;
+      ? `<div class="flex flex-col min-w-0 pointer-events-none"><span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors pointer-events-none">${f.name}</span><span class="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black pointer-events-none">Shortcut</span></div>`
+      : `<span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors pointer-events-none">${f.name}</span>`;
 
    html += `
      <div class="flex items-center gap-1 bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-300 dark:hover:border-gray-500 transition group">
         <div onclick="openDriveFile('${f.url}')" class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none active:scale-[0.98] px-2 py-1">
-            <div class="relative w-8 h-8 rounded ${bgClass} flex items-center justify-center shrink-0">
+            <div class="relative w-8 h-8 rounded ${bgClass} flex items-center justify-center shrink-0 pointer-events-none">
               ${iconHtml}
               ${shortcutBadge}
             </div>
