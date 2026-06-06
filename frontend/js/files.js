@@ -24,14 +24,12 @@ document.getElementById('tab-files').innerHTML = `
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
      </button>
      
-     <!-- Added min-w-0 to prevent invisible flex overlap on mobile -->
      <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1 min-w-0">Trip Folder</h3>
      
-     <!-- Rebuilt Paste Button (Large touch target, isolated pointer events, prominent style) -->
-     <button id="btnDrivePaste" onclick="executePasteAction(this)" class="hidden-force relative flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-lg font-bold text-[11px] md:text-sm shadow-md transition-all cursor-pointer z-[60] shrink-0 select-none touch-manipulation focus:outline-none">
-        <svg class="w-4 h-4 md:w-5 md:h-5 btn-icon pointer-events-none transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-        <span class="btn-text pointer-events-none transition-opacity tracking-wide">Paste Here</span>
-        <div class="btn-spinner hidden-force absolute !w-4 !h-4 md:!w-5 md:!h-5 border-2 border-white/30 border-t-white rounded-full animate-spin pointer-events-none"></div>
+     <!-- Paste Button (Icon-only, styled consistently with other header buttons) -->
+     <button id="btnDrivePaste" onclick="executePasteAction(this)" class="hidden-force p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Paste Copied Item">
+        <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+        <div class="btn-spinner hidden-force !w-3 !h-3 md:!w-4 md:!h-4 border-2 absolute pointer-events-none border-emerald-500/30 border-t-emerald-600 dark:border-emerald-400/30 dark:border-t-emerald-400 rounded-full animate-spin"></div>
      </button>
 
      <input type="file" id="driveFileInput" multiple class="hidden-force" onchange="handleFileSelect(event)">
@@ -66,7 +64,7 @@ document.getElementById('tab-files').innerHTML = `
      </div>
      
      <button onclick="refreshCurrentDriveFolder(this)" class="p-1.5 rounded-lg text-primary hover:bg-blue-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative flex items-center justify-center" title="Refresh">
-        <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+        <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
         <div class="btn-spinner spinner-primary hidden-force !w-3 !h-3 md:!w-4 md:!h-4 border-2 absolute pointer-events-none"></div>
      </button>
    </div>
@@ -244,7 +242,7 @@ if (successCount > 0) {
 
 function copyDriveItemToClipboard(id, isFolder, name) {
  activeClipboard = { id, isFolder, name };
- showToast(`Copied "${name}" to clipboard. Navigate to your destination and click "Paste Here".`);
+ showToast(`Copied "${name}" to clipboard. Navigate to your destination and click Paste.`);
  updateDriveHeader(); 
 }
 
