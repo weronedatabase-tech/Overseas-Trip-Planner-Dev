@@ -19,52 +19,55 @@ function buildFilesUI() {
 document.getElementById('tab-files').innerHTML = `
  <div class="flex flex-col h-full w-full relative">
    <!-- Header -->
-   <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex items-center gap-2 shadow-sm rounded-t-xl md:rounded-none z-10">
-     <button type="button" id="btnDriveBack" ontouchstart="" onclick="navigateDriveBack()" class="hidden-force cursor-pointer p-1.5 rounded-lg text-gray-500 active:bg-gray-100 dark:active:bg-gray-800 md:hover:bg-gray-100 md:dark:hover:bg-gray-800 transition focus:outline-none shrink-0 active:scale-95">
+   <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex items-center gap-2 shadow-sm rounded-t-xl md:rounded-none relative z-20">
+     <button type="button" id="btnDriveBack" onclick="navigateDriveBack()" class="hidden-force p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 active:scale-95">
         <svg class="w-5 h-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
      </button>
-     <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1">Trip Folder</h3>
      
-     <!-- Paste Button (Visible when clipboard is not null) -->
-     <button type="button" id="btnDrivePaste" ontouchstart="" onclick="pasteDriveItem()" class="hidden-force cursor-pointer p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 active:bg-emerald-50 dark:active:bg-gray-800 md:hover:bg-emerald-50 md:dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative z-20 flex items-center justify-center active:scale-95" title="Paste Clipboard">
-        <svg class="w-5 h-5 md:w-6 md:h-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-     </button>
+     <h3 id="driveCurrentFolderName" class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight truncate flex-1 min-w-0 pr-1">Trip Folder</h3>
+     
+     <div class="flex items-center gap-1 md:gap-1.5 shrink-0">
+         <!-- Paste Button (Visible when clipboard is not null) -->
+         <button type="button" id="btnDrivePaste" onclick="pasteDriveItem()" class="hidden-force p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative z-30 flex items-center justify-center active:scale-95" title="Paste Clipboard">
+            <svg class="w-5 h-5 md:w-6 md:h-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+         </button>
 
-     <input type="file" id="driveFileInput" multiple class="hidden-force" onchange="handleFileSelect(event)">
-     
-     <!-- Add Menu Dropdown -->
-     <div class="relative inline-block text-left z-20">
-       <button type="button" id="btnDriveAdd" ontouchstart="" onclick="toggleDriveAddMenu(event)" class="cursor-pointer p-1.5 rounded-lg text-primary active:bg-blue-50 dark:active:bg-gray-800 md:hover:bg-blue-50 md:dark:hover:bg-gray-800 transition focus:outline-none shrink-0 flex items-center gap-1 font-bold text-xs md:text-sm active:scale-95" title="Add New">
-          <svg class="w-5 h-5 md:w-6 md:h-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-          <span class="hidden md:inline pointer-events-none">Add</span>
-       </button>
-       <div id="driveAddMenu" class="hidden-force origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-[100]">
-         <div class="py-1.5">
-           <a href="#" onclick="toggleDriveAddMenu(); promptCreateFolder()" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-             <svg class="mr-3 h-5 w-5 text-yellow-500 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> New Folder
-           </a>
-           <a href="#" onclick="toggleDriveAddMenu(); triggerFileUpload()" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-             <svg class="mr-3 h-5 w-5 text-blue-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> File Upload
-           </a>
+         <input type="file" id="driveFileInput" multiple class="hidden-force" onchange="handleFileSelect(event)">
+         
+         <!-- Add Menu Dropdown -->
+         <div class="relative inline-block text-left z-30">
+           <button type="button" id="btnDriveAdd" onclick="toggleDriveAddMenu(event)" class="p-1.5 rounded-lg text-primary hover:bg-blue-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 flex items-center gap-1 font-bold text-xs md:text-sm active:scale-95" title="Add New">
+              <svg class="w-5 h-5 md:w-6 md:h-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              <span class="hidden md:inline pointer-events-none">Add</span>
+           </button>
+           <div id="driveAddMenu" class="hidden-force origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-[100]">
+             <div class="py-1.5">
+               <a href="#" onclick="toggleDriveAddMenu(); promptCreateFolder()" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                 <svg class="mr-3 h-5 w-5 text-yellow-500 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> New Folder
+               </a>
+               <a href="#" onclick="toggleDriveAddMenu(); triggerFileUpload()" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                 <svg class="mr-3 h-5 w-5 text-blue-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> File Upload
+               </a>
+             </div>
+             <div class="py-1.5">
+               <a href="#" onclick="toggleDriveAddMenu(); promptCreateGoogleDoc('doc')" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                 <svg class="mr-3 h-5 w-5 text-blue-600 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Google Doc
+               </a>
+               <a href="#" onclick="toggleDriveAddMenu(); promptCreateGoogleDoc('sheet')" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                 <svg class="mr-3 h-5 w-5 text-green-600 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Google Sheet
+               </a>
+               <a href="#" onclick="toggleDriveAddMenu(); promptCreateGoogleDoc('slide')" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                 <svg class="mr-3 h-5 w-5 text-yellow-600 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 12l-4-3 4-3v6zm7-1V8h-5v6h5z"/></svg> Google Slides
+               </a>
+             </div>
+           </div>
          </div>
-         <div class="py-1.5">
-           <a href="#" onclick="toggleDriveAddMenu(); promptCreateGoogleDoc('doc')" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-             <svg class="mr-3 h-5 w-5 text-blue-600 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Google Doc
-           </a>
-           <a href="#" onclick="toggleDriveAddMenu(); promptCreateGoogleDoc('sheet')" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-             <svg class="mr-3 h-5 w-5 text-green-600 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Google Sheet
-           </a>
-           <a href="#" onclick="toggleDriveAddMenu(); promptCreateGoogleDoc('slide')" class="group flex items-center px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-             <svg class="mr-3 h-5 w-5 text-yellow-600 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 12l-4-3 4-3v6zm7-1V8h-5v6h5z"/></svg> Google Slides
-           </a>
-         </div>
-       </div>
+         
+         <button type="button" onclick="refreshCurrentDriveFolder(this)" class="p-1.5 rounded-lg text-primary hover:bg-blue-50 dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative z-30 flex items-center justify-center active:scale-95" title="Refresh">
+            <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <div class="btn-spinner spinner-primary hidden-force !w-3 !h-3 md:!w-4 md:!h-4 border-2 absolute pointer-events-none"></div>
+         </button>
      </div>
-     
-     <button type="button" ontouchstart="" onclick="refreshCurrentDriveFolder(this)" class="cursor-pointer p-1.5 rounded-lg text-primary active:bg-blue-50 dark:active:bg-gray-800 md:hover:bg-blue-50 md:dark:hover:bg-gray-800 transition focus:outline-none shrink-0 relative z-20 flex items-center justify-center active:scale-95" title="Refresh">
-        <svg class="w-5 h-5 md:w-6 md:h-6 btn-icon pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-        <div class="btn-spinner spinner-primary hidden-force !w-3 !h-3 md:!w-4 md:!h-4 border-2 absolute pointer-events-none"></div>
-     </button>
    </div>
    
    <!-- Loading Overlay -->
@@ -418,7 +421,7 @@ const container = document.getElementById('driveContentsList');
 let html = '';
 
 if (folders.length === 0 && files.length === 0) {
-   container.innerHTML = '<div class="flex flex-col items-center justify-center p-8 text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg><p class="text-xs font-bold">This folder is empty.</p></div>';
+   container.innerHTML = '<div class="flex flex-col items-center justify-center p-8 text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg><p class="text-xs font-bold">This folder is empty.</p></div>';
    return;
 }
 
