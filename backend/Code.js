@@ -90,7 +90,6 @@ case 'getDriveContents': result = getDriveContents(data.folderId); break;
 case 'uploadDriveFile': result = uploadDriveFile(data.folderId, data.fileName, data.mimeType, data.fileData); break;
 case 'createDriveFolder': result = createDriveFolder(data.parentFolderId, data.folderName); break;
 case 'createGoogleDoc': result = createGoogleDoc(data.folderId, data.fileName, data.docType); break;
-case 'copyDriveItem': result = copyDriveItem(data.itemId, data.isFolder, data.targetFolderId); break;
 case 'renameDriveItem': result = renameDriveItem(data.itemId, data.isFolder, data.newName, data.currentFolderId); break;
 case 'deleteDriveItem': result = deleteDriveItem(data.itemId, data.isFolder, data.currentFolderId); break;
 case 'fetchLogistics': result = fetchLogistics(); break;
@@ -171,8 +170,8 @@ const data = ss.getSheetByName("Raw Data").getDataRange().getValues();
 let currentUserRecord = null;
 for (let i = 1; i < data.length; i++) { 
 if (String(data[i][11]).trim().toUpperCase() === nric) { 
-  currentUserRecord = data[i]; 
-  break; 
+ currentUserRecord = data[i]; 
+ break; 
 } 
 }
 if (!currentUserRecord) return {status: 'error', message: 'Profile not found.'};
@@ -197,21 +196,21 @@ const rowNric = String(data[i][11]).trim().toUpperCase();
 
 let isFamilyMember = false;
 if (targetTraineeName) {
-  if (rowRole === 'TRAINEE' && rowName === targetTraineeName) isFamilyMember = true;
-  if (rowRole === 'CAREGIVER' && rowRelatedTrainee === targetTraineeName) isFamilyMember = true;
+ if (rowRole === 'TRAINEE' && rowName === targetTraineeName) isFamilyMember = true;
+ if (rowRole === 'CAREGIVER' && rowRelatedTrainee === targetTraineeName) isFamilyMember = true;
 }
 if (rowNric === nric) isFamilyMember = true; // Always include self
 
 if (isFamilyMember) {
-  let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
-  let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
-  family.push({
-      email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
-      group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
-      nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
-      emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
-      shortName: data[i][22] || ''
-  });
+ let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
+ let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
+ family.push({
+     email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+     group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
+     nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
+     emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
+     shortName: data[i][22] || ''
+ });
 }
 }
 return { status: 'success', family: family };
@@ -335,7 +334,7 @@ const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
 const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
 if (ts > existingTs) {
- sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
+sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
 }
 } else {
 sheet.appendRow([t, v, status, tsDate, takenBy]);
@@ -443,25 +442,25 @@ let url = f.getUrl();
 let isShortcut = false;
 
 if (mime === 'application/vnd.google-apps.shortcut') {
-  isShortcut = true;
-  try {
-    const tId = f.getTargetId();
-    const tMime = f.getTargetMimeType();
-    if (tMime === 'application/vnd.google-apps.folder') {
-      url = `https://drive.google.com/drive/folders/${tId}`;
-    } else {
-      url = `https://drive.google.com/open?id=${tId}`;
-    }
-    mime = tMime; 
-  } catch(e) { } 
+ isShortcut = true;
+ try {
+   const tId = f.getTargetId();
+   const tMime = f.getTargetMimeType();
+   if (tMime === 'application/vnd.google-apps.folder') {
+     url = `https://drive.google.com/drive/folders/${tId}`;
+   } else {
+     url = `https://drive.google.com/open?id=${tId}`;
+   }
+   mime = tMime; 
+ } catch(e) { } 
 }
 
 files.push({
-  id: f.getId(),
-  name: f.getName(),
-  mimeType: mime,
-  url: url,
-  isShortcut: isShortcut
+ id: f.getId(),
+ name: f.getName(),
+ mimeType: mime,
+ url: url,
+ isShortcut: isShortcut
 });
 }
 files.sort((a,b) => a.name.localeCompare(b.name));
@@ -471,8 +470,8 @@ const folderIter = folder.getFolders();
 while(folderIter.hasNext()) {
 const f = folderIter.next();
 folders.push({
-  id: f.getId(),
-  name: f.getName()
+ id: f.getId(),
+ name: f.getName()
 });
 }
 folders.sort((a,b) => a.name.localeCompare(b.name));
@@ -512,16 +511,16 @@ let folder = folderId === 'root' ? getTripFolder() : DriveApp.getFolderById(fold
 let fileId;
 
 if (docType === 'doc') {
-  let doc = DocumentApp.create(fileName);
-  fileId = doc.getId();
+ let doc = DocumentApp.create(fileName);
+ fileId = doc.getId();
 } else if (docType === 'sheet') {
-  let sheet = SpreadsheetApp.create(fileName);
-  fileId = sheet.getId();
+ let sheet = SpreadsheetApp.create(fileName);
+ fileId = sheet.getId();
 } else if (docType === 'slide') {
-  let slide = SlidesApp.create(fileName);
-  fileId = slide.getId();
+ let slide = SlidesApp.create(fileName);
+ fileId = slide.getId();
 } else {
-  throw new Error("Invalid document type.");
+ throw new Error("Invalid document type.");
 }
 
 let file = DriveApp.getFileById(fileId);
@@ -530,53 +529,6 @@ Utilities.sleep(1500);
 return getDriveContents(folderId);
 } catch (e) {
 return { status: 'error', message: e.message };
-}
-}
-
-function copyDriveItem(itemId, isFolder, targetFolderId) {
-try {
-let targetFolder = targetFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(targetFolderId);
-let originalName = isFolder ? DriveApp.getFolderById(itemId).getName() : DriveApp.getFileById(itemId).getName();
-let newName = "Copy of " + originalName;
-
-if (isFolder) {
-  let sourceFolder = DriveApp.getFolderById(itemId);
-  
-  // Safety: Prevent pasting a folder into itself
-  if (sourceFolder.getId() === targetFolder.getId()) {
-      throw new Error("Cannot paste a folder inside itself.");
-  }
-  
-  copyFolderRecursively(sourceFolder, targetFolder, newName);
-} else {
-  let sourceFile = DriveApp.getFileById(itemId);
-  
-  // Directly execute copy into targetFolder.
-  // This naturally handles same-directory duplication without needing moveTo()
-  sourceFile.makeCopy(newName, targetFolder);
-}
-
-// Wait 3 seconds to ensure Google Drive's search index is updated before fetching the new list
-Utilities.sleep(3000); 
-return getDriveContents(targetFolderId);
-} catch(e) {
-return { status: 'error', message: e.message };
-}
-}
-
-function copyFolderRecursively(source, destination, newName) {
-let newFolder = destination.createFolder(newName);
-
-let files = source.getFiles();
-while (files.hasNext()) {
-let file = files.next();
-file.makeCopy(file.getName(), newFolder);
-}
-
-let folders = source.getFolders();
-while (folders.hasNext()) {
-let subFolder = folders.next();
-copyFolderRecursively(subFolder, newFolder, subFolder.getName());
 }
 }
 
@@ -672,25 +624,25 @@ if (!email) return;
 
 try {
 if (actionType === 'add') {
-  if (role === 'editor') {
-    folder.addEditor(email);
-  } else {
-    folder.addViewer(email);
-  }
-  access[email] = role;
-  results.success.push(email);
+ if (role === 'editor') {
+   folder.addEditor(email);
+ } else {
+   folder.addViewer(email);
+ }
+ access[email] = role;
+ results.success.push(email);
 } else if (actionType === 'remove') {
-  if (access[email]) {
-    if (access[email] === 'editor') {
-      folder.removeEditor(email);
-    } else {
-      folder.removeViewer(email);
-    }
-    delete access[email];
-    results.success.push(email);
-  } else {
-    results.failed.push({ email: email, reason: 'Not granted via app' });
-  }
+ if (access[email]) {
+   if (access[email] === 'editor') {
+     folder.removeEditor(email);
+   } else {
+     folder.removeViewer(email);
+   }
+   delete access[email];
+   results.success.push(email);
+ } else {
+   results.failed.push({ email: email, reason: 'Not granted via app' });
+ }
 }
 } catch (error) {
 results.failed.push({ email: email, reason: error.message });
@@ -751,7 +703,7 @@ const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
 const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
 if (ts > existingTs) {
- sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
+sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
 }
 } else {
 sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
@@ -778,8 +730,8 @@ if (rawAccess) {
 const accessObj = JSON.parse(rawAccess);
 for (let email in accessObj) {
 try {
-  if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
-  else { folder.removeViewer(email); }
+ if (accessObj[email] === 'editor') { folder.removeEditor(email); } 
+ else { folder.removeViewer(email); }
 } catch(e) { }
 }
 }
