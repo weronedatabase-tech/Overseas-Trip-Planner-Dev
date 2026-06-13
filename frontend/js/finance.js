@@ -43,7 +43,7 @@ async function buildFinanceUI() {
                 <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Finance Options Planner</h3>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="addFinanceOption()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:bg-blue-100 transition shadow-sm focus:outline-none">
+                <button onclick="addFinanceOption()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:bg-blue-100 transition shadow-sm focus:outline-none shrink-0">
                     + Add Option
                 </button>
                 <button id="btn-save-finance" onclick="saveFinanceConfig(this)" class="bg-primary text-white text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-md hover:bg-blue-600 transition flex items-center shadow-sm focus:outline-none shrink-0">
@@ -62,9 +62,9 @@ async function buildFinanceUI() {
             <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading Planner...</span>
         </div>
 
-        <div class="flex-grow overflow-x-auto overflow-y-hidden p-3 bg-gray-50 dark:bg-gray-950">
-            <div id="financeOptionsContainer" class="flex gap-4 h-full items-start pb-4">
-                <!-- Options will be rendered here horizontally -->
+        <div class="flex-grow overflow-y-auto overflow-x-hidden p-2 md:p-4 bg-gray-50 dark:bg-gray-950 custom-scrollbar pb-10">
+            <div id="financeOptionsContainer" class="flex flex-col gap-5 w-full items-center pb-4">
+                <!-- Options will be rendered here vertically -->
             </div>
         </div>
     </div>
@@ -119,7 +119,7 @@ function renderFinanceGlobalSettings() {
 
     container.innerHTML = `
         <div class="flex items-center gap-2">
-            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Pax Calculation Mode:</label>
+            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Pax Calculation Mode:</label>
             <select onchange="updateFinanceConfig('globalPaxMode', this.value)" class="text-[11px] md:text-xs font-bold border border-gray-300 dark:border-gray-600 rounded p-1 md:p-1.5 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
                 <option value="individual" ${financeConfig.globalPaxMode === 'individual' ? 'selected' : ''}>Individual per Option</option>
                 <option value="manual" ${financeConfig.globalPaxMode === 'manual' ? 'selected' : ''}>Global Override (Manual)</option>
@@ -128,12 +128,12 @@ function renderFinanceGlobalSettings() {
         </div>
         
         <div class="flex items-center gap-2 ${financeConfig.globalPaxMode !== 'manual' ? 'hidden-force' : ''}">
-            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Global Pax Count:</label>
+            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Pax Count:</label>
             <input type="number" min="0" value="${financeConfig.globalPaxCount}" onchange="updateFinanceConfig('globalPaxCount', this.value)" onkeyup="updateFinanceConfig('globalPaxCount', this.value)" class="w-20 text-[11px] md:text-xs font-bold border border-gray-300 dark:border-gray-600 rounded p-1 md:p-1.5 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">
         </div>
         
         <div class="flex items-center gap-2 ${financeConfig.globalPaxMode !== 'auto' ? 'hidden-force' : ''}">
-            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Total Active Participants:</label>
+            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Total Active Participants:</label>
             <span class="text-xs font-black text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 rounded border border-blue-200 dark:border-blue-800 shadow-sm">${autoPax}</span>
         </div>
     `;
@@ -147,6 +147,7 @@ function updateFinanceConfig(key, value) {
     } else if (key === 'globalPaxCount') {
         financeConfig[key] = parseInt(value) || 0;
         financeOptions.forEach(o => updateTotals(o.id));
+        renderFinanceOptions(); // Re-render to update the disabled input values
     }
 }
 
@@ -226,7 +227,7 @@ function addFinanceOption(title = "New Option", reRender = true) {
         });
     });
 
-    financeOptions.push(newOpt);
+    financeOptions.unshift(newOpt);
     if (reRender) renderFinanceOptions();
 }
 
@@ -239,7 +240,7 @@ function duplicateFinanceOption(id) {
     copy.title = opt.title + " (Copy)";
     copy.fields.forEach(f => f.id = generateFinanceUUID()); // Assign new unique IDs for fields
     
-    financeOptions.push(copy);
+    financeOptions.unshift(copy);
     renderFinanceOptions();
 }
 
@@ -297,12 +298,12 @@ function renderFinanceOptions() {
         const paxInputDisabled = financeConfig.globalPaxMode !== 'individual';
 
         html += `
-        <div class="w-[420px] shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden max-h-full">
-            <div class="p-3 bg-gray-50/80 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-3 shrink-0">
+        <div class="w-full max-w-xl shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="p-3 md:p-4 bg-gray-50/80 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-3 shrink-0">
                 <div class="flex justify-between items-center">
                     <input type="text" value="${opt.title}" 
                            onchange="updateFinanceOption('${opt.id}', 'title', this.value)"
-                           class="font-black text-sm bg-transparent border-b border-transparent focus:border-primary outline-none text-gray-900 dark:text-white w-2/3 px-1 transition">
+                           class="font-black text-sm md:text-base bg-transparent border-b border-transparent focus:border-primary outline-none text-gray-900 dark:text-white w-2/3 px-1 transition pb-0.5">
                     <div class="flex gap-1.5">
                         <button onclick="duplicateFinanceOption('${opt.id}')" class="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2 py-1.5 rounded transition" title="Duplicate Option">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -313,54 +314,57 @@ function renderFinanceOptions() {
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3 mt-1">
-                    <div>
-                        <label class="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Pax Count</label>
-                        <input type="number" min="0" value="${opt.pax}" 
-                            ${paxInputDisabled ? 'disabled' : ''} 
-                            onchange="updateFinanceOption('${opt.id}', 'pax', this.value)" 
-                            onkeyup="updateFinanceOption('${opt.id}', 'pax', this.value)"
-                            class="w-full text-xs font-bold px-2 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary ${paxInputDisabled ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800' : ''}">
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Display Currency</label>
-                        <select onchange="updateFinanceOption('${opt.id}', 'displayCurrency', this.value)" 
-                            class="w-full text-xs font-bold px-2 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer">
-                            ${getCurrencyOptions(opt.displayCurrency)}
-                        </select>
-                    </div>
+                <div class="w-1/2 md:w-1/3 mt-1 px-1">
+                    <label class="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Pax Count ${paxInputDisabled ? '(Global)' : ''}</label>
+                    <input type="number" min="0" value="${pax}" 
+                        ${paxInputDisabled ? 'disabled' : ''} 
+                        onchange="updateFinanceOption('${opt.id}', 'pax', this.value)" 
+                        onkeyup="updateFinanceOption('${opt.id}', 'pax', this.value)"
+                        class="w-full text-xs font-bold px-2 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary ${paxInputDisabled ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-500' : ''}">
                 </div>
             </div>
             
-            <div class="p-2 overflow-y-auto custom-scrollbar flex-grow space-y-1 bg-white dark:bg-gray-800">
+            <div class="p-2 flex-grow space-y-1.5 bg-white dark:bg-gray-800">
                 ${opt.fields.map(f => {
                     return `
-                    <div class="flex gap-1 items-center bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-lg border border-transparent focus-within:border-gray-200 dark:focus-within:border-gray-700 transition">
-                        <button onclick="removeFinanceCategory('${opt.id}', '${f.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded shrink-0 transition" title="Delete Category">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                        <input type="text" value="${f.name}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'name', this.value)" class="w-[120px] bg-transparent text-[10px] font-bold text-gray-700 dark:text-gray-200 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Category Name">
-                        <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'currency', this.value)" class="w-[55px] bg-white dark:bg-gray-950 text-[9px] font-bold border border-gray-300 dark:border-gray-600 rounded py-1 pl-1 pr-0 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
-                            ${getCurrencyOptions(f.currency)}
-                        </select>
-                        <input type="number" step="0.01" min="0" value="${f.cost}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" class="w-[65px] bg-white dark:bg-gray-950 text-[10px] font-bold border border-gray-300 dark:border-gray-600 rounded p-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="0.00">
-                        <input type="text" value="${f.remarks}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'remarks', this.value)" class="flex-1 min-w-0 bg-transparent text-[10px] font-medium text-gray-600 dark:text-gray-400 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Remarks...">
+                    <div class="flex flex-col gap-1 w-full bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-transparent focus-within:border-gray-200 dark:focus-within:border-gray-700 transition">
+                        <div class="flex items-center gap-1.5 w-full">
+                            <button onclick="removeFinanceCategory('${opt.id}', '${f.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded shrink-0 transition" title="Delete Category">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                            <input type="text" value="${f.name}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'name', this.value)" class="flex-1 min-w-0 bg-transparent text-[11px] font-bold text-gray-700 dark:text-gray-200 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Category Name">
+                            <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'currency', this.value)" class="w-[60px] shrink-0 bg-white dark:bg-gray-950 text-[10px] font-bold border border-gray-300 dark:border-gray-600 rounded py-1.5 pl-1.5 pr-0 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
+                                ${getCurrencyOptions(f.currency)}
+                            </select>
+                            <input type="number" step="0.01" min="0" value="${f.cost}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" class="w-[75px] shrink-0 bg-white dark:bg-gray-950 text-[11px] font-bold border border-gray-300 dark:border-gray-600 rounded p-1.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="0.00">
+                        </div>
+                        <div class="flex w-full pl-8">
+                            <input type="text" value="${f.remarks}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'remarks', this.value)" class="flex-1 w-full min-w-0 bg-transparent text-[10px] font-medium text-gray-500 dark:text-gray-400 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Remarks...">
+                        </div>
                     </div>
                     `;
                 }).join('')}
-                <div class="pt-2 px-1">
-                    <button onclick="addFinanceCategory('${opt.id}')" class="w-full py-2 border-2 border-dashed border-blue-300 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-[10px] font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Custom Category</button>
+                <div class="pt-2 px-1 pb-1">
+                    <button onclick="addFinanceCategory('${opt.id}')" class="w-full py-2 border-2 border-dashed border-blue-300 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-[11px] font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Custom Category</button>
                 </div>
             </div>
             
-            <div class="p-3 md:p-4 bg-blue-50/80 dark:bg-blue-900/20 border-t border-blue-100 dark:border-blue-900/50 shrink-0 flex flex-col gap-2">
-                <div class="flex justify-between items-center">
+            <div class="p-3 md:p-4 bg-blue-50/80 dark:bg-blue-900/20 border-t border-blue-100 dark:border-blue-900/50 shrink-0 flex flex-col gap-3">
+                <div class="flex justify-between items-center pb-3 border-b border-blue-200/50 dark:border-blue-800/50">
+                    <span class="font-bold text-[10px] text-blue-800 dark:text-blue-300 uppercase tracking-widest">Display Currency</span>
+                    <select onchange="updateFinanceOption('${opt.id}', 'displayCurrency', this.value)" 
+                        class="w-[100px] text-xs font-bold px-2 py-1.5 bg-white dark:bg-gray-950 border border-blue-300 dark:border-blue-700 rounded focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-sm text-blue-900 dark:text-blue-100">
+                        ${getCurrencyOptions(opt.displayCurrency)}
+                    </select>
+                </div>
+                
+                <div class="flex justify-between items-center mt-1">
                     <span class="font-black text-xs text-blue-800 dark:text-blue-300 uppercase tracking-widest">Total Estimated</span>
-                    <span id="total_${opt.id}" class="font-black text-sm md:text-base text-blue-700 dark:text-blue-400 bg-white dark:bg-gray-900 px-2.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 shadow-sm">${opt.displayCurrency} ${totalDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <span id="total_${opt.id}" class="font-black text-sm md:text-base text-blue-700 dark:text-blue-400 bg-white dark:bg-gray-900 px-2.5 py-1 rounded border border-blue-200 dark:border-blue-800 shadow-sm">${opt.displayCurrency} ${totalDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="font-black text-[11px] text-emerald-800 dark:text-emerald-400 uppercase tracking-widest">Cost Per Pax</span>
-                    <span id="cpp_${opt.id}" class="font-black text-sm text-emerald-700 dark:text-emerald-400 bg-white dark:bg-gray-900 px-2.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shadow-sm">${opt.displayCurrency} ${cppDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <span id="cpp_${opt.id}" class="font-black text-sm md:text-base text-emerald-700 dark:text-emerald-400 bg-white dark:bg-gray-900 px-2.5 py-1 rounded border border-emerald-200 dark:border-emerald-800 shadow-sm">${opt.displayCurrency} ${cppDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                 </div>
             </div>
         </div>
