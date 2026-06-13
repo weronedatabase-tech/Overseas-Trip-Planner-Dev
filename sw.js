@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myg-trip-v25';
+const CACHE_NAME = 'myg-trip-v26';
 const urlsToCache =[
 './',
 './index.html',
@@ -32,9 +32,9 @@ event.waitUntil(
 caches.keys().then(cacheNames => {
 return Promise.all(
 cacheNames.map(cacheName => {
-  if (cacheName !== CACHE_NAME) {
-    return caches.delete(cacheName);
-  }
+ if (cacheName !== CACHE_NAME) {
+   return caches.delete(cacheName);
+ }
 })
 );
 }).then(() => self.clients.claim()) // Instantly take control of uncontrolled clients
