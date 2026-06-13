@@ -1,9 +1,39 @@
 let financeOptions = [];
+let globalFinanceRates = { "SGD": 1, "MYR": 0.28 };
+let financeConfig = {
+    globalPaxMode: 'individual', // 'individual', 'manual', 'auto'
+    globalPaxCount: 0
+};
+
 const defaultFinanceFields = [
     'Accommodation', 'Transport', 'Day 1 Lunch', 'Day 1 Dinner', 
     'Day 1 Activity', 'Day 2 Breakfast', 'Day 2 Lunch', 'Day 2 Activity', 
-    'Logistics', 'First Aid', 'Miscellaneous', 'Recce'
+    'Logistics', 'First Aid', 'Miscellaneous', 'Recce', 'Insurance'
 ];
+
+function generateFinanceUUID() {
+    return 'fin_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function getCurrencyOptions(selected) {
+    const top = ["SGD", "MYR"];
+    const rest = ["USD", "EUR", "GBP", "AUD", "IDR", "THB", "JPY", "KRW", "TWD", "PHP", "VND"];
+    let html = '';
+    top.forEach(c => html += `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`);
+    html += `<option disabled>──────────</option>`;
+    rest.forEach(c => html += `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`);
+    return html;
+}
+
+function getActivePax(opt) {
+    if (financeConfig.globalPaxMode === 'auto') {
+        return globalLogistics && globalLogistics.participants ? globalLogistics.participants.length : 0;
+    } else if (financeConfig.globalPaxMode === 'manual') {
+        return parseInt(financeConfig.globalPaxCount) || 0;
+    } else {
+        return parseInt(opt.pax) || 0;
+    }
+}
 
 async function buildFinanceUI() {
     document.getElementById('tab-finance').innerHTML = `
@@ -23,7 +53,11 @@ async function buildFinanceUI() {
             </div>
         </div>
 
-        <div id="financeLoadingOverlay" class="absolute inset-0 top-[50px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 flex flex-col justify-center items-center">
+        <div id="financeGlobalSettings" class="bg-white dark:bg-gray-800 p-2 md:p-3 shrink-0 border-b border-gray-200 dark:border-gray-800 flex flex-wrap items-center gap-4 z-10 shadow-[0_4px_10px_-5px_rgba(0,0,0,0.05)]">
+            <!-- Global Pax controls injected here -->
+        </div>
+
+        <div id="financeLoadingOverlay" class="absolute inset-0 top-[90px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 flex flex-col justify-center items-center">
             <div class="loader !w-8 !h-8 border-primary mb-2"></div>
             <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading Planner...</span>
         </div>
@@ -38,11 +72,36 @@ async function buildFinanceUI() {
 
     try {
         const res = await callBackend('fetchFinance');
-        financeOptions = res.options && Array.isArray(res.options) ? res.options : [];
+        globalFinanceRates = res.rates || { "SGD": 1, "MYR": 0.28 };
+        
+        const rawOptions = res.data?.options || (Array.isArray(res.data) ? res.data : []);
+        financeConfig = res.data?.config || { globalPaxMode: 'individual', globalPaxCount: 0 };
+        
+        financeOptions = rawOptions.map(opt => {
+            // Migrate old object-based fields to array format
+            if (opt.fields && !Array.isArray(opt.fields)) {
+                const newFields = [];
+                for (let [k, v] of Object.entries(opt.fields)) {
+                    newFields.push({
+                        id: generateFinanceUUID(),
+                        name: k,
+                        cost: parseFloat(v.cost) || 0,
+                        currency: v.currency || 'MYR',
+                        remarks: v.remarks || ''
+                    });
+                }
+                opt.fields = newFields;
+            }
+            if(!opt.displayCurrency) opt.displayCurrency = 'SGD';
+            if(!opt.pax) opt.pax = 0;
+            return opt;
+        });
+
         if (financeOptions.length === 0) {
-            // Initialize with one default option if empty
             addFinanceOption("Option 1", false);
         }
+        
+        renderFinanceGlobalSettings();
         renderFinanceOptions();
     } catch (e) {
         showToast("Failed to load finance data.", true);
@@ -52,20 +111,136 @@ async function buildFinanceUI() {
     }
 }
 
+function renderFinanceGlobalSettings() {
+    const container = document.getElementById('financeGlobalSettings');
+    if (!container) return;
+
+    const autoPax = globalLogistics?.participants?.length || 0;
+
+    container.innerHTML = `
+        <div class="flex items-center gap-2">
+            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Pax Calculation Mode:</label>
+            <select onchange="updateFinanceConfig('globalPaxMode', this.value)" class="text-[11px] md:text-xs font-bold border border-gray-300 dark:border-gray-600 rounded p-1 md:p-1.5 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
+                <option value="individual" ${financeConfig.globalPaxMode === 'individual' ? 'selected' : ''}>Individual per Option</option>
+                <option value="manual" ${financeConfig.globalPaxMode === 'manual' ? 'selected' : ''}>Global Override (Manual)</option>
+                <option value="auto" ${financeConfig.globalPaxMode === 'auto' ? 'selected' : ''}>Global Auto (Use Participants Database)</option>
+            </select>
+        </div>
+        
+        <div class="flex items-center gap-2 ${financeConfig.globalPaxMode !== 'manual' ? 'hidden-force' : ''}">
+            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Global Pax Count:</label>
+            <input type="number" min="0" value="${financeConfig.globalPaxCount}" onchange="updateFinanceConfig('globalPaxCount', this.value)" onkeyup="updateFinanceConfig('globalPaxCount', this.value)" class="w-20 text-[11px] md:text-xs font-bold border border-gray-300 dark:border-gray-600 rounded p-1 md:p-1.5 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">
+        </div>
+        
+        <div class="flex items-center gap-2 ${financeConfig.globalPaxMode !== 'auto' ? 'hidden-force' : ''}">
+            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Total Active Participants:</label>
+            <span class="text-xs font-black text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 rounded border border-blue-200 dark:border-blue-800 shadow-sm">${autoPax}</span>
+        </div>
+    `;
+}
+
+function updateFinanceConfig(key, value) {
+    if (key === 'globalPaxMode') {
+        financeConfig[key] = value;
+        renderFinanceGlobalSettings();
+        renderFinanceOptions(); // Re-render to disable/enable inputs
+    } else if (key === 'globalPaxCount') {
+        financeConfig[key] = parseInt(value) || 0;
+        financeOptions.forEach(o => updateTotals(o.id));
+    }
+}
+
+function updateFinanceOption(optId, key, value) {
+    const opt = financeOptions.find(o => o.id === optId);
+    if (!opt) return;
+    
+    if (key === 'title') {
+        opt.title = value;
+    } else if (key === 'pax') {
+        opt.pax = parseInt(value) || 0;
+        updateTotals(optId);
+    } else if (key === 'displayCurrency') {
+        opt.displayCurrency = value;
+        updateTotals(optId);
+    }
+}
+
+function updateFinanceField(optId, fieldId, key, value) {
+    const opt = financeOptions.find(o => o.id === optId);
+    if (!opt) return;
+    const field = opt.fields.find(f => f.id === fieldId);
+    if (!field) return;
+    
+    if (key === 'cost') {
+        field.cost = parseFloat(value) || 0;
+        updateTotals(optId);
+    } else if (key === 'currency') {
+        field.currency = value;
+        updateTotals(optId);
+    } else if (key === 'name') {
+        field.name = value;
+    } else if (key === 'remarks') {
+        field.remarks = value;
+    }
+}
+
+function updateTotals(optId) {
+    const opt = financeOptions.find(o => o.id === optId);
+    if (!opt) return;
+    
+    const pax = getActivePax(opt);
+    let totalSgd = 0;
+    
+    opt.fields.forEach(f => {
+        const rate = globalFinanceRates[f.currency] || 1;
+        totalSgd += (parseFloat(f.cost) || 0) * rate;
+    });
+    
+    const dispRate = globalFinanceRates[opt.displayCurrency] || 1;
+    const totalDisp = totalSgd / dispRate;
+    const cppDisp = pax > 0 ? totalDisp / pax : 0;
+    
+    const totEl = document.getElementById(`total_${opt.id}`);
+    const cppEl = document.getElementById(`cpp_${opt.id}`);
+    
+    if (totEl) totEl.textContent = `${opt.displayCurrency} ${totalDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    if (cppEl) cppEl.textContent = `${opt.displayCurrency} ${cppDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
+
 function addFinanceOption(title = "New Option", reRender = true) {
     const newOpt = {
-        id: 'opt_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        id: generateFinanceUUID(),
         title: title,
-        fields: {}
+        pax: 0,
+        displayCurrency: 'SGD',
+        fields: []
     };
     
-    // Initialize default fields
     defaultFinanceFields.forEach(f => {
-        newOpt.fields[f] = { cost: 0, remarks: '' };
+        newOpt.fields.push({
+            id: generateFinanceUUID(),
+            name: f,
+            cost: 0,
+            currency: 'MYR',
+            remarks: ''
+        });
     });
 
     financeOptions.push(newOpt);
     if (reRender) renderFinanceOptions();
+}
+
+function duplicateFinanceOption(id) {
+    const opt = financeOptions.find(o => o.id === id);
+    if (!opt) return;
+    
+    const copy = JSON.parse(JSON.stringify(opt));
+    copy.id = generateFinanceUUID();
+    copy.title = opt.title + " (Copy)";
+    copy.fields.forEach(f => f.id = generateFinanceUUID()); // Assign new unique IDs for fields
+    
+    financeOptions.push(copy);
+    renderFinanceOptions();
 }
 
 function removeFinanceOption(id) {
@@ -74,24 +249,26 @@ function removeFinanceOption(id) {
     renderFinanceOptions();
 }
 
-function updateFinanceField(optId, fieldName, key, value) {
+function addFinanceCategory(optId) {
     const opt = financeOptions.find(o => o.id === optId);
-    if (opt) {
-        if (!opt.fields[fieldName]) opt.fields[fieldName] = { cost: 0, remarks: '' };
-        if (key === 'cost') {
-            opt.fields[fieldName].cost = parseFloat(value) || 0;
-            // Update total locally on the DOM to avoid re-rendering entire list and losing focus
-            const totalEl = document.getElementById(`total_${optId}`);
-            if (totalEl) {
-                const total = Object.values(opt.fields).reduce((sum, f) => sum + (parseFloat(f.cost) || 0), 0);
-                totalEl.textContent = `$${total.toFixed(2)}`;
-            }
-        } else if (key === 'remarks') {
-            opt.fields[fieldName].remarks = value;
-        } else if (key === 'title') {
-            opt.title = value;
-        }
-    }
+    if(!opt) return;
+    
+    opt.fields.push({
+        id: generateFinanceUUID(),
+        name: 'New Category',
+        cost: 0,
+        currency: 'MYR',
+        remarks: ''
+    });
+    renderFinanceOptions();
+}
+
+function removeFinanceCategory(optId, fieldId) {
+    const opt = financeOptions.find(o => o.id === optId);
+    if(!opt) return;
+    
+    opt.fields = opt.fields.filter(f => f.id !== fieldId);
+    renderFinanceOptions(); // Re-render fully to cleanly drop the DOM row and trigger totals math naturally
 }
 
 function renderFinanceOptions() {
@@ -99,54 +276,92 @@ function renderFinanceOptions() {
     if (!container) return;
 
     if (financeOptions.length === 0) {
-        container.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 font-bold text-sm">No options created yet. Click '+ Add Option' to start.</div>`;
+        container.innerHTML = `<div class="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 pt-10"><svg class="w-12 h-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><p class="font-bold text-sm">No options created yet. Click '+ Add Option' to start planning.</p></div>`;
         return;
     }
 
     let html = '';
     financeOptions.forEach(opt => {
-        const totalCost = Object.values(opt.fields).reduce((sum, f) => sum + (parseFloat(f.cost) || 0), 0);
+        const pax = getActivePax(opt);
+        let totalSgd = 0;
         
-        let rowsHtml = '';
-        defaultFinanceFields.forEach(field => {
-            const data = opt.fields[field] || { cost: 0, remarks: '' };
-            rowsHtml += `
-            <div class="grid grid-cols-[1fr_80px_1fr] gap-2 items-center border-b border-gray-100 dark:border-gray-800 py-1.5 last:border-0">
-                <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300 truncate pr-1" title="${field}">${field}</span>
-                <div class="relative">
-                    <span class="absolute left-2 top-1.5 text-gray-400 text-[10px]">$</span>
-                    <input type="number" min="0" step="0.01" value="${data.cost || 0}" 
-                           onchange="updateFinanceField('${opt.id}', '${field}', 'cost', this.value)"
-                           onkeyup="updateFinanceField('${opt.id}', '${field}', 'cost', this.value)"
-                           class="w-full pl-5 pr-1 py-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded text-[10px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-primary">
-                </div>
-                <input type="text" placeholder="Remarks..." value="${data.remarks || ''}" 
-                       onchange="updateFinanceField('${opt.id}', '${field}', 'remarks', this.value)"
-                       class="w-full px-2 py-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded text-[10px] font-medium text-gray-900 dark:text-white focus:outline-none focus:border-primary placeholder-gray-400">
-            </div>`;
+        opt.fields.forEach(f => {
+            const rate = globalFinanceRates[f.currency] || 1;
+            totalSgd += (parseFloat(f.cost) || 0) * rate;
         });
+        
+        const dispRate = globalFinanceRates[opt.displayCurrency] || 1;
+        const totalDisp = totalSgd / dispRate;
+        const cppDisp = pax > 0 ? totalDisp / pax : 0;
+        
+        const paxInputDisabled = financeConfig.globalPaxMode !== 'individual';
 
         html += `
-        <div class="w-80 shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden max-h-full">
-            <div class="p-3 bg-gray-50/80 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shrink-0">
-                <input type="text" value="${opt.title}" 
-                       onchange="updateFinanceField('${opt.id}', '', 'title', this.value)"
-                       class="font-black text-sm bg-transparent border-none outline-none text-gray-900 dark:text-white w-2/3 focus:ring-2 focus:ring-primary/50 rounded px-1">
-                <button onclick="removeFinanceOption('${opt.id}')" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded text-[10px] font-bold transition">Remove</button>
-            </div>
-            
-            <div class="p-3 overflow-y-auto custom-scrollbar flex-grow space-y-1">
-                <div class="grid grid-cols-[1fr_80px_1fr] gap-2 mb-1 border-b border-gray-200 dark:border-gray-700 pb-1">
-                    <span class="text-[9px] uppercase font-bold text-gray-400 tracking-wider">Category</span>
-                    <span class="text-[9px] uppercase font-bold text-gray-400 tracking-wider pl-1">Est. Cost</span>
-                    <span class="text-[9px] uppercase font-bold text-gray-400 tracking-wider pl-1">Remarks</span>
+        <div class="w-[420px] shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden max-h-full">
+            <div class="p-3 bg-gray-50/80 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-3 shrink-0">
+                <div class="flex justify-between items-center">
+                    <input type="text" value="${opt.title}" 
+                           onchange="updateFinanceOption('${opt.id}', 'title', this.value)"
+                           class="font-black text-sm bg-transparent border-b border-transparent focus:border-primary outline-none text-gray-900 dark:text-white w-2/3 px-1 transition">
+                    <div class="flex gap-1.5">
+                        <button onclick="duplicateFinanceOption('${opt.id}')" class="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2 py-1.5 rounded transition" title="Duplicate Option">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </button>
+                        <button onclick="removeFinanceOption('${opt.id}')" class="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 px-2 py-1.5 rounded transition" title="Delete Option">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
                 </div>
-                ${rowsHtml}
+                
+                <div class="grid grid-cols-2 gap-3 mt-1">
+                    <div>
+                        <label class="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Pax Count</label>
+                        <input type="number" min="0" value="${opt.pax}" 
+                            ${paxInputDisabled ? 'disabled' : ''} 
+                            onchange="updateFinanceOption('${opt.id}', 'pax', this.value)" 
+                            onkeyup="updateFinanceOption('${opt.id}', 'pax', this.value)"
+                            class="w-full text-xs font-bold px-2 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary ${paxInputDisabled ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800' : ''}">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Display Currency</label>
+                        <select onchange="updateFinanceOption('${opt.id}', 'displayCurrency', this.value)" 
+                            class="w-full text-xs font-bold px-2 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer">
+                            ${getCurrencyOptions(opt.displayCurrency)}
+                        </select>
+                    </div>
+                </div>
             </div>
             
-            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 border-t border-blue-100 dark:border-blue-900/50 shrink-0 flex justify-between items-center">
-                <span class="font-black text-xs text-blue-800 dark:text-blue-300 uppercase tracking-widest">Total Estimated</span>
-                <span id="total_${opt.id}" class="font-black text-sm text-blue-700 dark:text-blue-400 bg-white dark:bg-gray-900 px-2 py-1 rounded border border-blue-200 dark:border-blue-800 shadow-sm">$${totalCost.toFixed(2)}</span>
+            <div class="p-2 overflow-y-auto custom-scrollbar flex-grow space-y-1 bg-white dark:bg-gray-800">
+                ${opt.fields.map(f => {
+                    return `
+                    <div class="flex gap-1 items-center bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-lg border border-transparent focus-within:border-gray-200 dark:focus-within:border-gray-700 transition">
+                        <button onclick="removeFinanceCategory('${opt.id}', '${f.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded shrink-0 transition" title="Delete Category">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                        <input type="text" value="${f.name}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'name', this.value)" class="w-[120px] bg-transparent text-[10px] font-bold text-gray-700 dark:text-gray-200 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Category Name">
+                        <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'currency', this.value)" class="w-[55px] bg-white dark:bg-gray-950 text-[9px] font-bold border border-gray-300 dark:border-gray-600 rounded py-1 pl-1 pr-0 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
+                            ${getCurrencyOptions(f.currency)}
+                        </select>
+                        <input type="number" step="0.01" min="0" value="${f.cost}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" class="w-[65px] bg-white dark:bg-gray-950 text-[10px] font-bold border border-gray-300 dark:border-gray-600 rounded p-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="0.00">
+                        <input type="text" value="${f.remarks}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'remarks', this.value)" class="flex-1 min-w-0 bg-transparent text-[10px] font-medium text-gray-600 dark:text-gray-400 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Remarks...">
+                    </div>
+                    `;
+                }).join('')}
+                <div class="pt-2 px-1">
+                    <button onclick="addFinanceCategory('${opt.id}')" class="w-full py-2 border-2 border-dashed border-blue-300 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-[10px] font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Custom Category</button>
+                </div>
+            </div>
+            
+            <div class="p-3 md:p-4 bg-blue-50/80 dark:bg-blue-900/20 border-t border-blue-100 dark:border-blue-900/50 shrink-0 flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-black text-xs text-blue-800 dark:text-blue-300 uppercase tracking-widest">Total Estimated</span>
+                    <span id="total_${opt.id}" class="font-black text-sm md:text-base text-blue-700 dark:text-blue-400 bg-white dark:bg-gray-900 px-2.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 shadow-sm">${opt.displayCurrency} ${totalDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-black text-[11px] text-emerald-800 dark:text-emerald-400 uppercase tracking-widest">Cost Per Pax</span>
+                    <span id="cpp_${opt.id}" class="font-black text-sm text-emerald-700 dark:text-emerald-400 bg-white dark:bg-gray-900 px-2.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shadow-sm">${opt.displayCurrency} ${cppDisp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
             </div>
         </div>
         `;
@@ -158,7 +373,11 @@ function renderFinanceOptions() {
 async function saveFinanceConfig(btn) {
     setBtnLoading(btn, true);
     try {
-        await callBackend('saveFinance', { options: financeOptions });
+        const payload = {
+            options: financeOptions,
+            config: financeConfig
+        };
+        await callBackend('saveFinance', { payload: payload });
         showToast("Finance options saved successfully!");
     } catch(e) {
         showToast("Failed to save finance configurations.", true);
