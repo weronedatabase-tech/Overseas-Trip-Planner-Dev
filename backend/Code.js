@@ -99,7 +99,7 @@ case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
 case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
 case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
 case 'fetchFinance': result = fetchFinance(); break;
-case 'saveFinance': result = saveFinance(data.options); break;
+case 'saveFinance': result = saveFinance(data.payload); break;
 case 'fetchMinutes': result = fetchMinutes(); break;
 case 'syncMinutes': result = syncMinutes(data.updates, data.takenBy); break;
 case 'archiveAndReset': result = archiveAndReset(); break;
@@ -354,29 +354,68 @@ lock.releaseLock();
 }
 }
 
+function setupFinanceRates(sheet) {
+const pairs = [
+  ["Currency", "Rate to SGD"],
+  ["SGD", 1], 
+  ["MYR", '=IFERROR(GOOGLEFINANCE("CURRENCY:MYRSGD"), 0.28)'],
+  ["USD", '=IFERROR(GOOGLEFINANCE("CURRENCY:USDSGD"), 1.35)'],
+  ["EUR", '=IFERROR(GOOGLEFINANCE("CURRENCY:EURSGD"), 1.45)'],
+  ["GBP", '=IFERROR(GOOGLEFINANCE("CURRENCY:GBPSGD"), 1.7)'],
+  ["AUD", '=IFERROR(GOOGLEFINANCE("CURRENCY:AUDSGD"), 0.88)'],
+  ["IDR", '=IFERROR(GOOGLEFINANCE("CURRENCY:IDRSGD"), 0.00008)'],
+  ["THB", '=IFERROR(GOOGLEFINANCE("CURRENCY:THBSGD"), 0.038)'],
+  ["JPY", '=IFERROR(GOOGLEFINANCE("CURRENCY:JPYSGD"), 0.009)'],
+  ["KRW", '=IFERROR(GOOGLEFINANCE("CURRENCY:KRWSGD"), 0.001)'],
+  ["TWD", '=IFERROR(GOOGLEFINANCE("CURRENCY:TWDSGD"), 0.042)'],
+  ["PHP", '=IFERROR(GOOGLEFINANCE("CURRENCY:PHPSGD"), 0.024)'],
+  ["VND", '=IFERROR(GOOGLEFINANCE("CURRENCY:VNDSGD"), 0.00005)']
+];
+sheet.getRange(1, 4, pairs.length, 2).setValues(pairs);
+sheet.getRange(1, 4, 1, 2).setFontWeight("bold");
+}
+
 function fetchFinance() {
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Finance Options");
-if (!sheet) return { status: 'success', options: [] };
-const data = sheet.getDataRange().getValues();
-if (data.length < 2) return { status: 'success', options: [] };
-const raw = String(data[1][0] || '');
-if(!raw) return { status: 'success', options: [] };
-try {
-return { status: 'success', options: JSON.parse(raw) };
-} catch(e) {
-return { status: 'success', options: [] };
-}
+if (!sheet) {
+sheet = ss.insertSheet("Finance Options");
+sheet.getRange("A1").setValue("JSON Data - Do Not Edit");
+setupFinanceRates(sheet);
+} else {
+const d1 = sheet.getRange("D1").getValue();
+if (d1 !== "Currency") setupFinanceRates(sheet);
 }
 
-function saveFinance(options) {
+// Ensure formulas are evaluated
+SpreadsheetApp.flush();
+
+let ratesObj = { "SGD": 1 };
+try {
+const ratesData = sheet.getRange(2, 4, 13, 2).getValues();
+ratesData.forEach(r => {
+  if(r[0] && r[1] && !isNaN(r[1])) ratesObj[String(r[0])] = parseFloat(r[1]);
+});
+} catch(e){}
+
+const data = sheet.getDataRange().getValues();
+let jsonData = null;
+if (data.length >= 2 && data[1][0]) {
+try { jsonData = JSON.parse(String(data[1][0])); } catch(e) {}
+}
+
+return { status: 'success', data: jsonData, rates: ratesObj };
+}
+
+function saveFinance(payload) {
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Finance Options");
 if (!sheet) {
-  sheet = ss.insertSheet("Finance Options");
-  sheet.appendRow(["JSON Data - Do Not Edit"]);
+sheet = ss.insertSheet("Finance Options");
+sheet.getRange("A1").setValue("JSON Data - Do Not Edit");
+setupFinanceRates(sheet);
 }
-sheet.getRange(2, 1).setValue(JSON.stringify(options));
+sheet.getRange(2, 1).setValue(JSON.stringify(payload));
 return { status: 'success' };
 }
 
