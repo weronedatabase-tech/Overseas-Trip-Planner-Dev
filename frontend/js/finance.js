@@ -79,6 +79,46 @@ if (opt) {
 }
 
 // -----------------------------------------------------------
+// LIVE MONEY FORMATTER
+// -----------------------------------------------------------
+window.formatMoneyInput = function(input, isBlur) {
+   let cursorStart = input.selectionStart;
+   let oldLen = input.value.length;
+   
+   let val = input.value.replace(/[^0-9.]/g, '');
+   if(val === '') {
+       input.value = '';
+       return;
+   }
+   
+   let parts = val.split('.');
+   if(parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+   
+   if (isBlur) {
+       let number = parseFloat(val);
+       if(!isNaN(number)) {
+           input.value = number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+       } else {
+           input.value = '0.00';
+       }
+   } else {
+       parts = val.split('.');
+       let whole = parts[0] ? parseFloat(parts[0]).toLocaleString('en-US') : '0';
+       
+       if(parts.length > 1) {
+           input.value = whole + '.' + parts[1].substring(0, 2);
+       } else {
+           input.value = whole;
+       }
+       
+       let newLen = input.value.length;
+       let diff = newLen - oldLen;
+       let newCursor = cursorStart + diff;
+       try { input.setSelectionRange(newCursor, newCursor); } catch(e){}
+   }
+};
+
+// -----------------------------------------------------------
 // EXCHANGE RATES MODAL
 // -----------------------------------------------------------
 function openFinanceRatesModal() {
@@ -483,7 +523,8 @@ const field = opt.fields.find(f => f.id === fieldId);
 if (!field) return;
 
 if (key === 'cost') {
-   field.cost = parseFloat(value) || 0;
+   // Remove commas safely before parsing as float
+   field.cost = parseFloat(String(value).replace(/,/g, '')) || 0;
    updateTotals(optId);
 } else if (key === 'tax') {
    field.tax = parseFloat(value) || 0;
@@ -827,6 +868,8 @@ financeOptions.forEach(opt => {
                        ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-900 dark:text-purple-300 border-purple-400 dark:border-purple-700 focus:border-purple-500 focus:ring-purple-500' 
                        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 border-amber-400 dark:border-amber-700 focus:border-amber-500 focus:ring-amber-500';
 
+                   const displayCostStr = parseFloat(f.cost || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
                    return `
                    <div class="fin-cat-row flex flex-col w-full bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-transparent focus-within:border-gray-300 dark:focus-within:border-gray-600 transition shadow-sm" data-field-id="${f.id}">
                        
@@ -852,7 +895,10 @@ financeOptions.forEach(opt => {
                                <option value="per_pax" ${f.costType === 'per_pax' ? 'selected' : ''}>/Pax</option>
                            </select>
 
-                           <input type="number" step="0.01" min="0" value="${f.cost}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" class="hide-spinners w-[90px] shrink-0 bg-white dark:bg-gray-950 text-sm font-bold border border-gray-300 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="Cost">
+                           <input type="text" value="${displayCostStr}" 
+                                  oninput="formatMoneyInput(this, false); updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" 
+                                  onblur="formatMoneyInput(this, true); updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" 
+                                  class="w-[100px] shrink-0 bg-white dark:bg-gray-950 text-sm font-bold border border-gray-300 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm text-right" placeholder="0.00">
                            
                            <div class="flex items-center gap-1 w-[70px] shrink-0 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 outline-none focus-within:border-primary focus-within:ring-1 focus-within:ring-primary shadow-sm" title="Tax Percentage">
                                <span class="text-[10px] font-bold text-gray-400">+</span>
