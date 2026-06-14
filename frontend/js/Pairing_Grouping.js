@@ -66,7 +66,7 @@ endDrag(e, e.clientX, e.clientY);
 // --- CORE LOGIC ---
 function startDrag(e, clientX, clientY, isTouch) {
 // Prevent interfering with buttons or scrollbars
-if(e.target.closest('.remove-x') || e.target.closest('button')) return;
+if(e.target.closest('.remove-x') || e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
 
 let draggable = e.target.closest('.dnd-draggable');
 let roomDraggable = e.target.closest('.dnd-room-draggable');
@@ -74,15 +74,15 @@ let roomDraggable = e.target.closest('.dnd-room-draggable');
 if(!draggable && !roomDraggable) return;
 
 if (draggable) {
-   const pairingContainer = document.getElementById('log-pairings');
-   if(!pairingContainer || pairingContainer.classList.contains('hidden-force')) return;
-   dndState.type = 'pairing';
-   dndState.el = draggable;
+  const pairingContainer = document.getElementById('log-pairings');
+  if(!pairingContainer || pairingContainer.classList.contains('hidden-force')) return;
+  dndState.type = 'pairing';
+  dndState.el = draggable;
 } else if (roomDraggable) {
-   const roomsContainer = document.getElementById('log-rooms');
-   if(!roomsContainer || roomsContainer.classList.contains('hidden-force')) return;
-   dndState.type = 'rooming';
-   dndState.el = roomDraggable;
+  const roomsContainer = document.getElementById('log-rooms');
+  if(!roomsContainer || roomsContainer.classList.contains('hidden-force')) return;
+  dndState.type = 'rooming';
+  dndState.el = roomDraggable;
 }
 
 dndState.nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
@@ -104,66 +104,66 @@ const deltaY = Math.abs(clientY - dndState.startY);
 
 // If user hasn't triggered drag, check direction of movement
 if (!dndState.isDragging) {
-   // For rooms, we allow dragging into columns below or beside, so any substantial movement triggers it
-   const threshold = dndState.type === 'rooming' ? 10 : 8;
-   
-   if ((dndState.type === 'pairing' && deltaX > threshold && deltaX > deltaY) || (dndState.type === 'rooming' && (deltaX > threshold || deltaY > threshold))) {
-       
-       if (dndState.type === 'pairing' && deltaY > 8 && deltaY > deltaX) {
-           // Cancel horizontal swipe if vertical swipe is prominent in pairing
-           dndState.el = null;
-           return;
-       }
+  // For rooms, we allow dragging into columns below or beside, so any substantial movement triggers it
+  const threshold = dndState.type === 'rooming' ? 10 : 8;
+  
+  if ((dndState.type === 'pairing' && deltaX > threshold && deltaX > deltaY) || (dndState.type === 'rooming' && (deltaX > threshold || deltaY > threshold))) {
+      
+      if (dndState.type === 'pairing' && deltaY > 8 && deltaY > deltaX) {
+          // Cancel horizontal swipe if vertical swipe is prominent in pairing
+          dndState.el = null;
+          return;
+      }
 
-       dndState.isDragging = true;
-       
-       if(isTouch && navigator.vibrate) navigator.vibrate(20);
-       
-       dndState.el.classList.add('locked-for-drag');
-       
-       // Generate visually identical clone
-       dndState.clone = dndState.nameNode.cloneNode(true);
-       dndState.clone.classList.add('dragging-clone');
-       
-       // Force size to exact bounding box constraints so centering works perfectly
-       dndState.clone.style.width = dndState.rectWidth + 'px';
-       dndState.clone.style.height = dndState.rectHeight + 'px';
-       dndState.clone.style.margin = '0px';
-       
-       document.body.appendChild(dndState.clone);
-   } else if (dndState.type === 'pairing' && deltaY > 8) {
-       dndState.el = null;
-       return;
-   }
+      dndState.isDragging = true;
+      
+      if(isTouch && navigator.vibrate) navigator.vibrate(20);
+      
+      dndState.el.classList.add('locked-for-drag');
+      
+      // Generate visually identical clone
+      dndState.clone = dndState.nameNode.cloneNode(true);
+      dndState.clone.classList.add('dragging-clone');
+      
+      // Force size to exact bounding box constraints so centering works perfectly
+      dndState.clone.style.width = dndState.rectWidth + 'px';
+      dndState.clone.style.height = dndState.rectHeight + 'px';
+      dndState.clone.style.margin = '0px';
+      
+      document.body.appendChild(dndState.clone);
+  } else if (dndState.type === 'pairing' && deltaY > 8) {
+      dndState.el = null;
+      return;
+  }
 }
 
 if (dndState.isDragging && dndState.clone) {
-   if(e.cancelable) e.preventDefault(); 
-   
-   updateClonePosition(clientX, clientY);
-   
-   // Highlight valid drop zones
-   const elAtPoint = document.elementFromPoint(clientX, clientY);
-   
-   if (dndState.type === 'pairing') {
-       const activeDz = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
-       document.querySelectorAll('.dnd-dropzone').forEach(dz => {
-           if (dz === activeDz && dz.dataset.role !== dndState.el.dataset.role) {
-               dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
-           } else {
-               dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
-           }
-       });
-   } else if (dndState.type === 'rooming') {
-       const activeRoom = elAtPoint ? elAtPoint.closest('.dnd-room-dropzone') : null;
-       document.querySelectorAll('.dnd-room-dropzone').forEach(dz => {
-           if (dz === activeRoom) {
-               dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
-           } else {
-               dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
-           }
-       });
-   }
+  if(e.cancelable) e.preventDefault(); 
+  
+  updateClonePosition(clientX, clientY);
+  
+  // Highlight valid drop zones
+  const elAtPoint = document.elementFromPoint(clientX, clientY);
+  
+  if (dndState.type === 'pairing') {
+      const activeDz = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
+      document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+          if (dz === activeDz && dz.dataset.role !== dndState.el.dataset.role) {
+              dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+          } else {
+              dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+          }
+      });
+  } else if (dndState.type === 'rooming') {
+      const activeRoom = elAtPoint ? elAtPoint.closest('.dnd-room-dropzone') : null;
+      document.querySelectorAll('.dnd-room-dropzone').forEach(dz => {
+          if (dz === activeRoom) {
+              dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+          } else {
+              dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+          }
+      });
+  }
 }
 }
 
@@ -171,30 +171,30 @@ function endDrag(e, clientX, clientY) {
 if(dndState.el) dndState.el.classList.remove('locked-for-drag');
 
 if (dndState.isDragging && dndState.clone) {
-   dndState.clone.remove(); 
-   dndState.clone = null; 
-   dndState.isDragging = false;
-   
-   document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary'));
+  dndState.clone.remove(); 
+  dndState.clone = null; 
+  dndState.isDragging = false;
+  
+  document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary'));
 
-   const elAtPoint = document.elementFromPoint(clientX, clientY);
-   
-   if (dndState.type === 'pairing') {
-       const dropZone = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
-       if(dropZone && dndState.el && dropZone.dataset.role !== dndState.el.dataset.role) {
-           const sourceNric = dndState.el.dataset.nric;
-           const sourceRole = dndState.el.dataset.role;
-           const targetNric = dropZone.dataset.nric;
-           if(sourceNric && targetNric) handleDndDrop(sourceNric, sourceRole, targetNric);
-       }
-   } else if (dndState.type === 'rooming') {
-       const roomDropZone = elAtPoint ? elAtPoint.closest('.dnd-room-dropzone') : null;
-       if (roomDropZone && dndState.el) {
-           const sourceNric = dndState.el.dataset.nric;
-           const targetRoomId = roomDropZone.dataset.roomId;
-           if (sourceNric && targetRoomId) handleRoomDrop(sourceNric, targetRoomId);
-       }
-   }
+  const elAtPoint = document.elementFromPoint(clientX, clientY);
+  
+  if (dndState.type === 'pairing') {
+      const dropZone = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
+      if(dropZone && dndState.el && dropZone.dataset.role !== dndState.el.dataset.role) {
+          const sourceNric = dndState.el.dataset.nric;
+          const sourceRole = dndState.el.dataset.role;
+          const targetNric = dropZone.dataset.nric;
+          if(sourceNric && targetNric) handleDndDrop(sourceNric, sourceRole, targetNric);
+      }
+  } else if (dndState.type === 'rooming') {
+      const roomDropZone = elAtPoint ? elAtPoint.closest('.dnd-room-dropzone') : null;
+      if (roomDropZone && dndState.el) {
+          const sourceNric = dndState.el.dataset.nric;
+          const targetRoomId = roomDropZone.dataset.roomId;
+          if (sourceNric && targetRoomId) handleRoomDrop(sourceNric, targetRoomId);
+      }
+  }
 }
 dndState.el = null;
 dndState.nameNode = null;
@@ -202,9 +202,9 @@ dndState.nameNode = null;
 
 function updateClonePosition(x, y) {
 if(dndState.clone) {
-   const centerX = x - (dndState.rectWidth / 2);
-   const centerY = y - (dndState.rectHeight / 2);
-   dndState.clone.style.transform = `translate3d(${centerX}px, ${centerY}px, 0px) scale(1.05)`;
+  const centerX = x - (dndState.rectWidth / 2);
+  const centerY = y - (dndState.rectHeight / 2);
+  dndState.clone.style.transform = `translate3d(${centerX}px, ${centerY}px, 0px) scale(1.05)`;
 }
 }
 }
@@ -224,10 +224,10 @@ const key = traineeNric + '_' + volNric;
 pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric, ts });
 
 if(existing) {
-   existing.status = 'ACTIVE';
-   existing.ts = ts;
+  existing.status = 'ACTIVE';
+  existing.ts = ts;
 } else {
-   globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
+  globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
 }
 
 renderPairings(); 
@@ -301,24 +301,24 @@ try {
 const res = await callBackend('syncPairingUpdates', { updates: updates, takenBy: currentUser.name });
 
 if(res.pairings) {
-  res.pairings.forEach(sPair => {
-      const key = sPair.traineeNric + '_' + sPair.volNric;
-      if (!pendingPairingsMap.has(key)) {
-          let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
-          if (lPair) {
-              if (sPair.ts > lPair.ts) {
-                  lPair.status = sPair.status;
-                  lPair.ts = sPair.ts;
-              }
-          } else {
-              globalLogistics.pairings.push(sPair);
-          }
-      }
-  });
-  
-  if (!dndState.el && !dndState.isDragging && dndState.type === 'pairing') {
-      renderPairings();
-  }
+ res.pairings.forEach(sPair => {
+     const key = sPair.traineeNric + '_' + sPair.volNric;
+     if (!pendingPairingsMap.has(key)) {
+         let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+         if (lPair) {
+             if (sPair.ts > lPair.ts) {
+                 lPair.status = sPair.status;
+                 lPair.ts = sPair.ts;
+             }
+         } else {
+             globalLogistics.pairings.push(sPair);
+         }
+     }
+ });
+ 
+ if (!dndState.el && !dndState.isDragging && dndState.type === 'pairing') {
+     renderPairings();
+ }
 }
 setSyncButtonState('saved');
 } catch(e) {
@@ -338,35 +338,35 @@ const logTab = document.getElementById('tab-logistics');
 if(!logTab || logTab.classList.contains('hidden-force') || isPairingSyncing || (dndState.type === 'pairing' && (dndState.el || dndState.isDragging))) return;
 
 try {
-  const res = await callBackend('fetchPairingsOnly');
-  if(res.pairings) {
-      const server = res.pairings;
-      let hasChanges = false;
-      
-      server.forEach(sPair => {
-          const key = sPair.traineeNric + '_' + sPair.volNric;
-          if (!pendingPairingsMap.has(key)) {
-              let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
-              if (lPair) {
-                  if (sPair.ts > lPair.ts) {
-                      lPair.status = sPair.status;
-                      lPair.ts = sPair.ts;
-                      hasChanges = true;
-                  }
-              } else {
-                  globalLogistics.pairings.push(sPair);
-                  hasChanges = true;
-              }
-          }
-      });
-      
-      if (hasChanges && !dndState.el && !dndState.isDragging) {
-          renderPairings();
-          if(!document.getElementById('selectionBottomSheet').classList.contains('hidden-force') && currentPairingTarget) {
-              openPairingSheet(currentPairingTarget, currentPairingSourceRole);
-          }
-      }
-  }
+ const res = await callBackend('fetchPairingsOnly');
+ if(res.pairings) {
+     const server = res.pairings;
+     let hasChanges = false;
+     
+     server.forEach(sPair => {
+         const key = sPair.traineeNric + '_' + sPair.volNric;
+         if (!pendingPairingsMap.has(key)) {
+             let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+             if (lPair) {
+                 if (sPair.ts > lPair.ts) {
+                     lPair.status = sPair.status;
+                     lPair.ts = sPair.ts;
+                     hasChanges = true;
+                 }
+             } else {
+                 globalLogistics.pairings.push(sPair);
+                 hasChanges = true;
+             }
+         }
+     });
+     
+     if (hasChanges && !dndState.el && !dndState.isDragging) {
+         renderPairings();
+         if(!document.getElementById('selectionBottomSheet').classList.contains('hidden-force') && currentPairingTarget) {
+             openPairingSheet(currentPairingTarget, currentPairingSourceRole);
+         }
+     }
+ }
 } catch(e) { }
 }, 8000);
 }
@@ -374,7 +374,9 @@ try {
 // ==========================================
 // ROOMS LOGIC
 // ==========================================
-function generateRoomUUID() { return 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
+function generateRoomUUID(idx) { 
+  return 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9) + (idx !== undefined ? '_' + idx : ''); 
+}
 
 function setRoomSyncButtonState(state) {
 const btn = document.getElementById('btn-sync-rooms');
@@ -402,16 +404,29 @@ textSpan.textContent = "Save Failed";
 }
 
 function addRoom() {
-const name = prompt("Enter Room Name (e.g. Room 101):");
-if (!name || !name.trim()) return;
-const capStr = prompt("Enter Room Capacity (e.g. 2, 4):", "2");
+const prefix = prompt("Enter Room Base Name (e.g. 'Room', 'Tent', 'Block A'):", "Room");
+if (!prefix || !prefix.trim()) return;
+const capStr = prompt("Enter Capacity per room:", "2");
 const capacity = parseInt(capStr) || 2;
+const qtyStr = prompt("Quantity of this room type to create:", "1");
+const qty = parseInt(qtyStr) || 1;
 
-const newRoom = { id: generateRoomUUID(), name: name.trim(), capacity: capacity, occupants: [], ts: Date.now(), isDeleted: false };
 if(!globalLogistics.rooms) globalLogistics.rooms = [];
-globalLogistics.rooms.push(newRoom);
-queueRoomUpdate(newRoom.id);
+
+let existingCount = globalLogistics.rooms.filter(r => !r.isDeleted && r.name.startsWith(prefix.trim())).length;
+
+for(let i=0; i<qty; i++) {
+  let roomName = prefix.trim();
+  if (qty > 1 || existingCount > 0) {
+      roomName = `${prefix.trim()} ${existingCount + i + 1}`;
+  }
+  
+  const newRoom = { id: generateRoomUUID(i), name: roomName, capacity: capacity, occupants: [], ts: Date.now(), isDeleted: false };
+  globalLogistics.rooms.push(newRoom);
+  queueRoomUpdate(newRoom.id);
+}
 renderRooms();
+showToast(`Created ${qty} room(s).`);
 }
 
 function promptEditRoom(id) {
@@ -433,141 +448,162 @@ function deleteRoom(id) {
 if(!confirm("Are you sure you want to delete this room? Users inside will be unassigned.")) return;
 const room = globalLogistics.rooms.find(r => r.id === id);
 if(room) {
-   room.isDeleted = true;
-   room.ts = Date.now();
-   room.occupants = [];
-   queueRoomUpdate(id);
-   renderRooms();
+  room.isDeleted = true;
+  room.ts = Date.now();
+  room.occupants = [];
+  queueRoomUpdate(id);
+  renderRooms();
+}
+}
+
+function resetAllRooms() {
+if(!confirm("⚠️ DANGER: This will delete ALL rooms and unassign everyone. Are you sure you want to proceed?")) return;
+let changed = false;
+globalLogistics.rooms.forEach(r => {
+    if(!r.isDeleted) {
+        r.isDeleted = true;
+        r.ts = Date.now();
+        r.occupants = [];
+        queueRoomUpdate(r.id);
+        changed = true;
+    }
+});
+if(changed) {
+  renderRooms();
+  showToast("All rooms have been cleared.");
 }
 }
 
 function autoAssignRooms() {
-const capStr = prompt("Enter Default Room Capacity for Auto-Rooming (e.g. 2, 3, 4):", "2");
-const defaultCap = parseInt(capStr);
-if(!defaultCap || defaultCap < 1) return;
+if(!confirm("This will automatically assign unassigned participants into EXISTING rooms based on their connections. Ensure you have created enough rooms first. Continue?")) return;
 
-if(!confirm("This will overwrite empty rooms and create new ones. Existing filled rooms will remain untouched. Continue?")) return;
-
-// 1. Map Family Groups and Pairings
-const familyMap = {}; // pocNric -> [nrics]
-const pairingsMap = {}; // traineeNric -> [volNrics]
+const familyMap = {}; 
+const pairingsMap = {}; 
 
 globalLogistics.participants.forEach(p => {
-   if (p.pocNric) {
-       if(!familyMap[p.pocNric]) familyMap[p.pocNric] = [];
-       familyMap[p.pocNric].push(p.nric);
-   }
+  if (p.pocNric) {
+      if(!familyMap[p.pocNric]) familyMap[p.pocNric] = [];
+      familyMap[p.pocNric].push(p.nric);
+  }
 });
 
 (globalLogistics.pairings || []).forEach(p => {
-   if(p.status === 'ACTIVE') {
-       if(!pairingsMap[p.traineeNric]) pairingsMap[p.traineeNric] = [];
-       pairingsMap[p.traineeNric].push(p.volNric);
-   }
+  if(p.status === 'ACTIVE') {
+      if(!pairingsMap[p.traineeNric]) pairingsMap[p.traineeNric] = [];
+      pairingsMap[p.traineeNric].push(p.volNric);
+  }
 });
 
-// 2. Build Clusters
 const clusters = [];
 const visited = new Set();
 
-// Function to traverse connections
 function buildCluster(startNric) {
-   const cluster = [];
-   const queue = [startNric];
-   
-   while(queue.length > 0) {
-       const curr = queue.shift();
-       if(!visited.has(curr)) {
-           visited.add(curr);
-           cluster.push(curr);
-           
-           const pObj = globalLogistics.participants.find(x => x.nric === curr);
-           if(pObj) {
-               // Add family members
-               if(familyMap[pObj.pocNric]) {
-                   familyMap[pObj.pocNric].forEach(fam => {
-                       if(!visited.has(fam)) queue.push(fam);
-                   });
-               }
-               // Add pairings (if trainee)
-               if(pairingsMap[curr]) {
-                   pairingsMap[curr].forEach(vol => {
-                       if(!visited.has(vol)) queue.push(vol);
-                   });
-               }
-               // Add pairings (if volunteer)
-               Object.keys(pairingsMap).forEach(tNric => {
-                   if(pairingsMap[tNric].includes(curr) && !visited.has(tNric)) {
-                       queue.push(tNric);
-                   }
-               });
-           }
-       }
-   }
-   return cluster;
+  const cluster = [];
+  const queue = [startNric];
+  
+  while(queue.length > 0) {
+      const curr = queue.shift();
+      if(!visited.has(curr)) {
+          visited.add(curr);
+          cluster.push(curr);
+          
+          const pObj = globalLogistics.participants.find(x => x.nric === curr);
+          if(pObj) {
+              if(familyMap[pObj.pocNric]) {
+                  familyMap[pObj.pocNric].forEach(fam => {
+                      if(!visited.has(fam)) queue.push(fam);
+                  });
+              }
+              if(pairingsMap[curr]) {
+                  pairingsMap[curr].forEach(vol => {
+                      if(!visited.has(vol)) queue.push(vol);
+                  });
+              }
+              Object.keys(pairingsMap).forEach(tNric => {
+                  if(pairingsMap[tNric].includes(curr) && !visited.has(tNric)) {
+                      queue.push(tNric);
+                  }
+              });
+          }
+      }
+  }
+  return cluster;
 }
 
 globalLogistics.participants.forEach(p => {
-   if(!visited.has(p.nric)) {
-       clusters.push(buildCluster(p.nric));
-   }
+  if(!visited.has(p.nric)) {
+      clusters.push(buildCluster(p.nric));
+  }
 });
 
-// 3. Find already assigned people
 const assignedNrics = new Set();
 globalLogistics.rooms.forEach(r => {
-   if(!r.isDeleted) r.occupants.forEach(n => assignedNrics.add(n));
+  if(!r.isDeleted) r.occupants.forEach(n => assignedNrics.add(n));
 });
 
-// 4. Chunk unassigned clusters into rooms
-if(!globalLogistics.rooms) globalLogistics.rooms = [];
-let nextRoomIdx = globalLogistics.rooms.filter(r => !r.isDeleted).length + 1;
+let unassignedClusters = clusters.map(c => c.filter(n => !assignedNrics.has(n))).filter(c => c.length > 0);
+let activeRooms = globalLogistics.rooms.filter(r => !r.isDeleted);
 
-clusters.forEach(cluster => {
-   const unassigned = cluster.filter(n => !assignedNrics.has(n));
-   
-   for(let i = 0; i < unassigned.length; i += defaultCap) {
-       const chunk = unassigned.slice(i, i + defaultCap);
-       const rId = generateRoomUUID();
-       const newRoom = {
-           id: rId,
-           name: `Room ${nextRoomIdx++}`,
-           capacity: defaultCap,
-           occupants: chunk,
-           ts: Date.now(),
-           isDeleted: false
-       };
-       globalLogistics.rooms.push(newRoom);
-       queueRoomUpdate(rId);
-   }
+let totalAvailable = activeRooms.reduce((sum, r) => sum + Math.max(0, r.capacity - r.occupants.length), 0);
+if (totalAvailable === 0) {
+  showToast("No available space in existing rooms.", true);
+  return;
+}
+
+let placedCount = 0;
+
+unassignedClusters.forEach(cluster => {
+  let roomToFit = activeRooms.find(r => (r.capacity - r.occupants.length) >= cluster.length);
+  if (roomToFit) {
+      cluster.forEach(n => {
+          roomToFit.occupants.push(n);
+          placedCount++;
+      });
+      roomToFit.ts = Date.now();
+      queueRoomUpdate(roomToFit.id);
+  } else {
+      cluster.forEach(n => {
+          let availableRoom = activeRooms.find(r => r.occupants.length < r.capacity);
+          if (availableRoom) {
+              availableRoom.occupants.push(n);
+              availableRoom.ts = Date.now();
+              queueRoomUpdate(availableRoom.id);
+              placedCount++;
+          }
+      });
+  }
 });
 
 renderRooms();
-showToast("Auto-rooming complete.");
+if (placedCount > 0) {
+  showToast(`Auto-assigned ${placedCount} participants into available slots.`);
+} else {
+  showToast("No one was assigned. Please check capacity.");
+}
 }
 
 function handleRoomDrop(nric, targetRoomId) {
 // Remove from all other rooms locally first
 globalLogistics.rooms.forEach(r => {
-   if(!r.isDeleted && r.occupants.includes(nric)) {
-       r.occupants = r.occupants.filter(n => n !== nric);
-       r.ts = Date.now();
-       queueRoomUpdate(r.id);
-   }
+  if(!r.isDeleted && r.occupants.includes(nric)) {
+      r.occupants = r.occupants.filter(n => n !== nric);
+      r.ts = Date.now();
+      queueRoomUpdate(r.id);
+  }
 });
 
 // Add to target room
 const targetRoom = globalLogistics.rooms.find(r => r.id === targetRoomId);
 if(targetRoom && !targetRoom.isDeleted) {
-   if(targetRoom.occupants.length >= targetRoom.capacity) {
-       showToast("Room is full!", true);
-       // Still try to render if we stripped them from another room
-       renderRooms(); 
-       return;
-   }
-   targetRoom.occupants.push(nric);
-   targetRoom.ts = Date.now();
-   queueRoomUpdate(targetRoom.id);
+  if(targetRoom.occupants.length >= targetRoom.capacity) {
+      showToast("Room is full!", true);
+      // Still try to render if we stripped them from another room
+      renderRooms(); 
+      return;
+  }
+  targetRoom.occupants.push(nric);
+  targetRoom.ts = Date.now();
+  queueRoomUpdate(targetRoom.id);
 }
 
 renderRooms();
@@ -576,20 +612,20 @@ renderRooms();
 function unassignFromRoom(nric, roomId) {
 const room = globalLogistics.rooms.find(r => r.id === roomId);
 if(room && !room.isDeleted) {
-   room.occupants = room.occupants.filter(n => n !== nric);
-   room.ts = Date.now();
-   queueRoomUpdate(roomId);
-   renderRooms();
+  room.occupants = room.occupants.filter(n => n !== nric);
+  room.ts = Date.now();
+  queueRoomUpdate(roomId);
+  renderRooms();
 }
 }
 
 function queueRoomUpdate(roomId) {
 const room = globalLogistics.rooms.find(r => r.id === roomId);
 if(room) {
-   pendingRoomUpdates.set(roomId, room);
-   setRoomSyncButtonState('saving');
-   if(roomSyncTimeout) clearTimeout(roomSyncTimeout);
-   roomSyncTimeout = setTimeout(() => { executeRoomSync(); }, 1500);
+  pendingRoomUpdates.set(roomId, room);
+  setRoomSyncButtonState('saving');
+  if(roomSyncTimeout) clearTimeout(roomSyncTimeout);
+  roomSyncTimeout = setTimeout(() => { executeRoomSync(); }, 1500);
 }
 }
 
@@ -603,74 +639,74 @@ const updates = Array.from(batch.values());
 pendingRoomUpdates.clear();
 
 try {
-   const res = await callBackend('syncRoomUpdates', { updates: updates, takenBy: currentUser.name });
-   
-   if(res.rooms) {
-       // Global Sweep Mutex logic
-       res.rooms.forEach(sRoom => {
-           if (!pendingRoomUpdates.has(sRoom.id)) {
-               let lRoom = globalLogistics.rooms.find(r => r.id === sRoom.id);
-               if (lRoom) {
-                   if (sRoom.ts > (lRoom.ts || 0)) {
-                       lRoom.name = sRoom.name;
-                       lRoom.capacity = sRoom.capacity;
-                       lRoom.occupants = sRoom.occupants;
-                       lRoom.isDeleted = sRoom.isDeleted;
-                       lRoom.ts = sRoom.ts;
-                   }
-               } else {
-                   globalLogistics.rooms.push(sRoom);
-               }
-           }
-       });
-       
-       if (!dndState.el && !dndState.isDragging && dndState.type === 'rooming') {
-           renderRooms();
-       }
-   }
-   setRoomSyncButtonState('saved');
+  const res = await callBackend('syncRoomUpdates', { updates: updates, takenBy: currentUser.name });
+  
+  if(res.rooms) {
+      // Global Sweep Mutex logic
+      res.rooms.forEach(sRoom => {
+          if (!pendingRoomUpdates.has(sRoom.id)) {
+              let lRoom = globalLogistics.rooms.find(r => r.id === sRoom.id);
+              if (lRoom) {
+                  if (sRoom.ts > (lRoom.ts || 0)) {
+                      lRoom.name = sRoom.name;
+                      lRoom.capacity = sRoom.capacity;
+                      lRoom.occupants = sRoom.occupants;
+                      lRoom.isDeleted = sRoom.isDeleted;
+                      lRoom.ts = sRoom.ts;
+                  }
+              } else {
+                  globalLogistics.rooms.push(sRoom);
+              }
+          }
+      });
+      
+      if (!dndState.el && !dndState.isDragging && dndState.type === 'rooming') {
+          renderRooms();
+      }
+  }
+  setRoomSyncButtonState('saved');
 } catch(e) {
-   setRoomSyncButtonState('error');
-   batch.forEach((val, key) => pendingRoomUpdates.set(key, val));
+  setRoomSyncButtonState('error');
+  batch.forEach((val, key) => pendingRoomUpdates.set(key, val));
 } finally {
-   isRoomSyncing = false;
+  isRoomSyncing = false;
 }
 }
 
 function startRoomPolling() {
 setInterval(async () => {
-   const logTab = document.getElementById('tab-logistics');
-   const roomSec = document.getElementById('log-rooms');
-   if(!logTab || logTab.classList.contains('hidden-force') || !roomSec || roomSec.classList.contains('hidden-force') || isRoomSyncing || (dndState.type === 'rooming' && (dndState.el || dndState.isDragging))) return;
+  const logTab = document.getElementById('tab-logistics');
+  const roomSec = document.getElementById('log-rooms');
+  if(!logTab || logTab.classList.contains('hidden-force') || !roomSec || roomSec.classList.contains('hidden-force') || isRoomSyncing || (dndState.type === 'rooming' && (dndState.el || dndState.isDragging))) return;
 
-   try {
-       const res = await callBackend('fetchRoomsOnly');
-       if(res.rooms) {
-           let hasChanges = false;
-           res.rooms.forEach(sRoom => {
-               if (!pendingRoomUpdates.has(sRoom.id)) {
-                   let lRoom = globalLogistics.rooms.find(r => r.id === sRoom.id);
-                   if (lRoom) {
-                       if (sRoom.ts > (lRoom.ts || 0)) {
-                           lRoom.name = sRoom.name;
-                           lRoom.capacity = sRoom.capacity;
-                           lRoom.occupants = sRoom.occupants;
-                           lRoom.isDeleted = sRoom.isDeleted;
-                           lRoom.ts = sRoom.ts;
-                           hasChanges = true;
-                       }
-                   } else {
-                       globalLogistics.rooms.push(sRoom);
-                       hasChanges = true;
-                   }
-               }
-           });
-           
-           if(hasChanges && !dndState.el && !dndState.isDragging) {
-               renderRooms();
-           }
-       }
-   } catch(e){}
+  try {
+      const res = await callBackend('fetchRoomsOnly');
+      if(res.rooms) {
+          let hasChanges = false;
+          res.rooms.forEach(sRoom => {
+              if (!pendingRoomUpdates.has(sRoom.id)) {
+                  let lRoom = globalLogistics.rooms.find(r => r.id === sRoom.id);
+                  if (lRoom) {
+                      if (sRoom.ts > (lRoom.ts || 0)) {
+                          lRoom.name = sRoom.name;
+                          lRoom.capacity = sRoom.capacity;
+                          lRoom.occupants = sRoom.occupants;
+                          lRoom.isDeleted = sRoom.isDeleted;
+                          lRoom.ts = sRoom.ts;
+                          hasChanges = true;
+                      }
+                  } else {
+                      globalLogistics.rooms.push(sRoom);
+                      hasChanges = true;
+                  }
+              }
+          });
+          
+          if(hasChanges && !dndState.el && !dndState.isDragging) {
+              renderRooms();
+          }
+      }
+  } catch(e){}
 }, 10000);
 }
 
@@ -697,13 +733,13 @@ document.getElementById('tab-logistics').innerHTML = `
 <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 z-10 flex flex-col gap-1 shadow-sm">
 <div class="flex justify-between items-center px-1">
 <div class="flex items-center gap-2">
-    <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Pairings</h3>
-    <button onclick="toggleAltSwap()" class="bg-gray-100 dark:bg-gray-800 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm" title="Swap Columns">
-       <svg class="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-    </button>
+   <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Pairings</h3>
+   <button onclick="toggleAltSwap()" class="bg-gray-100 dark:bg-gray-800 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm" title="Swap Columns">
+      <svg class="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+   </button>
 </div>
 <button onclick="manualSyncPairings(this)" class="btn-sync-pairings text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
-  <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
+ <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
 </button>
 </div>
 <p class="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 px-1 leading-tight">Slide between columns to pair. Tap 'X' to unpair.</p>
@@ -724,39 +760,43 @@ document.getElementById('tab-logistics').innerHTML = `
 <!-- Drag & Drop Rooming UI -->
 <div id="log-rooms" class="hidden-force flex-1 flex flex-col min-h-0 w-full relative">
 <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 z-10 flex flex-col gap-2 shadow-sm">
- <div class="flex justify-between items-center px-1">
-   <div class="flex items-center gap-2">
-       <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Room Assignments</h3>
-       <button onclick="autoAssignRooms()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none">Auto-Room</button>
-       <button onclick="addRoom()" class="bg-gray-100 dark:bg-gray-800 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm" title="Add Room">
-         <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-       </button>
-   </div>
-   <button id="btn-sync-rooms" class="text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
-     <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
-   </button>
- </div>
- <div class="flex justify-between items-center px-1">
-   <p class="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 leading-tight">Drag unassigned people into rooms.</p>
-   <select id="roomFilterSelect" onchange="renderRooms()" class="text-[10px] font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 outline-none">
-     <option value="ALL">All Participants</option>
-     <option value="TRAINEE">Trainees Only</option>
-     <option value="CAREGIVER">Caregivers Only</option>
-     <option value="VOLUNTEER">Volunteers Only</option>
-   </select>
- </div>
+  <div class="flex justify-between items-center px-1">
+      <div class="flex items-center gap-2">
+          <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Room Assignments</h3>
+          <button onclick="resetAllRooms()" class="bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-sm hover:bg-red-100 transition focus:outline-none" title="Reset All Rooms">Clear All</button>
+          <button onclick="autoAssignRooms()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none">Auto-Room</button>
+          <button onclick="addRoom()" class="bg-gray-100 dark:bg-gray-800 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm" title="Add Room(s)">
+            <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          </button>
+      </div>
+      <button id="btn-sync-rooms" class="text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+        <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
+      </button>
+  </div>
+  <div class="flex justify-between items-center px-1 gap-2">
+      <div class="relative w-full max-w-sm">
+          <input type="text" id="roomSearchInput" oninput="renderRooms()" placeholder="Fuzzy search participants/rooms..." class="w-full p-1.5 pl-7 border border-gray-300 dark:border-gray-700 rounded text-[10px] font-bold bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+          <svg class="w-3.5 h-3.5 absolute left-2 top-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+      <select id="roomFilterSelect" onchange="renderRooms()" class="text-[10px] font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1.5 outline-none shrink-0">
+        <option value="ALL">All Roles</option>
+        <option value="TRAINEE">Trainees</option>
+        <option value="CAREGIVER">Caregivers</option>
+        <option value="VOLUNTEER">Volunteers</option>
+      </select>
+  </div>
 </div>
 
 <div class="flex flex-col md:flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 rounded-b-xl md:rounded-none">
- <!-- Unassigned Pool (Top on mobile, Left on Desktop) -->
- <div class="flex-1 md:w-1/3 md:max-w-xs md:flex-none flex flex-col min-h-[35%] md:min-h-0 overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/50">
-   <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">Unassigned (<span id="unassignedCount">0</span>)</h4>
-   <div id="roomUnassignedPool" class="space-y-1.5 flex-grow overflow-y-auto p-2 custom-scrollbar"></div>
- </div>
- <!-- Rooms Display (Bottom on mobile, Right on Desktop) -->
- <div class="flex-[2] md:flex-1 flex flex-col h-full overflow-hidden relative">
-   <div id="roomListContainer" class="flex-grow overflow-y-auto p-2 md:p-3 custom-scrollbar flex flex-col gap-3"></div>
- </div>
+<!-- Unassigned Pool (Top on mobile, Left on Desktop) -->
+<div class="flex-1 md:w-1/3 md:max-w-xs md:flex-none flex flex-col min-h-[35%] md:min-h-0 overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/50">
+  <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">Unassigned (<span id="unassignedCount">0</span>)</h4>
+  <div id="roomUnassignedPool" class="space-y-1.5 flex-grow overflow-y-auto p-2 custom-scrollbar"></div>
+</div>
+<!-- Rooms Display (Bottom on mobile, Right on Desktop) -->
+<div class="flex-[2] md:flex-1 flex flex-col h-full overflow-hidden relative">
+  <div id="roomListContainer" class="flex-grow overflow-y-auto p-2 md:p-3 custom-scrollbar flex flex-col gap-3"></div>
+</div>
 </div>
 </div>
 
@@ -822,7 +862,7 @@ function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairings(); }
 function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
 return `<div class="relative inline-block m-1 align-top pointer-events-auto">
 <div class="${targetColorClass} text-[9px] md:text-[10px] pl-1.5 pr-2.5 py-0.5 rounded shadow-sm border border-gray-300 dark:border-gray-600 font-bold opacity-90 leading-tight break-words whitespace-normal text-center" style="overflow-wrap: anywhere;">
-   ${targetName}
+  ${targetName}
 </div>
 <div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
 </div>`;
@@ -840,8 +880,8 @@ let pairedPills = '';
 myPairings.forEach(pair => {
 const pairedPerson = item.role === 'TRAINEE' ? vols.find(v => v.nric === pair.volNric) : trainees.find(t => t.nric === pair.traineeNric);
 if(pairedPerson) {
-   const pColor = getProjectColor(pairedPerson.group);
-   pairedPills += generatePillHtml(pairedPerson.displayName || pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
+  const pColor = getProjectColor(pairedPerson.group);
+  pairedPills += generatePillHtml(pairedPerson.displayName || pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
 }
 });
 
@@ -851,14 +891,14 @@ const displayName = item.displayName || item.name;
 return `
 <div class="dnd-draggable dnd-dropzone bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-md border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col min-h-[60px] gap-1" data-nric="${item.nric}" data-role="${item.role}">
 <div class="flex justify-between items-start w-full gap-1">
- <div class="main-name-pill font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full inline-flex flex-wrap items-center gap-1 self-start min-w-0 leading-[1.1]">
-   <span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: break-word;">${displayName}</span>
-   ${famBadge}
- </div>
- <button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-1 rounded border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
+<div class="main-name-pill font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full inline-flex flex-wrap items-center gap-1 self-start min-w-0 leading-[1.1]">
+  <span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: break-word;">${displayName}</span>
+  ${famBadge}
+</div>
+<button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-1 rounded border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
 </div>
 <div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto bg-gray-50/50 dark:bg-gray-900/50 p-1 rounded min-h-[28px] border border-dashed border-gray-200 dark:border-gray-700 mt-0.5">
-   ${pairedPills || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 mt-0.5 ml-0.5 pointer-events-none">Drop pair here</span>'}
+  ${pairedPills || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 mt-0.5 ml-0.5 pointer-events-none">Drop pair here</span>'}
 </div>
 </div>
 `;
@@ -873,7 +913,7 @@ const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status |
 const traineesWithCaregivers = new Set();
 globalLogistics.participants.forEach(p => {
 if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-   traineesWithCaregivers.add(p.relatedTrainee.trim().toLowerCase());
+  traineesWithCaregivers.add(p.relatedTrainee.trim().toLowerCase());
 }
 });
 
@@ -915,75 +955,107 @@ document.getElementById('dnd-target-list').innerHTML = targetHtml || '<p class="
 // ---------------------------------------------------------
 function renderRooms() {
 if(!globalLogistics || !document.getElementById('roomListContainer')) return;
+
 const rFilter = document.getElementById('roomFilterSelect') ? document.getElementById('roomFilterSelect').value : 'ALL';
+const query = document.getElementById('roomSearchInput') ? document.getElementById('roomSearchInput').value.toLowerCase().trim() : '';
 
 const allNricsInRooms = new Set();
 const activeRooms = (globalLogistics.rooms || []).filter(r => !r.isDeleted);
 activeRooms.forEach(r => r.occupants.forEach(n => allNricsInRooms.add(n)));
 
 const unassignedArr = globalLogistics.participants.filter(p => !allNricsInRooms.has(p.nric) && (rFilter === 'ALL' || p.role === rFilter));
-document.getElementById('unassignedCount').innerText = unassignedArr.length;
+
+// Filter unassigned pool based on search query
+let filteredUnassigned = unassignedArr;
+if (query) {
+  filteredUnassigned = unassignedArr.filter(p => {
+      const dName = (p.displayName || p.name).toLowerCase();
+      return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+  });
+}
+
+document.getElementById('unassignedCount').innerText = filteredUnassigned.length;
 
 let unHtml = '';
-unassignedArr.forEach(item => {
-   const dynColor = getProjectColor(item.group);
-   const dName = item.displayName || item.name;
-   const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
-   const roleShort = item.role.substring(0,3).toUpperCase();
-   
-   unHtml += `
-   <div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex items-center gap-1.5" data-nric="${item.nric}" data-role="${item.role}">
-       <span class="main-name-pill font-bold text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} min-w-0 flex-1 truncate">${dName}</span>
-       <span class="text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0">${roleShort}</span>
-   </div>
-   `;
+filteredUnassigned.forEach(item => {
+  const dynColor = getProjectColor(item.group);
+  const dName = item.displayName || item.name;
+  const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+  const roleShort = item.role.substring(0,3).toUpperCase();
+  
+  unHtml += `
+  <div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex items-center gap-1.5" data-nric="${item.nric}" data-role="${item.role}">
+      <span class="main-name-pill font-bold text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} min-w-0 flex-1 truncate">${dName}</span>
+      <span class="text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0">${roleShort}</span>
+  </div>
+  `;
 });
-document.getElementById('roomUnassignedPool').innerHTML = unHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-2">All assigned.</p>';
+document.getElementById('roomUnassignedPool').innerHTML = unHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-2">All assigned / No matches.</p>';
+
+// Filter active rooms based on search query
+let roomsToRender = activeRooms;
+if (query) {
+  roomsToRender = activeRooms.filter(r => {
+      if (r.name.toLowerCase().includes(query)) return true;
+      return r.occupants.some(nric => {
+          const p = globalLogistics.participants.find(x => x.nric === nric);
+          if (!p) return false;
+          const dName = (p.displayName || p.name).toLowerCase();
+          return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+      });
+  });
+}
 
 let roomHtml = '';
-activeRooms.forEach(room => {
-   const occCount = room.occupants.length;
-   const isFull = occCount >= room.capacity;
-   
-   let occHtml = '';
-   room.occupants.forEach(nric => {
-       const p = globalLogistics.participants.find(x => x.nric === nric);
-       if(p) {
-           const dName = p.displayName || p.name;
-           const dynColor = getProjectColor(p.group);
-           occHtml += `
-           <div class="dnd-room-draggable relative inline-block m-1 cursor-grab active:cursor-grabbing hover:scale-105 transition-transform pointer-events-auto" data-nric="${p.nric}">
-               <div class="main-name-pill ${dynColor} text-[10px] px-1.5 py-0.5 rounded shadow-sm border font-bold opacity-90 leading-tight">
-                   ${dName}
-               </div>
-               <div class="remove-x" onclick="unassignFromRoom('${p.nric}', '${room.id}')">×</div>
-           </div>`;
-       }
-   });
-   
-   const occDisplay = isFull ? `<span class="text-green-600 dark:text-green-400 font-black tracking-widest">${occCount}/${room.capacity} (FULL)</span>` : `<span class="text-gray-500 dark:text-gray-400 font-bold tracking-widest">${occCount}/${room.capacity}</span>`;
-   
-   roomHtml += `
-   <div class="dnd-room-dropzone flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors" data-room-id="${room.id}">
-       <div class="flex justify-between items-center bg-gray-50/80 dark:bg-gray-900/50 p-2 border-b border-gray-100 dark:border-gray-700 rounded-t-xl shrink-0">
-           <div class="flex items-center gap-2 min-w-0">
-               <span class="font-black text-xs text-gray-900 dark:text-white truncate">${room.name}</span>
-               <span class="text-[9px] bg-gray-200/50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shrink-0">${occDisplay}</span>
-           </div>
-           <div class="flex items-center gap-1 shrink-0">
-               <button onclick="openRoomAddSheet('${room.id}')" class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 font-bold px-1.5 py-0.5 rounded hover:bg-blue-100 transition focus:outline-none" ${isFull ? 'disabled style="opacity:0.5;"' : ''}>+ Add</button>
-               <button onclick="promptEditRoom('${room.id}')" class="text-gray-400 hover:text-primary transition p-0.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-               <button onclick="deleteRoom('${room.id}')" class="text-gray-400 hover:text-red-500 transition p-0.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-           </div>
-       </div>
-       <div class="p-1.5 min-h-[40px] flex flex-wrap content-start items-start pointer-events-auto bg-transparent">
-           ${occHtml || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 m-1 pointer-events-none">Drop here...</span>'}
-       </div>
-   </div>
-   `;
+roomsToRender.forEach(room => {
+  const occCount = room.occupants.length;
+  const isFull = occCount >= room.capacity;
+  
+  let occHtml = '';
+  room.occupants.forEach(nric => {
+      const p = globalLogistics.participants.find(x => x.nric === nric);
+      if(p) {
+          const dName = p.displayName || p.name;
+          const dynColor = getProjectColor(p.group);
+          let isMatch = false;
+          if (query) {
+              isMatch = dName.toLowerCase().includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+          }
+          const matchClass = isMatch ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800 scale-105 z-10' : '';
+          
+          occHtml += `
+          <div class="dnd-room-draggable relative inline-block m-1 cursor-grab active:cursor-grabbing hover:scale-105 transition-transform pointer-events-auto" data-nric="${p.nric}">
+              <div class="main-name-pill ${dynColor} ${matchClass} text-[10px] px-1.5 py-0.5 rounded shadow-sm border font-bold opacity-90 leading-tight">
+                  ${dName}
+              </div>
+              <div class="remove-x" onclick="unassignFromRoom('${p.nric}', '${room.id}')">×</div>
+          </div>`;
+      }
+  });
+  
+  const occDisplay = isFull ? `<span class="text-green-600 dark:text-green-400 font-black tracking-widest">${occCount}/${room.capacity} (FULL)</span>` : `<span class="text-gray-500 dark:text-gray-400 font-bold tracking-widest">${occCount}/${room.capacity}</span>`;
+  
+  roomHtml += `
+  <div class="dnd-room-dropzone flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors" data-room-id="${room.id}">
+      <div class="flex justify-between items-center bg-gray-50/80 dark:bg-gray-900/50 p-2 border-b border-gray-100 dark:border-gray-700 rounded-t-xl shrink-0">
+          <div class="flex items-center gap-2 min-w-0">
+              <span class="font-black text-xs text-gray-900 dark:text-white truncate">${room.name}</span>
+              <span class="text-[9px] bg-gray-200/50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shrink-0">${occDisplay}</span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+              <button onclick="openRoomAddSheet('${room.id}')" class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 font-bold px-1.5 py-0.5 rounded hover:bg-blue-100 transition focus:outline-none" ${isFull ? 'disabled style="opacity:0.5;"' : ''}>+ Add</button>
+              <button onclick="promptEditRoom('${room.id}')" class="text-gray-400 hover:text-primary transition p-0.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+              <button onclick="deleteRoom('${room.id}')" class="text-gray-400 hover:text-red-500 transition p-0.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+          </div>
+      </div>
+      <div class="p-1.5 min-h-[40px] flex flex-wrap content-start items-start pointer-events-auto bg-transparent">
+          ${occHtml || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 m-1 pointer-events-none">Drop here...</span>'}
+      </div>
+  </div>
+  `;
 });
 
-document.getElementById('roomListContainer').innerHTML = roomHtml || '<div class="flex justify-center items-center h-20 text-xs font-bold text-gray-400">No rooms created.</div>';
+document.getElementById('roomListContainer').innerHTML = roomHtml || '<div class="flex justify-center items-center h-20 text-xs font-bold text-gray-400">No rooms match criteria.</div>';
 }
 
 // ---------------------------------------------------------
@@ -1027,8 +1099,8 @@ const dName = t.displayName || t.name;
 
 html += `<div onclick="confirmPairing('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">
 <div class="flex justify-between items-start w-full gap-2">
-  <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]">${dName}</span>
-  <span class="text-[9px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${roleLabel}</span>
+ <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]">${dName}</span>
+ <span class="text-[9px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${roleLabel}</span>
 </div>
 </div>`;
 });
@@ -1059,8 +1131,8 @@ const dName = t.displayName || t.name;
 
 html += `<div onclick="confirmRoomAdd('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">
 <div class="flex justify-between items-start w-full gap-2">
-  <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]">${dName}</span>
-  <span class="text-[9px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${t.role.substring(0,3)}</span>
+ <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]">${dName}</span>
+ <span class="text-[9px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${t.role.substring(0,3)}</span>
 </div>
 </div>`;
 });
@@ -1102,9 +1174,9 @@ handleRoomDrop(nric, activeRoomTargetId);
 
 const room = globalLogistics.rooms.find(r => r.id === activeRoomTargetId);
 if(room && room.occupants.length >= room.capacity) {
-   closeSelectionSheet();
+  closeSelectionSheet();
 } else {
-   openRoomAddSheet(activeRoomTargetId); 
+  openRoomAddSheet(activeRoomTargetId); 
 }
 }
 
@@ -1114,16 +1186,16 @@ setSyncButtonState('loading');
 try { 
 const res = await callBackend('fetchPairingsOnly'); 
 if(res.pairings) {
-  res.pairings.forEach(sPair => {
-      const key = sPair.traineeNric + '_' + sPair.volNric;
-      if (!pendingPairingsMap.has(key)) {
-          let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
-          if (lPair) {
-              if (sPair.ts > lPair.ts) { lPair.status = sPair.status; lPair.ts = sPair.ts; }
-          } else { globalLogistics.pairings.push(sPair); }
-      }
-  });
-  renderPairings();
+ res.pairings.forEach(sPair => {
+     const key = sPair.traineeNric + '_' + sPair.volNric;
+     if (!pendingPairingsMap.has(key)) {
+         let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+         if (lPair) {
+             if (sPair.ts > lPair.ts) { lPair.status = sPair.status; lPair.ts = sPair.ts; }
+         } else { globalLogistics.pairings.push(sPair); }
+     }
+ });
+ renderPairings();
 }
 setSyncButtonState('saved'); showToast("Refreshed from server!"); 
 } catch(e) { setSyncButtonState('error'); } 
