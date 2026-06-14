@@ -500,6 +500,10 @@ if (key === 'cost') {
    field.remarks = value;
 }
 queueFinanceUpdate(optId);
+
+if (key === 'costType') {
+   renderFinanceOptions(); // Re-render to update the dynamic color of the dropdown
+}
 }
 
 function updateTotals(optId) {
@@ -818,6 +822,11 @@ financeOptions.forEach(opt => {
            
            <div class="fin-cat-container p-2 bg-white dark:bg-gray-800 flex flex-col gap-2 max-h-[50vh] overflow-y-auto custom-scrollbar" data-opt-id="${opt.id}">
                ${opt.fields.map(f => {
+                   // Dynamic color based on Cost Type to act as a visual reminder
+                   const costTypeColorClass = f.costType === 'per_pax' 
+                       ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-900 dark:text-purple-300 border-purple-400 dark:border-purple-700 focus:border-purple-500 focus:ring-purple-500' 
+                       : 'bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 border-amber-400 dark:border-amber-700 focus:border-amber-500 focus:ring-amber-500';
+
                    return `
                    <div class="fin-cat-row flex flex-col w-full bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-transparent focus-within:border-gray-300 dark:focus-within:border-gray-600 transition shadow-sm" data-field-id="${f.id}">
                        
@@ -838,7 +847,7 @@ financeOptions.forEach(opt => {
                                ${getCurrencyOptions(f.currency)}
                            </select>
                            
-                           <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'costType', this.value)" class="w-[70px] shrink-0 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 text-xs font-extrabold border border-amber-400 dark:border-amber-700 rounded py-1.5 px-1 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-sm cursor-pointer transition-colors">
+                           <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'costType', this.value)" class="w-[70px] shrink-0 text-xs font-extrabold border rounded py-1.5 px-1 outline-none focus:ring-1 shadow-sm cursor-pointer transition-colors ${costTypeColorClass}">
                                <option value="total" ${f.costType !== 'per_pax' ? 'selected' : ''}>Total</option>
                                <option value="per_pax" ${f.costType === 'per_pax' ? 'selected' : ''}>/Pax</option>
                            </select>
