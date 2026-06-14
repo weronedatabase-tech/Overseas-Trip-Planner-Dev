@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myg-trip-v32';
+const CACHE_NAME = 'myg-trip-v33';
 const urlsToCache =[
 './',
 './index.html',
@@ -34,7 +34,7 @@ caches.keys().then(cacheNames => {
 return Promise.all(
 cacheNames.map(cacheName => {
 if (cacheName !== CACHE_NAME) {
-  return caches.delete(cacheName);
+ return caches.delete(cacheName);
 }
 })
 );
