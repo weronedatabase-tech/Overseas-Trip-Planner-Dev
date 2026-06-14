@@ -48,6 +48,9 @@ sheet.setFrozenRows(1);
 sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
 sheet.appendRow(["Timestamp", "NRIC", "Name", "Total Amount (SGD)", "PayNow Serial", "Payment Status", "CSV Match Date"]);
 sheet.setFrozenRows(2);
+} else if (name === "Rooms") {
+sheet.appendRow(["Room ID", "Room Name", "Capacity", "Occupants", "Last Updated", "Updated By", "Is Deleted"]);
+sheet.setFrozenRows(1);
 } else if (name === "Attendance") {
 sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
 sheet.setFrozenRows(1);
@@ -95,9 +98,10 @@ case 'createGoogleDoc': result = createGoogleDoc(data.folderId, data.fileName, d
 case 'renameDriveItem': result = renameDriveItem(data.itemId, data.isFolder, data.newName, data.currentFolderId); break;
 case 'deleteDriveItem': result = deleteDriveItem(data.itemId, data.isFolder, data.currentFolderId); break;
 case 'fetchLogistics': result = fetchLogistics(); break;
-case 'syncAllPairings': result = fetchPairingsOnly(); break; 
 case 'syncPairingUpdates': result = syncPairingUpdates(data.updates, data.takenBy || 'Admin'); break;
 case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
+case 'syncRoomUpdates': result = syncRoomUpdates(data.updates, data.takenBy || 'Admin'); break;
+case 'fetchRoomsOnly': result = fetchRoomsOnly(); break;
 case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
 case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
 case 'fetchFinance': result = fetchFinance(); break;
@@ -213,11 +217,11 @@ if (isFamilyMember) {
 let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 family.push({
-   email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
-   group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
-   nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
-   emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
-   shortName: data[i][22] || ''
+  email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+  group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
+  nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
+  emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
+  shortName: data[i][22] || ''
 });
 }
 }
@@ -269,31 +273,31 @@ const data = sheet.getDataRange().getValues();
 const results = [];
 for(let i = 1; i < data.length; i++) {
 if(data[i][11]) { 
- results.push({
-   timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
-   email: data[i][1],
-   role: data[i][2],
-   fullName: data[i][3],
-   relatedTrainee: data[i][4],
-   relationship: data[i][5],
-   group: data[i][6],
-   gender: data[i][7],
-   contact: data[i][8],
-   address: data[i][9],
-   nationality: data[i][10],
-   nric: data[i][11],
-   passportNo: data[i][12],
-   passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
-   dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
-   diet: data[i][15],
-   emergencyName: data[i][16],
-   emergencyContact: data[i][17],
-   emergencyRelation: data[i][18],
-   sleeping: data[i][19],
-   otherPoints: data[i][20],
-   pocNric: data[i][21],
-   shortName: data[i][22]
- });
+results.push({
+  timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
+  email: data[i][1],
+  role: data[i][2],
+  fullName: data[i][3],
+  relatedTrainee: data[i][4],
+  relationship: data[i][5],
+  group: data[i][6],
+  gender: data[i][7],
+  contact: data[i][8],
+  address: data[i][9],
+  nationality: data[i][10],
+  nric: data[i][11],
+  passportNo: data[i][12],
+  passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
+  dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
+  diet: data[i][15],
+  emergencyName: data[i][16],
+  emergencyContact: data[i][17],
+  emergencyRelation: data[i][18],
+  sleeping: data[i][19],
+  otherPoints: data[i][20],
+  pocNric: data[i][21],
+  shortName: data[i][22]
+});
 }
 }
 return { status: 'success', roster: results };
@@ -309,7 +313,8 @@ name: pData[i][3],
 relatedTrainee: pData[i][4] ? String(pData[i][4]).trim() : '',
 shortName: pData[i][22] ? String(pData[i][22]).trim() : '',
 group: String(pData[i][6]).trim(), 
-nric: String(pData[i][11]).trim().toUpperCase()
+nric: String(pData[i][11]).trim().toUpperCase(),
+pocNric: String(pData[i][21]).trim().toUpperCase()
 });
 }
 }
@@ -328,7 +333,35 @@ pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
 }
 }
 }
-return { status: 'success', participants, pairings, roomConfigs:[], rooms: [], groups: [], buses:[] };
+
+const roomSheet = ss.getSheetByName("Rooms"); let rooms = [];
+if(roomSheet) {
+const maxCols = Math.max(roomSheet.getLastColumn(), 1);
+const headers = roomSheet.getRange(1,1,1,maxCols).getValues()[0];
+if(headers[0] !== "Room ID") {
+roomSheet.getRange(1,1,1,7).setValues([["Room ID", "Room Name", "Capacity", "Occupants", "Last Updated", "Updated By", "Is Deleted"]]);
+roomSheet.setFrozenRows(1);
+}
+
+const roomData = roomSheet.getDataRange().getValues();
+for(let i=1; i<roomData.length; i++) {
+const id = String(roomData[i][0]).trim();
+if(id && id !== "Room ID") {
+  let occ = [];
+  try { occ = JSON.parse(roomData[i][3] || '[]'); } catch(e){}
+  rooms.push({
+      id: id,
+      name: String(roomData[i][1]),
+      capacity: parseInt(roomData[i][2]) || 0,
+      occupants: occ,
+      ts: new Date(roomData[i][4]).getTime() || 0,
+      isDeleted: String(roomData[i][6]).toUpperCase() === 'TRUE'
+  });
+}
+}
+}
+
+return { status: 'success', participants, pairings, rooms, groups: [], buses:[] };
 }
 
 function fetchPairingsOnly() {
@@ -397,22 +430,134 @@ lock.releaseLock();
 }
 }
 
+function fetchRoomsOnly() {
+const ss = getDatabase();
+const roomSheet = ss.getSheetByName("Rooms");
+let rooms = [];
+if(roomSheet) {
+const rData = roomSheet.getDataRange().getValues();
+for(let i=1; i<rData.length; i++) {
+const id = String(rData[i][0]).trim();
+if(id && id !== "Room ID") {
+  let occ = [];
+  try { occ = JSON.parse(rData[i][3] || '[]'); } catch(e){}
+  rooms.push({
+      id: id,
+      name: String(rData[i][1]),
+      capacity: parseInt(rData[i][2]) || 0,
+      occupants: occ,
+      ts: new Date(rData[i][4]).getTime() || 0,
+      isDeleted: String(rData[i][6]).toUpperCase() === 'TRUE'
+  });
+}
+}
+}
+return { status: 'success', rooms };
+}
+
+function syncRoomUpdates(updates, takenBy) {
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(10000);
+const ss = getDatabase();
+let sheet = ss.getSheetByName("Rooms");
+if(!sheet) {
+sheet = ss.insertSheet("Rooms");
+sheet.appendRow(["Room ID", "Room Name", "Capacity", "Occupants", "Last Updated", "Updated By", "Is Deleted"]);
+sheet.setFrozenRows(1);
+}
+
+const data = sheet.getDataRange().getValues();
+const existingMap = {};
+for (let i = 1; i < data.length; i++) {
+const id = String(data[i][0]).trim();
+if(id && id !== "Room ID") existingMap[id] = i + 1;
+}
+
+updates.forEach(u => {
+const tsDate = new Date(u.ts);
+const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
+const occStr = JSON.stringify(u.occupants || []);
+
+if (existingMap[u.id]) {
+  const rowIndex = existingMap[u.id];
+  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+  
+  if (u.ts > existingTs) {
+      sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.name, u.capacity, occStr, tsDate, takenBy, isDel]]);
+  }
+} else {
+  sheet.appendRow([u.id, u.name, u.capacity, occStr, tsDate, takenBy, isDel]);
+  existingMap[u.id] = sheet.getLastRow();
+}
+});
+
+// Perform Global Sweep to ensure no duplicate occupants across active rooms
+SpreadsheetApp.flush();
+const freshData = sheet.getDataRange().getValues();
+const roomsList = [];
+for(let i=1; i<freshData.length; i++) {
+ const id = String(freshData[i][0]).trim();
+ if(id && String(freshData[i][6]).toUpperCase() !== 'TRUE') {
+     let occ = [];
+     try { occ = JSON.parse(freshData[i][3] || '[]'); } catch(e){}
+     roomsList.push({
+         rowIdx: i + 1,
+         id: id,
+         occupants: occ,
+         ts: new Date(freshData[i][4]).getTime() || 0
+     });
+ }
+}
+
+// Sort by TS desc so latest assignments win
+roomsList.sort((a,b) => b.ts - a.ts);
+const seenNrics = new Set();
+let needsFlush = false;
+
+roomsList.forEach(r => {
+const newOcc = [];
+let changed = false;
+r.occupants.forEach(n => {
+  if(!seenNrics.has(n)) {
+      seenNrics.add(n);
+      newOcc.push(n);
+  } else {
+      changed = true; // Dupe found and removed silently
+  }
+});
+
+if(changed) {
+  sheet.getRange(r.rowIdx, 4, 1, 2).setValues([[JSON.stringify(newOcc), new Date()]]);
+  needsFlush = true;
+}
+});
+
+return fetchRoomsOnly();
+} catch (e) {
+return { status: 'error', message: e.message };
+} finally {
+lock.releaseLock();
+}
+}
+
 function setupFinanceRates(sheet) {
 const pairs = [
- ["Currency", "Rate to SGD"],
- ["SGD", 1], 
- ["MYR", '=IFERROR(GOOGLEFINANCE("CURRENCY:MYRSGD"), 0.28)'],
- ["USD", '=IFERROR(GOOGLEFINANCE("CURRENCY:USDSGD"), 1.35)'],
- ["EUR", '=IFERROR(GOOGLEFINANCE("CURRENCY:EURSGD"), 1.45)'],
- ["GBP", '=IFERROR(GOOGLEFINANCE("CURRENCY:GBPSGD"), 1.7)'],
- ["AUD", '=IFERROR(GOOGLEFINANCE("CURRENCY:AUDSGD"), 0.88)'],
- ["IDR", '=IFERROR(GOOGLEFINANCE("CURRENCY:IDRSGD"), 0.00008)'],
- ["THB", '=IFERROR(GOOGLEFINANCE("CURRENCY:THBSGD"), 0.038)'],
- ["JPY", '=IFERROR(GOOGLEFINANCE("CURRENCY:JPYSGD"), 0.009)'],
- ["KRW", '=IFERROR(GOOGLEFINANCE("CURRENCY:KRWSGD"), 0.001)'],
- ["TWD", '=IFERROR(GOOGLEFINANCE("CURRENCY:TWDSGD"), 0.042)'],
- ["PHP", '=IFERROR(GOOGLEFINANCE("CURRENCY:PHPSGD"), 0.024)'],
- ["VND", '=IFERROR(GOOGLEFINANCE("CURRENCY:VNDSGD"), 0.00005)']
+["Currency", "Rate to SGD"],
+["SGD", 1], 
+["MYR", '=IFERROR(GOOGLEFINANCE("CURRENCY:MYRSGD"), 0.28)'],
+["USD", '=IFERROR(GOOGLEFINANCE("CURRENCY:USDSGD"), 1.35)'],
+["EUR", '=IFERROR(GOOGLEFINANCE("CURRENCY:EURSGD"), 1.45)'],
+["GBP", '=IFERROR(GOOGLEFINANCE("CURRENCY:GBPSGD"), 1.7)'],
+["AUD", '=IFERROR(GOOGLEFINANCE("CURRENCY:AUDSGD"), 0.88)'],
+["IDR", '=IFERROR(GOOGLEFINANCE("CURRENCY:IDRSGD"), 0.00008)'],
+["THB", '=IFERROR(GOOGLEFINANCE("CURRENCY:THBSGD"), 0.038)'],
+["JPY", '=IFERROR(GOOGLEFINANCE("CURRENCY:JPYSGD"), 0.009)'],
+["KRW", '=IFERROR(GOOGLEFINANCE("CURRENCY:KRWSGD"), 0.001)'],
+["TWD", '=IFERROR(GOOGLEFINANCE("CURRENCY:TWDSGD"), 0.042)'],
+["PHP", '=IFERROR(GOOGLEFINANCE("CURRENCY:PHPSGD"), 0.024)'],
+["VND", '=IFERROR(GOOGLEFINANCE("CURRENCY:VNDSGD"), 0.00005)']
 ];
 sheet.getRange(1, 4, pairs.length, 2).setValues(pairs);
 sheet.getRange(1, 4, 1, 2).setFontWeight("bold");
@@ -437,7 +582,7 @@ let ratesObj = { "SGD": 1 };
 try {
 const ratesData = sheet.getRange(2, 4, 13, 2).getValues();
 ratesData.forEach(r => {
- if(r[0] && r[1] && !isNaN(r[1])) ratesObj[String(r[0])] = parseFloat(r[1]);
+if(r[0] && r[1] && !isNaN(r[1])) ratesObj[String(r[0])] = parseFloat(r[1]);
 });
 } catch(e){}
 
@@ -457,9 +602,9 @@ lock.waitLock(10000);
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Finance Options");
 if (!sheet) {
- sheet = ss.insertSheet("Finance Options");
- sheet.getRange("A1").setValue("JSON Data - Do Not Edit");
- setupFinanceRates(sheet);
+sheet = ss.insertSheet("Finance Options");
+sheet.getRange("A1").setValue("JSON Data - Do Not Edit");
+setupFinanceRates(sheet);
 }
 
 let existingStr = sheet.getRange(2, 1).getValue();
@@ -469,35 +614,35 @@ try { if(existingStr) existingData = JSON.parse(existingStr); } catch(e){}
 let changed = false;
 
 if (payload.config && payload.config.ts) {
- if (!existingData.config || !existingData.config.ts || payload.config.ts > existingData.config.ts) {
-   existingData.config = payload.config;
-   changed = true;
- }
+if (!existingData.config || !existingData.config.ts || payload.config.ts > existingData.config.ts) {
+  existingData.config = payload.config;
+  changed = true;
+}
 } else if (payload.config) {
- existingData.config = payload.config;
- changed = true;
+existingData.config = payload.config;
+changed = true;
 }
 
 if (payload.updates && Array.isArray(payload.updates)) {
- let optMap = {};
- if(existingData.options) existingData.options.forEach(o => optMap[o.id] = o);
- 
- payload.updates.forEach(u => {
-   let ext = optMap[u.id];
-   if (!ext || !ext.ts || !u.ts || u.ts > ext.ts) {
-     optMap[u.id] = u;
-     changed = true;
-   }
- });
- existingData.options = Object.values(optMap);
+let optMap = {};
+if(existingData.options) existingData.options.forEach(o => optMap[o.id] = o);
+
+payload.updates.forEach(u => {
+  let ext = optMap[u.id];
+  if (!ext || !ext.ts || !u.ts || u.ts > ext.ts) {
+    optMap[u.id] = u;
+    changed = true;
+  }
+});
+existingData.options = Object.values(optMap);
 } else if (payload.options) {
- // Fallback for old save behavior
- existingData.options = payload.options;
- changed = true;
+// Fallback for old save behavior
+existingData.options = payload.options;
+changed = true;
 }
 
 if(changed) {
- sheet.getRange(2, 1).setValue(JSON.stringify(existingData));
+sheet.getRange(2, 1).setValue(JSON.stringify(existingData));
 }
 
 return fetchFinance();
@@ -526,13 +671,13 @@ for (let i = 1; i < data.length; i++) {
 const id = String(data[i][0]).trim();
 if (!id || id === "Note ID") continue;
 minutes.push({
- id: id,
- date: String(data[i][1] || ''),
- content: String(data[i][2] || ''),
- assignedTo: String(data[i][3] || ''),
- ts: new Date(data[i][4]).getTime() || 0,
- updatedBy: String(data[i][5] || ''),
- isDeleted: String(data[i][6]).toUpperCase() === 'TRUE'
+id: id,
+date: String(data[i][1] || ''),
+content: String(data[i][2] || ''),
+assignedTo: String(data[i][3] || ''),
+ts: new Date(data[i][4]).getTime() || 0,
+updatedBy: String(data[i][5] || ''),
+isDeleted: String(data[i][6]).toUpperCase() === 'TRUE'
 });
 }
 return { status: 'success', minutes };
@@ -545,41 +690,41 @@ lock.waitLock(10000);
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Minutes");
 if(!sheet) {
- sheet = ss.insertSheet("Minutes");
- sheet.appendRow(["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]);
- sheet.setFrozenRows(1);
+sheet = ss.insertSheet("Minutes");
+sheet.appendRow(["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]);
+sheet.setFrozenRows(1);
 }
 
 const maxCols = Math.max(sheet.getLastColumn(), 1);
 const headers = sheet.getRange(1, 1, 1, maxCols).getValues()[0];
 if (headers[0] !== "Note ID") {
- sheet.getRange(1, 1, 1, 7).setValues([["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]]);
+sheet.getRange(1, 1, 1, 7).setValues([["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]]);
 }
 
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
- const id = String(data[i][0]).trim();
- if(id && id !== "Note ID") existingMap[id] = i + 1;
+const id = String(data[i][0]).trim();
+if(id && id !== "Note ID") existingMap[id] = i + 1;
 }
 
 updates.forEach(u => {
- const id = u.id;
- const tsDate = new Date(u.ts);
- const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
- 
- if (existingMap[id]) {
-   const rowIndex = existingMap[id];
-   const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
-   
-   if (u.ts > existingTs) {
-     sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
-   }
- } else {
-   sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
-   existingMap[id] = sheet.getLastRow();
- }
+const id = u.id;
+const tsDate = new Date(u.ts);
+const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
+
+if (existingMap[id]) {
+  const rowIndex = existingMap[id];
+  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+  
+  if (u.ts > existingTs) {
+    sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
+  }
+} else {
+  sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
+  existingMap[id] = sheet.getLastRow();
+}
 });
 
 return fetchMinutes();
@@ -696,14 +841,14 @@ let isShortcut = false;
 if (mime === 'application/vnd.google-apps.shortcut') {
 isShortcut = true;
 try {
- const tId = f.getTargetId();
- const tMime = f.getTargetMimeType();
- if (tMime === 'application/vnd.google-apps.folder') {
-   url = `https://drive.google.com/drive/folders/${tId}`;
- } else {
-   url = `https://drive.google.com/open?id=${tId}`;
- }
- mime = tMime; 
+const tId = f.getTargetId();
+const tMime = f.getTargetMimeType();
+if (tMime === 'application/vnd.google-apps.folder') {
+  url = `https://drive.google.com/drive/folders/${tId}`;
+} else {
+  url = `https://drive.google.com/open?id=${tId}`;
+}
+mime = tMime; 
 } catch(e) { } 
 }
 
@@ -877,23 +1022,23 @@ if (!email) return;
 try {
 if (actionType === 'add') {
 if (role === 'editor') {
- folder.addEditor(email);
+folder.addEditor(email);
 } else {
- folder.addViewer(email);
+folder.addViewer(email);
 }
 access[email] = role;
 results.success.push(email);
 } else if (actionType === 'remove') {
 if (access[email]) {
- if (access[email] === 'editor') {
-   folder.removeEditor(email);
- } else {
-   folder.removeViewer(email);
- }
- delete access[email];
- results.success.push(email);
+if (access[email] === 'editor') {
+  folder.removeEditor(email);
 } else {
- results.failed.push({ email: email, reason: 'Not granted via app' });
+  folder.removeViewer(email);
+}
+delete access[email];
+results.success.push(email);
+} else {
+results.failed.push({ email: email, reason: 'Not granted via app' });
 }
 }
 } catch (error) {

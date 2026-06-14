@@ -115,9 +115,9 @@ if(tabId === 'minutes') { if(typeof buildMinutesUI === 'function') buildMinutesU
 if(tabId === 'settings') buildSettingsUI();
 if(tabId === 'files') {
 if (!document.getElementById('driveContentsList')) {
-  buildFilesUI();
-  currentDrivePath = [];
-  loadDriveFolder('root', 'Trip Folder');
+ buildFilesUI();
+ currentDrivePath = [];
+ loadDriveFolder('root', 'Trip Folder');
 }
 }
 }
@@ -128,17 +128,17 @@ document.getElementById('modalContainer').innerHTML = `
 <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm p-6 shadow-2xl border border-gray-200 dark:border-gray-700 m-auto">
 <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Initialize Trip Setup</h3>
 <div class="space-y-3 mb-6 mt-4">
-  <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
-  <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
-  <div class="grid grid-cols-2 gap-2 mt-2">
-    <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Start Date</label><input type="date" id="tripStartInput" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"></div>
-    <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">End Date</label><input type="date" id="tripEndInput" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"></div>
-  </div>
-  <p class="text-[9px] text-gray-400 dark:text-gray-500 mt-1 leading-tight">End date is used to flag participants with passports expiring within 6 months.</p>
+ <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Trip Title</label><input type="text" id="tripTitleInput" value="MYG Overseas Trip" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
+ <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Trip Year</label><input type="number" id="tripYearInput" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
+ <div class="grid grid-cols-2 gap-2 mt-2">
+   <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">Start Date</label><input type="date" id="tripStartInput" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"></div>
+   <div><label class="block text-[10px] uppercase font-bold mb-1 text-gray-500 dark:text-gray-400 tracking-wider">End Date</label><input type="date" id="tripEndInput" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"></div>
+ </div>
+ <p class="text-[9px] text-gray-400 dark:text-gray-500 mt-1 leading-tight">End date is used to flag participants with passports expiring within 6 months.</p>
 </div>
 <div class="flex space-x-3">
-  <button onclick="cancelTripSetup()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition focus:outline-none">Cancel</button>
-  <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold shadow-sm flex justify-center items-center hover:bg-blue-600 transition focus:outline-none"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
+ <button onclick="cancelTripSetup()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition focus:outline-none">Cancel</button>
+ <button onclick="confirmTripSetup(this)" class="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold shadow-sm flex justify-center items-center hover:bg-blue-600 transition focus:outline-none"><span class="btn-text">Open Reg</span><div class="btn-spinner spinner-white hidden-force ml-2"></div></button>
 </div>
 </div>
 </div>
@@ -146,10 +146,10 @@ document.getElementById('modalContainer').innerHTML = `
 <div id="selectionBottomSheet" class="fixed inset-0 bg-black/60 z-[95] hidden-force flex flex-col justify-end">
 <div class="bg-white dark:bg-gray-900 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t border-gray-200 dark:border-gray-800 h-[80vh] flex flex-col">
 <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
-  <span id="sheetTitle" class="font-bold text-base md:text-lg text-gray-800 dark:text-gray-100 truncate pr-2">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none shrink-0">&times;</button>
+ <span id="sheetTitle" class="font-bold text-base md:text-lg text-gray-800 dark:text-gray-100 truncate pr-2">Select</span><button type="button" onclick="closeSelectionSheet()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none shrink-0">&times;</button>
 </div>
 <div class="p-3 border-b border-gray-200 dark:border-gray-800 shrink-0 bg-gray-50 dark:bg-gray-900">
-  <input type="text" id="pairingSearchInput" oninput="filterPairingSheet()" placeholder="Search by name..." class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-950 font-medium text-sm focus:outline-none focus:border-primary text-gray-900 dark:text-white shadow-sm">
+ <input type="text" id="sheetSearchInput" oninput="filterBottomSheet()" placeholder="Search by name..." class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-950 font-medium text-sm focus:outline-none focus:border-primary text-gray-900 dark:text-white shadow-sm">
 </div>
 <div class="flex-grow overflow-y-auto p-3 space-y-2 bg-gray-50/50 dark:bg-gray-900/50" id="sheetListContainer"></div>
 </div>
@@ -158,8 +158,8 @@ document.getElementById('modalContainer').innerHTML = `
 <div id="colorPickerModal" class="fixed inset-0 bg-black/60 z-[96] hidden-force flex justify-center items-center p-4 backdrop-blur-sm">
 <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
 <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-  <h3 class="text-lg font-bold text-gray-900 dark:text-white">Select Color</h3>
-  <button type="button" onclick="closeColorPicker()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none">&times;</button>
+ <h3 class="text-lg font-bold text-gray-900 dark:text-white">Select Color</h3>
+ <button type="button" onclick="closeColorPicker()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none">&times;</button>
 </div>
 <div class="grid grid-cols-6 gap-3 mb-2" id="colorPaletteGrid"></div>
 </div>
