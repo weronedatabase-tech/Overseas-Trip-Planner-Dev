@@ -74,7 +74,7 @@ case 'login': result = handleLogin(data.nric, data.password); break;
 case 'getProfile': result = getProfile(data.nric); break;
 case 'updateProfile': result = updateProfile(data.member); break;
 case 'submitRegistration': result = submitRegistration(data.payload); break;
-case 'toggleRegistration': result = toggleRegistration(data.status, data.tripTitle, data.tripYear); break;
+case 'toggleRegistration': result = toggleRegistration(data.status, data.tripTitle, data.tripYear, data.tripStart, data.tripEnd); break;
 case 'toggleEdits': result = toggleEdits(data.status); break;
 case 'getCommittee': result = getCommitteeList(); break;
 case 'addCommittee': result = modifyCommitteeList(data.nric, true, data.name, data.phone); break;
@@ -83,6 +83,8 @@ case 'addProjectGroup': result = modifyProjectGroups(data.groupName, true, data.
 case 'removeProjectGroup': result = modifyProjectGroups(data.groupName, false, data.callerNric); break;
 case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, data.newName); break;
 case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
+case 'saveTripSettings': result = saveTripSettings(data.title, data.year, data.start, data.end); break;
+case 'fetchAdminRoster': result = fetchAdminRoster(); break;
 case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
 case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
 case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
@@ -138,7 +140,9 @@ activeProjects = Array.from(projSet);
 return {
 status: 'success', registrationOpen: props.getProperty('REGISTRATION_OPEN') === 'true', allowEdits: props.getProperty('ALLOW_EDITS') === 'true',
 committee: commList, projectGroups: groupList, projectColors: projColors, activeProjects: activeProjects, junctures: juncList,
-sortingRules: sortingRules, driveAccessList: driveAccessList, tripTitle: props.getProperty('TRIP_TITLE') || '', tripYear: props.getProperty('TRIP_YEAR') || ''
+sortingRules: sortingRules, driveAccessList: driveAccessList, 
+tripTitle: props.getProperty('TRIP_TITLE') || '', tripYear: props.getProperty('TRIP_YEAR') || '',
+tripStartDate: props.getProperty('TRIP_START_DATE') || '', tripEndDate: props.getProperty('TRIP_END_DATE') || ''
 };
 }
 
@@ -209,11 +213,11 @@ if (isFamilyMember) {
 let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 family.push({
-    email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
-    group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
-    nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
-    emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
-    shortName: data[i][22] || ''
+   email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+   group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
+   nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
+   emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
+   shortName: data[i][22] || ''
 });
 }
 }
@@ -254,6 +258,45 @@ p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping
 ]);
 });
 return { status: 'success' };
+}
+
+function fetchAdminRoster() {
+const ss = getDatabase();
+const sheet = ss.getSheetByName("Raw Data");
+if(!sheet) return { status: 'success', roster: [] };
+
+const data = sheet.getDataRange().getValues();
+const results = [];
+for(let i = 1; i < data.length; i++) {
+if(data[i][11]) { 
+ results.push({
+   timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
+   email: data[i][1],
+   role: data[i][2],
+   fullName: data[i][3],
+   relatedTrainee: data[i][4],
+   relationship: data[i][5],
+   group: data[i][6],
+   gender: data[i][7],
+   contact: data[i][8],
+   address: data[i][9],
+   nationality: data[i][10],
+   nric: data[i][11],
+   passportNo: data[i][12],
+   passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
+   dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
+   diet: data[i][15],
+   emergencyName: data[i][16],
+   emergencyContact: data[i][17],
+   emergencyRelation: data[i][18],
+   sleeping: data[i][19],
+   otherPoints: data[i][20],
+   pocNric: data[i][21],
+   shortName: data[i][22]
+ });
+}
+}
+return { status: 'success', roster: results };
 }
 
 function fetchLogistics() {
@@ -356,20 +399,20 @@ lock.releaseLock();
 
 function setupFinanceRates(sheet) {
 const pairs = [
-  ["Currency", "Rate to SGD"],
-  ["SGD", 1], 
-  ["MYR", '=IFERROR(GOOGLEFINANCE("CURRENCY:MYRSGD"), 0.28)'],
-  ["USD", '=IFERROR(GOOGLEFINANCE("CURRENCY:USDSGD"), 1.35)'],
-  ["EUR", '=IFERROR(GOOGLEFINANCE("CURRENCY:EURSGD"), 1.45)'],
-  ["GBP", '=IFERROR(GOOGLEFINANCE("CURRENCY:GBPSGD"), 1.7)'],
-  ["AUD", '=IFERROR(GOOGLEFINANCE("CURRENCY:AUDSGD"), 0.88)'],
-  ["IDR", '=IFERROR(GOOGLEFINANCE("CURRENCY:IDRSGD"), 0.00008)'],
-  ["THB", '=IFERROR(GOOGLEFINANCE("CURRENCY:THBSGD"), 0.038)'],
-  ["JPY", '=IFERROR(GOOGLEFINANCE("CURRENCY:JPYSGD"), 0.009)'],
-  ["KRW", '=IFERROR(GOOGLEFINANCE("CURRENCY:KRWSGD"), 0.001)'],
-  ["TWD", '=IFERROR(GOOGLEFINANCE("CURRENCY:TWDSGD"), 0.042)'],
-  ["PHP", '=IFERROR(GOOGLEFINANCE("CURRENCY:PHPSGD"), 0.024)'],
-  ["VND", '=IFERROR(GOOGLEFINANCE("CURRENCY:VNDSGD"), 0.00005)']
+ ["Currency", "Rate to SGD"],
+ ["SGD", 1], 
+ ["MYR", '=IFERROR(GOOGLEFINANCE("CURRENCY:MYRSGD"), 0.28)'],
+ ["USD", '=IFERROR(GOOGLEFINANCE("CURRENCY:USDSGD"), 1.35)'],
+ ["EUR", '=IFERROR(GOOGLEFINANCE("CURRENCY:EURSGD"), 1.45)'],
+ ["GBP", '=IFERROR(GOOGLEFINANCE("CURRENCY:GBPSGD"), 1.7)'],
+ ["AUD", '=IFERROR(GOOGLEFINANCE("CURRENCY:AUDSGD"), 0.88)'],
+ ["IDR", '=IFERROR(GOOGLEFINANCE("CURRENCY:IDRSGD"), 0.00008)'],
+ ["THB", '=IFERROR(GOOGLEFINANCE("CURRENCY:THBSGD"), 0.038)'],
+ ["JPY", '=IFERROR(GOOGLEFINANCE("CURRENCY:JPYSGD"), 0.009)'],
+ ["KRW", '=IFERROR(GOOGLEFINANCE("CURRENCY:KRWSGD"), 0.001)'],
+ ["TWD", '=IFERROR(GOOGLEFINANCE("CURRENCY:TWDSGD"), 0.042)'],
+ ["PHP", '=IFERROR(GOOGLEFINANCE("CURRENCY:PHPSGD"), 0.024)'],
+ ["VND", '=IFERROR(GOOGLEFINANCE("CURRENCY:VNDSGD"), 0.00005)']
 ];
 sheet.getRange(1, 4, pairs.length, 2).setValues(pairs);
 sheet.getRange(1, 4, 1, 2).setFontWeight("bold");
@@ -394,7 +437,7 @@ let ratesObj = { "SGD": 1 };
 try {
 const ratesData = sheet.getRange(2, 4, 13, 2).getValues();
 ratesData.forEach(r => {
-  if(r[0] && r[1] && !isNaN(r[1])) ratesObj[String(r[0])] = parseFloat(r[1]);
+ if(r[0] && r[1] && !isNaN(r[1])) ratesObj[String(r[0])] = parseFloat(r[1]);
 });
 } catch(e){}
 
@@ -437,13 +480,13 @@ for (let i = 1; i < data.length; i++) {
 const id = String(data[i][0]).trim();
 if (!id || id === "Note ID") continue;
 minutes.push({
-  id: id,
-  date: String(data[i][1] || ''),
-  content: String(data[i][2] || ''),
-  assignedTo: String(data[i][3] || ''),
-  ts: new Date(data[i][4]).getTime() || 0,
-  updatedBy: String(data[i][5] || ''),
-  isDeleted: String(data[i][6]).toUpperCase() === 'TRUE'
+ id: id,
+ date: String(data[i][1] || ''),
+ content: String(data[i][2] || ''),
+ assignedTo: String(data[i][3] || ''),
+ ts: new Date(data[i][4]).getTime() || 0,
+ updatedBy: String(data[i][5] || ''),
+ isDeleted: String(data[i][6]).toUpperCase() === 'TRUE'
 });
 }
 return { status: 'success', minutes };
@@ -456,41 +499,41 @@ lock.waitLock(10000);
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Minutes");
 if(!sheet) {
-  sheet = ss.insertSheet("Minutes");
-  sheet.appendRow(["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]);
-  sheet.setFrozenRows(1);
+ sheet = ss.insertSheet("Minutes");
+ sheet.appendRow(["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]);
+ sheet.setFrozenRows(1);
 }
 
 const maxCols = Math.max(sheet.getLastColumn(), 1);
 const headers = sheet.getRange(1, 1, 1, maxCols).getValues()[0];
 if (headers[0] !== "Note ID") {
-  sheet.getRange(1, 1, 1, 7).setValues([["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]]);
+ sheet.getRange(1, 1, 1, 7).setValues([["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]]);
 }
 
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
-  const id = String(data[i][0]).trim();
-  if(id && id !== "Note ID") existingMap[id] = i + 1;
+ const id = String(data[i][0]).trim();
+ if(id && id !== "Note ID") existingMap[id] = i + 1;
 }
 
 updates.forEach(u => {
-  const id = u.id;
-  const tsDate = new Date(u.ts);
-  const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
-  
-  if (existingMap[id]) {
-    const rowIndex = existingMap[id];
-    const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
-    const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
-    
-    if (u.ts > existingTs) {
-      sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
-    }
-  } else {
-    sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
-    existingMap[id] = sheet.getLastRow();
-  }
+ const id = u.id;
+ const tsDate = new Date(u.ts);
+ const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
+ 
+ if (existingMap[id]) {
+   const rowIndex = existingMap[id];
+   const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+   
+   if (u.ts > existingTs) {
+     sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
+   }
+ } else {
+   sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
+   existingMap[id] = sheet.getLastRow();
+ }
 });
 
 return fetchMinutes();
@@ -501,7 +544,7 @@ lock.releaseLock();
 }
 }
 
-function toggleRegistration(status, tripTitle, tripYear) {
+function toggleRegistration(status, tripTitle, tripYear, tripStart, tripEnd) {
 const props = PropertiesService.getScriptProperties();
 if (status) {
 tripTitle = tripTitle || 'Overseas Trip'; tripYear = tripYear || new Date().getFullYear().toString();
@@ -511,10 +554,22 @@ let yearFolder = subFolders.hasNext() ? subFolders.next() : mainFolder.createFol
 let files = yearFolder.getFilesByName("Active Database"); let dbId;
 if (files.hasNext()) { dbId = files.next().getId(); }
 else { let ss = SpreadsheetApp.create("Active Database"); dbId = ss.getId(); DriveApp.getFileById(dbId).moveTo(yearFolder); setupSheets(ss); }
-props.setProperty('TRIP_TITLE', tripTitle); props.setProperty('TRIP_YEAR', tripYear); props.setProperty('DB_SHEET_ID', dbId);
+props.setProperty('TRIP_TITLE', tripTitle); props.setProperty('TRIP_YEAR', tripYear); 
+if(tripStart) props.setProperty('TRIP_START_DATE', tripStart);
+if(tripEnd) props.setProperty('TRIP_END_DATE', tripEnd);
+props.setProperty('DB_SHEET_ID', dbId);
 }
 props.setProperty('REGISTRATION_OPEN', status ? 'true' : 'false');
-return { status: 'success', tripTitle, tripYear };
+return { status: 'success', tripTitle, tripYear, tripStart, tripEnd };
+}
+
+function saveTripSettings(title, year, start, end) {
+const props = PropertiesService.getScriptProperties();
+if(title) props.setProperty('TRIP_TITLE', title);
+if(year) props.setProperty('TRIP_YEAR', year);
+if(start) props.setProperty('TRIP_START_DATE', start);
+if(end) props.setProperty('TRIP_END_DATE', end);
+return { status: 'success', title, year, start, end };
 }
 
 function toggleEdits(status) { PropertiesService.getScriptProperties().setProperty('ALLOW_EDITS', status ? 'true' : 'false'); return { status: 'success' }; }
@@ -595,14 +650,14 @@ let isShortcut = false;
 if (mime === 'application/vnd.google-apps.shortcut') {
 isShortcut = true;
 try {
-  const tId = f.getTargetId();
-  const tMime = f.getTargetMimeType();
-  if (tMime === 'application/vnd.google-apps.folder') {
-    url = `https://drive.google.com/drive/folders/${tId}`;
-  } else {
-    url = `https://drive.google.com/open?id=${tId}`;
-  }
-  mime = tMime; 
+ const tId = f.getTargetId();
+ const tMime = f.getTargetMimeType();
+ if (tMime === 'application/vnd.google-apps.folder') {
+   url = `https://drive.google.com/drive/folders/${tId}`;
+ } else {
+   url = `https://drive.google.com/open?id=${tId}`;
+ }
+ mime = tMime; 
 } catch(e) { } 
 }
 
@@ -776,23 +831,23 @@ if (!email) return;
 try {
 if (actionType === 'add') {
 if (role === 'editor') {
-  folder.addEditor(email);
+ folder.addEditor(email);
 } else {
-  folder.addViewer(email);
+ folder.addViewer(email);
 }
 access[email] = role;
 results.success.push(email);
 } else if (actionType === 'remove') {
 if (access[email]) {
-  if (access[email] === 'editor') {
-    folder.removeEditor(email);
-  } else {
-    folder.removeViewer(email);
-  }
-  delete access[email];
-  results.success.push(email);
+ if (access[email] === 'editor') {
+   folder.removeEditor(email);
+ } else {
+   folder.removeViewer(email);
+ }
+ delete access[email];
+ results.success.push(email);
 } else {
-  results.failed.push({ email: email, reason: 'Not granted via app' });
+ results.failed.push({ email: email, reason: 'Not granted via app' });
 }
 }
 } catch (error) {
@@ -901,6 +956,8 @@ props.setProperty('REGISTRATION_OPEN', 'false');
 props.setProperty('ALLOW_EDITS', 'false');
 props.deleteProperty('TRIP_TITLE'); 
 props.deleteProperty('TRIP_YEAR');
+props.deleteProperty('TRIP_START_DATE');
+props.deleteProperty('TRIP_END_DATE');
 props.deleteProperty('COMMITTEE_LIST'); 
 props.deleteProperty('ATTENDANCE_JUNCTURES');
 props.deleteProperty('APP_GRANTED_ACCESS'); 

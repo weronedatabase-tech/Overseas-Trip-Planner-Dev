@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myg-trip-v28';
+const CACHE_NAME = 'myg-trip-v29';
 const urlsToCache =[
 './',
 './index.html',
@@ -12,6 +12,7 @@ const urlsToCache =[
 './frontend/js/rolodex.js',
 './frontend/js/registration.js',
 './frontend/js/profile.js',
+'./frontend/js/participants.js',
 './frontend/js/Pairing_Grouping.js',
 './frontend/js/attendance.js',
 './frontend/js/finance.js',
