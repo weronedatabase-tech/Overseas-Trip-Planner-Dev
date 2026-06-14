@@ -4,7 +4,8 @@ let globalFinanceRates = { "SGD": 1, "MYR": 0.28 };
 let financeConfig = {
 globalPaxMode: 'individual', // 'individual', 'manual', 'auto'
 globalPaxCount: 0,
-ts: 0
+ts: 0,
+customRates: {}
 };
 let isFinanceCollapsed = false;
 let financeSyncTimeout = null;
@@ -44,6 +45,14 @@ if (financeConfig.globalPaxMode === 'auto') {
 }
 }
 
+function getActualRate(currency) {
+if (currency === 'SGD') return 1;
+if (financeConfig.customRates && financeConfig.customRates[currency]) {
+    return parseFloat(financeConfig.customRates[currency]);
+}
+return globalFinanceRates[currency] || 1;
+}
+
 function toggleFinanceCollapse() {
 isFinanceCollapsed = !isFinanceCollapsed;
 financeOptions.forEach(o => o._isCollapsed = isFinanceCollapsed);
@@ -67,6 +76,48 @@ if (opt) {
     queueFinanceUpdate(optId);
     renderFinanceOptions();
 }
+}
+
+// -----------------------------------------------------------
+// EXCHANGE RATES MODAL
+// -----------------------------------------------------------
+function openFinanceRatesModal() {
+const list = document.getElementById('financeRatesList');
+let html = '<p class="text-[10px] text-gray-500 dark:text-gray-400 mb-3 leading-tight">Override the live exchange rates used for calculations. Rates represent the value of 1 foreign unit in SGD.</p>';
+Object.keys(globalFinanceRates).forEach(c => {
+    if(c === 'SGD') return;
+    const live = globalFinanceRates[c] || 0;
+    const custom = (financeConfig.customRates && financeConfig.customRates[c]) ? financeConfig.customRates[c] : '';
+    html += `
+    <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="font-black text-xs text-gray-800 dark:text-gray-200 w-16 text-center shrink-0">1 ${c}</div>
+        <div class="font-bold text-xs text-gray-400 dark:text-gray-500 px-2 shrink-0">=</div>
+        <div class="flex-1 min-w-0 pr-2">
+            <input type="number" step="0.0001" placeholder="Live: ${live.toFixed(4)}" value="${custom}" 
+                onchange="setCustomRate('${c}', this.value)" 
+                class="w-full text-sm font-bold p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-gray-900 dark:text-white transition shadow-sm placeholder-gray-400">
+        </div>
+        <div class="font-black text-xs text-gray-800 dark:text-gray-200 shrink-0">SGD</div>
+    </div>`;
+});
+list.innerHTML = html;
+document.getElementById('financeRatesModal').classList.remove('hidden-force');
+}
+
+function closeFinanceRatesModal() {
+document.getElementById('financeRatesModal').classList.add('hidden-force');
+}
+
+function setCustomRate(currency, value) {
+if (!financeConfig.customRates) financeConfig.customRates = {};
+if (value.trim() === '') {
+    delete financeConfig.customRates[currency];
+} else {
+    financeConfig.customRates[currency] = parseFloat(value);
+}
+financeOptions.forEach(o => updateTotals(o.id));
+renderFinanceOptions();
+queueFinanceUpdate();
 }
 
 // -----------------------------------------------------------
@@ -136,6 +187,7 @@ try {
     if (res.data) {
         if (res.data.config && res.data.config.ts > financeConfig.ts) {
             financeConfig = res.data.config;
+            if(!financeConfig.customRates) financeConfig.customRates = {};
             renderFinanceGlobalSettings();
         }
         
@@ -195,6 +247,7 @@ financePollInterval = setInterval(async () => {
             
             if (res.data.config && res.data.config.ts > (financeConfig.ts || 0)) {
                 financeConfig = res.data.config;
+                if(!financeConfig.customRates) financeConfig.customRates = {};
                 renderFinanceGlobalSettings();
                 hasChanges = true;
             }
@@ -278,6 +331,23 @@ document.getElementById('tab-finance').innerHTML = `
             <!-- Options will be rendered here dynamically -->
         </div>
     </div>
+    
+    <!-- Exchange Rates Modal -->
+    <div id="financeRatesModal" class="fixed inset-0 bg-black/60 z-[96] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl border border-gray-200 dark:border-gray-700 m-auto animate-slide-up flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-3 border-b border-gray-200 dark:border-gray-700 pb-2 shrink-0">
+                <h3 class="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Exchange Rates
+                </h3>
+                <button type="button" onclick="closeFinanceRatesModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-1 focus:outline-none shrink-0">&times;</button>
+            </div>
+            <div id="financeRatesList" class="overflow-y-auto custom-scrollbar flex-grow space-y-2 pb-2"></div>
+            <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 shrink-0 flex justify-end">
+                <button onclick="closeFinanceRatesModal()" class="bg-primary text-white py-2 px-6 rounded-lg font-bold shadow-sm hover:bg-blue-600 transition focus:outline-none">Done</button>
+            </div>
+        </div>
+    </div>
 </div>
 `;
 
@@ -286,7 +356,8 @@ try {
     globalFinanceRates = res.rates || { "SGD": 1, "MYR": 0.28 };
     
     const rawOptions = res.data?.options || (Array.isArray(res.data) ? res.data : []);
-    financeConfig = res.data?.config || { globalPaxMode: 'individual', globalPaxCount: 0, ts: Date.now() };
+    financeConfig = res.data?.config || { globalPaxMode: 'individual', globalPaxCount: 0, ts: Date.now(), customRates: {} };
+    if(!financeConfig.customRates) financeConfig.customRates = {};
     
     financeOptions = rawOptions.map(opt => {
         // Support backward compatibility for old finance records
@@ -362,9 +433,15 @@ container.innerHTML = `
             </div>
         </div>
         
-        <button onclick="toggleFinanceCollapse()" class="text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none">
-            ${isFinanceCollapsed ? 'Expand All Options' : 'Collapse All Options'}
-        </button>
+        <div class="flex gap-2">
+            <button onclick="openFinanceRatesModal()" class="text-[10px] md:text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Rates
+            </button>
+            <button onclick="toggleFinanceCollapse()" class="text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none">
+                ${isFinanceCollapsed ? 'Expand All' : 'Collapse All'}
+            </button>
+        </div>
     </div>
 `;
 }
@@ -433,7 +510,7 @@ const pax = getActivePax(opt);
 let totalSgd = 0;
 
 opt.fields.forEach(f => {
-    const rate = globalFinanceRates[f.currency] || 1;
+    const rate = getActualRate(f.currency);
     const baseCost = parseFloat(f.cost) || 0;
     const taxPct = parseFloat(f.tax) || 0;
     const isPerPax = f.costType === 'per_pax';
@@ -444,7 +521,7 @@ opt.fields.forEach(f => {
     totalSgd += costWithTax * rate;
 });
 
-const dispRate = globalFinanceRates[opt.displayCurrency] || 1;
+const dispRate = getActualRate(opt.displayCurrency);
 const totalDisp = totalSgd / dispRate;
 const cppDisp = pax > 0 ? totalDisp / pax : 0;
 
@@ -685,7 +762,7 @@ financeOptions.forEach(opt => {
     let totalSgd = 0;
     
     opt.fields.forEach(f => {
-        const rate = globalFinanceRates[f.currency] || 1;
+        const rate = getActualRate(f.currency);
         const baseCost = parseFloat(f.cost) || 0;
         const taxPct = parseFloat(f.tax) || 0;
         const isPerPax = f.costType === 'per_pax';
@@ -696,7 +773,7 @@ financeOptions.forEach(opt => {
         totalSgd += costWithTax * rate;
     });
     
-    const dispRate = globalFinanceRates[opt.displayCurrency] || 1;
+    const dispRate = getActualRate(opt.displayCurrency);
     const totalDisp = totalSgd / dispRate;
     const cppDisp = pax > 0 ? totalDisp / pax : 0;
     
