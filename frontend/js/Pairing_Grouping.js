@@ -553,40 +553,83 @@ globalLogistics.participants.forEach(p => {
  }
 });
 
-const assignedNrics = new Set();
-globalLogistics.rooms.forEach(r => {
- if(!r.isDeleted) r.occupants.forEach(n => assignedNrics.add(n));
+const roomAssignments = {}; 
+const activeRooms = globalLogistics.rooms.filter(r => !r.isDeleted);
+
+activeRooms.forEach(r => {
+ r.occupants.forEach(n => roomAssignments[n] = r.id);
 });
 
-let unassignedClusters = clusters.map(c => c.filter(n => !assignedNrics.has(n))).filter(c => c.length > 0);
-let activeRooms = globalLogistics.rooms.filter(r => !r.isDeleted);
-
-let totalAvailable = activeRooms.reduce((sum, r) => sum + Math.max(0, r.capacity - r.occupants.length), 0);
-if (totalAvailable === 0) {
- showToast("No available space in existing rooms.", true);
- return;
+function getGender(nrics) {
+ if (!nrics || nrics.length === 0) return 'Empty';
+ let hasM = false, hasF = false;
+ nrics.forEach(n => {
+     const p = globalLogistics.participants.find(x => x.nric === n);
+     if (p) {
+         if (p.gender === 'Male') hasM = true;
+         if (p.gender === 'Female') hasF = true;
+     }
+ });
+ if (hasM && hasF) return 'Mixed';
+ if (hasM) return 'Male';
+ if (hasF) return 'Female';
+ return 'Unknown';
 }
 
 let placedCount = 0;
 
-unassignedClusters.forEach(cluster => {
- let roomToFit = activeRooms.find(r => (r.capacity - r.occupants.length) >= cluster.length);
- if (roomToFit) {
-     cluster.forEach(n => {
-         roomToFit.occupants.push(n);
-         placedCount++;
+clusters.forEach(cluster => {
+ const unassigned = cluster.filter(n => !roomAssignments[n]);
+ if (unassigned.length === 0) return; // All assigned
+
+ const assigned = cluster.filter(n => roomAssignments[n]);
+ 
+ if (assigned.length > 0) {
+     // Partially assigned cluster - Must be with family. If cannot fit EXACT same room, abort.
+     const roomIds = [...new Set(assigned.map(n => roomAssignments[n]))];
+     if (roomIds.length === 1) {
+         const targetRoom = activeRooms.find(r => r.id === roomIds[0]);
+         if (targetRoom && (targetRoom.capacity - targetRoom.occupants.length) >= unassigned.length) {
+             unassigned.forEach(n => {
+                 targetRoom.occupants.push(n);
+                 roomAssignments[n] = targetRoom.id;
+                 placedCount++;
+             });
+             targetRoom.ts = Date.now();
+             queueRoomUpdate(targetRoom.id);
+         }
+     }
+ } else {
+     // Completely unassigned cluster. Fit if room matches gender natively.
+     const clusterGender = getGender(unassigned);
+     
+     let roomToFit = activeRooms.find(r => {
+         const available = r.capacity - r.occupants.length;
+         if (available < unassigned.length) return false;
+         
+         const roomGender = getGender(r.occupants);
+         if (roomGender === 'Empty') return true;
+         if (clusterGender === 'Mixed' || roomGender === 'Mixed') return false; 
+         return clusterGender === roomGender;
      });
-     roomToFit.ts = Date.now();
-     queueRoomUpdate(roomToFit.id);
+     
+     if (roomToFit) {
+         unassigned.forEach(n => {
+             roomToFit.occupants.push(n);
+             roomAssignments[n] = roomToFit.id;
+             placedCount++;
+         });
+         roomToFit.ts = Date.now();
+         queueRoomUpdate(roomToFit.id);
+     }
  }
- // If the cluster does not fit entirely in one room, do NOT auto split them. Admin will do it manually.
 });
 
 renderRooms();
 if (placedCount > 0) {
- showToast(`Auto-assigned ${placedCount} participants into available slots.`);
+ showToast(`Auto-assigned ${placedCount} participants.`);
 } else {
- showToast("No clusters could be completely fitted into any single available room.");
+ showToast("No clusters could be completely fitted based on strict family/gender rules.");
 }
 }
 
@@ -769,20 +812,26 @@ document.getElementById('tab-logistics').innerHTML = `
 <div id="log-rooms" class="hidden-force flex-1 flex flex-col min-h-0 w-full relative">
 <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 z-10 flex flex-col gap-2 shadow-sm">
  <div class="flex justify-between items-center px-1">
-     <div class="flex items-center gap-2">
-         <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Room Assignments</h3>
-         <button onclick="resetRoomAssignments()" class="bg-orange-50 text-orange-600 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-sm hover:bg-orange-100 transition focus:outline-none" title="Clear Assignments">Clear Asgns</button>
-         <button onclick="deleteAllRooms()" class="bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-sm hover:bg-red-100 transition focus:outline-none" title="Delete All Rooms">Del Rooms</button>
-         <button onclick="autoAssignRooms()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none">Auto-Room</button>
-         <button onclick="addRoom()" class="bg-gray-100 dark:bg-gray-800 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm" title="Add Room(s)">
-           <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+     <div class="flex flex-wrap items-center gap-1.5">
+         <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1">Room Assignments</h3>
+         <button onclick="resetRoomAssignments()" class="bg-orange-50 text-orange-600 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800 text-[10px] md:text-xs font-bold px-2 py-1.5 rounded shadow-sm hover:bg-orange-100 transition focus:outline-none flex items-center gap-1" title="Clear all Assignments">
+             <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+             <span class="whitespace-nowrap hidden sm:inline">Assignment</span>
+         </button>
+         <button onclick="deleteAllRooms()" class="bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 text-[10px] md:text-xs font-bold px-2 py-1.5 rounded shadow-sm hover:bg-red-100 transition focus:outline-none flex items-center gap-1" title="Delete All Rooms">
+             <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+             <span class="whitespace-nowrap hidden sm:inline">Rooms</span>
+         </button>
+         <button onclick="autoAssignRooms()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2 py-1.5 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none whitespace-nowrap">Auto-Room</button>
+         <button onclick="addRoom()" class="bg-gray-100 dark:bg-gray-800 p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm shrink-0" title="Add Room(s)">
+             <svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
          </button>
      </div>
      <button id="btn-sync-rooms" class="text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
        <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
      </button>
  </div>
- <div class="flex justify-between items-center px-1 gap-2">
+ <div class="flex justify-between items-center px-1 gap-2 mt-1">
      <div class="relative w-full max-w-sm">
          <input type="text" id="roomSearchInput" oninput="renderRooms()" placeholder="Fuzzy search participants/rooms..." class="w-full p-1.5 pl-7 border border-gray-300 dark:border-gray-700 rounded text-[10px] font-bold bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
          <svg class="w-3.5 h-3.5 absolute left-2 top-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>

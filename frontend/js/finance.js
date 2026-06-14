@@ -863,10 +863,10 @@ financeOptions.forEach(opt => {
            
            <div class="fin-cat-container p-2 bg-white dark:bg-gray-800 flex flex-col gap-2 max-h-[50vh] overflow-y-auto custom-scrollbar" data-opt-id="${opt.id}">
                ${opt.fields.map(f => {
-                   // Dynamic color based on Cost Type to act as a visual reminder
+                   // Dynamic color based on Cost Type to act as a visual reminder (Explicitly defined to survive JIT caching)
                    const costTypeColorClass = f.costType === 'per_pax' 
-                       ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-900 dark:text-purple-300 border-purple-400 dark:border-purple-700 focus:border-purple-500 focus:ring-purple-500' 
-                       : 'bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 border-amber-400 dark:border-amber-700 focus:border-amber-500 focus:ring-amber-500';
+                       ? 'bg-purple-100 text-purple-900 border-purple-400 focus:border-purple-500 focus:ring-purple-500 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700' 
+                       : 'bg-green-100 text-green-900 border-green-400 focus:border-green-500 focus:ring-green-500 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700';
 
                    const displayCostStr = parseFloat(f.cost || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
