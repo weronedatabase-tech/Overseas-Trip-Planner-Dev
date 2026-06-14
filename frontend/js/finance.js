@@ -333,16 +333,16 @@ function renderFinanceGlobalSettings() {
          <div class="flex flex-wrap items-center gap-2 flex-1">
              <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-2 py-1">
                  <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Pax Mode:</label>
-                 <select onchange="updateFinanceConfig('globalPaxMode', this.value)" class="text-xs font-bold bg-transparent text-gray-900 dark:text-white focus:outline-none cursor-pointer">
-                     <option value="individual" ${financeConfig.globalPaxMode === 'individual' ? 'selected' : ''}>Individual Option</option>
-                     <option value="manual" ${financeConfig.globalPaxMode === 'manual' ? 'selected' : ''}>Global Override</option>
-                     <option value="auto" ${financeConfig.globalPaxMode === 'auto' ? 'selected' : ''}>Global Auto (Database)</option>
+                 <select onchange="updateFinanceConfig('globalPaxMode', this.value)" class="text-[11px] font-bold bg-transparent text-gray-900 dark:text-white focus:outline-none cursor-pointer">
+                     <option value="individual" ${financeConfig.globalPaxMode === 'individual' ? 'selected' : ''}>Manual Override (Individual Options)</option>
+                     <option value="manual" ${financeConfig.globalPaxMode === 'manual' ? 'selected' : ''}>Manual Override (All Options)</option>
+                     <option value="auto" ${financeConfig.globalPaxMode === 'auto' ? 'selected' : ''}>Total Pax based on Sign up</option>
                  </select>
              </div>
              
              <div class="flex items-center gap-1.5 ${financeConfig.globalPaxMode !== 'manual' ? 'hidden-force' : ''}">
                  <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Pax:</label>
-                 <input type="number" min="0" value="${financeConfig.globalPaxCount}" onchange="updateFinanceConfig('globalPaxCount', this.value)" onkeyup="updateFinanceConfig('globalPaxCount', this.value)" class="w-16 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-center">
+                 <input type="number" min="0" value="${financeConfig.globalPaxCount}" onchange="updateFinanceConfig('globalPaxCount', this.value)" onkeyup="updateFinanceConfig('globalPaxCount', this.value)" class="hide-spinners w-16 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-center">
              </div>
              
              <div class="flex items-center gap-1.5 ${financeConfig.globalPaxMode !== 'auto' ? 'hidden-force' : ''}">
@@ -719,51 +719,51 @@ function renderFinanceOptions() {
                      ${paxInputDisabled ? 'disabled' : ''} 
                      onchange="updateFinanceOption('${opt.id}', 'pax', this.value)" 
                      onkeyup="updateFinanceOption('${opt.id}', 'pax', this.value)"
-                     class="w-20 text-xs font-bold px-2 py-1 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded text-center focus:outline-none focus:ring-1 focus:ring-primary ${paxInputDisabled ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-500' : ''}">
+                     class="hide-spinners w-20 text-xs font-bold px-2 py-1 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded text-center focus:outline-none focus:ring-1 focus:ring-primary ${paxInputDisabled ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-500' : ''}">
              </div>
              
-             <div class="fin-cat-container p-2 bg-white dark:bg-gray-800 flex flex-col gap-1.5 max-h-[50vh] overflow-y-auto custom-scrollbar" data-opt-id="${opt.id}">
+             <div class="fin-cat-container p-2 bg-white dark:bg-gray-800 flex flex-col gap-2 max-h-[50vh] overflow-y-auto custom-scrollbar" data-opt-id="${opt.id}">
                  ${opt.fields.map(f => {
                      return `
-                     <div class="fin-cat-row flex flex-col w-full bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-lg border border-transparent focus-within:border-gray-200 dark:focus-within:border-gray-700 transition" data-field-id="${f.id}">
+                     <div class="fin-cat-row flex flex-col w-full bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-transparent focus-within:border-gray-300 dark:focus-within:border-gray-600 transition shadow-sm" data-field-id="${f.id}">
                          
                          <!-- Row 1: Drag, Delete, Name -->
-                         <div class="flex items-center gap-1.5 w-full">
+                         <div class="flex items-center gap-2 w-full mb-1">
                              <div class="fin-drag-handle cursor-grab active:cursor-grabbing p-1 shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition" onmousedown="startFinDrag(event)" ontouchstart="startFinDrag(event)">
-                                 <svg class="w-4 h-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16" /></svg>
+                                 <svg class="w-5 h-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16" /></svg>
                              </div>
                              <button onclick="removeFinanceCategory('${opt.id}', '${f.id}')" class="text-red-400 hover:text-red-600 p-1 shrink-0 transition" title="Delete Category">
-                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                              </button>
-                             <input type="text" value="${f.name}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'name', this.value)" class="flex-1 min-w-[80px] bg-transparent text-xs font-bold text-gray-800 dark:text-gray-100 outline-none px-0.5 border-b border-transparent focus:border-primary transition" placeholder="Category Name">
+                             <input type="text" value="${f.name}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'name', this.value)" class="flex-1 min-w-[80px] bg-transparent text-sm font-bold text-gray-900 dark:text-gray-100 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Category Name">
                          </div>
 
                          <!-- Row 2: Inputs (Currency, Cost Type, Cost, Tax, Remarks) -->
-                         <div class="flex items-center flex-wrap gap-1.5 pl-8 mt-1 w-full">
-                             <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'currency', this.value)" class="w-[55px] shrink-0 bg-white dark:bg-gray-950 text-[10px] font-bold border border-gray-300 dark:border-gray-600 rounded py-1 pl-1 pr-0 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
+                         <div class="flex items-center flex-wrap gap-2 pl-[42px] w-full">
+                             <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'currency', this.value)" class="w-[65px] shrink-0 bg-white dark:bg-gray-950 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded py-1.5 pl-1.5 pr-0 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
                                  ${getCurrencyOptions(f.currency)}
                              </select>
                              
-                             <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'costType', this.value)" class="w-[60px] shrink-0 bg-white dark:bg-gray-950 text-[10px] font-bold border border-gray-300 dark:border-gray-600 rounded py-1 px-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
+                             <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'costType', this.value)" class="w-[70px] shrink-0 bg-white dark:bg-gray-950 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded py-1.5 px-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer">
                                  <option value="total" ${f.costType !== 'per_pax' ? 'selected' : ''}>Total</option>
                                  <option value="per_pax" ${f.costType === 'per_pax' ? 'selected' : ''}>/Pax</option>
                              </select>
 
-                             <input type="number" step="0.01" min="0" value="${f.cost}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" class="w-[70px] shrink-0 bg-white dark:bg-gray-950 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded p-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="0.00">
+                             <input type="number" step="0.01" min="0" value="${f.cost}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" class="hide-spinners w-[90px] shrink-0 bg-white dark:bg-gray-950 text-sm font-bold border border-gray-300 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="Cost">
                              
-                             <div class="flex items-center gap-0.5 w-[55px] shrink-0 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded px-1 py-1 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary shadow-sm" title="Tax Percentage">
-                                 <span class="text-[9px] font-bold text-gray-400">+</span>
-                                 <input type="number" step="0.1" min="0" value="${f.tax || ''}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'tax', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'tax', this.value)" class="w-full bg-transparent text-[11px] font-bold outline-none text-right" placeholder="Tax">
-                                 <span class="text-[9px] font-bold text-gray-500">%</span>
+                             <div class="flex items-center gap-1 w-[70px] shrink-0 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 outline-none focus-within:border-primary focus-within:ring-1 focus-within:ring-primary shadow-sm" title="Tax Percentage">
+                                 <span class="text-[10px] font-bold text-gray-400">+</span>
+                                 <input type="number" step="0.1" min="0" value="${f.tax || ''}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'tax', this.value)" onkeyup="updateFinanceField('${opt.id}', '${f.id}', 'tax', this.value)" class="hide-spinners w-full bg-transparent text-sm font-bold outline-none text-right" placeholder="Tax">
+                                 <span class="text-[10px] font-bold text-gray-500">%</span>
                              </div>
 
-                             <input type="text" value="${f.remarks}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'remarks', this.value)" class="flex-1 min-w-[100px] bg-transparent text-[11px] font-medium text-gray-500 dark:text-gray-400 outline-none px-0.5 border-b border-transparent focus:border-primary transition" placeholder="Remarks...">
+                             <input type="text" value="${f.remarks}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'remarks', this.value)" class="flex-1 min-w-[120px] bg-transparent text-xs font-medium text-gray-500 dark:text-gray-400 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Remarks...">
                          </div>
                      </div>
                      `;
                  }).join('')}
-                 <div class="pt-1 px-1">
-                     <button onclick="addFinanceCategory('${opt.id}')" class="w-full py-1.5 border border-dashed border-blue-300 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-[11px] font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Custom Category</button>
+                 <div class="pt-2 px-1">
+                     <button onclick="addFinanceCategory('${opt.id}')" class="w-full py-2 border border-dashed border-blue-300 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Custom Category</button>
                  </div>
              </div>
          </div>
