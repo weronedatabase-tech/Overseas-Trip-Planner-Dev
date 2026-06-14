@@ -5,165 +5,166 @@ let pendingPairingsMap = new Map();
 let isPairingSyncing = false;
 let pairingPollInterval = null;
 
+// Expose DND state globally to this module so polling logic can detect drag activity
+let dndState = {
+isDragging: false,
+el: null,
+clone: null,
+startX: 0,
+startY: 0,
+nameNode: null,
+rectWidth: 0,
+rectHeight: 0
+};
+
 // ==========================================
 // ROBUST DRAG & DROP ENGINE (Mouse + Touch)
 // ==========================================
 if (!window.dndInitialized) {
 window.dndInitialized = true;
 
-let dndState = {
- isDragging: false,
- el: null,
- clone: null,
- startX: 0,
- startY: 0,
- nameNode: null,
- rectWidth: 0,
- rectHeight: 0
-};
-
 // --- TOUCH EVENTS (MOBILE) ---
 document.addEventListener('touchstart', (e) => {
- if(e.touches.length > 1) return;
- startDrag(e, e.touches[0].clientX, e.touches[0].clientY, true);
+if(e.touches.length > 1) return;
+startDrag(e, e.touches[0].clientX, e.touches[0].clientY, true);
 }, {passive: false});
 
 document.addEventListener('touchmove', (e) => {
- moveDrag(e, e.touches[0].clientX, e.touches[0].clientY, true);
+moveDrag(e, e.touches[0].clientX, e.touches[0].clientY, true);
 }, {passive: false});
 
 document.addEventListener('touchend', (e) => {
- const touch = e.changedTouches ? e.changedTouches[0] : e.touches[0];
- endDrag(e, touch.clientX, touch.clientY);
+const touch = e.changedTouches ? e.changedTouches[0] : e.touches[0];
+endDrag(e, touch.clientX, touch.clientY);
 });
 
 document.addEventListener('touchcancel', (e) => {
- const touch = e.changedTouches ? e.changedTouches[0] : e.touches[0];
- endDrag(e, touch.clientX, touch.clientY);
+const touch = e.changedTouches ? e.changedTouches[0] : e.touches[0];
+endDrag(e, touch.clientX, touch.clientY);
 });
 
 // --- MOUSE EVENTS (DESKTOP) ---
 document.addEventListener('mousedown', (e) => {
- if (e.button !== 0) return; 
- startDrag(e, e.clientX, e.clientY, false);
+if (e.button !== 0) return; 
+startDrag(e, e.clientX, e.clientY, false);
 });
 
 document.addEventListener('mousemove', (e) => {
- moveDrag(e, e.clientX, e.clientY, false);
+moveDrag(e, e.clientX, e.clientY, false);
 });
 
 document.addEventListener('mouseup', (e) => {
- endDrag(e, e.clientX, e.clientY);
+endDrag(e, e.clientX, e.clientY);
 });
 
 // --- CORE LOGIC ---
 function startDrag(e, clientX, clientY, isTouch) {
- // Prevent interfering with buttons or scrollbars
- if(e.target.closest('.remove-x') || e.target.closest('button')) return;
- 
- const pairingContainer = document.getElementById('log-pairings');
- if(!pairingContainer || pairingContainer.classList.contains('hidden-force')) return;
+// Prevent interfering with buttons or scrollbars
+if(e.target.closest('.remove-x') || e.target.closest('button')) return;
 
- let draggable = e.target.closest('.dnd-draggable');
- if(!draggable) return;
+const pairingContainer = document.getElementById('log-pairings');
+if(!pairingContainer || pairingContainer.classList.contains('hidden-force')) return;
 
- dndState.el = draggable;
- dndState.nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
- 
- const rect = dndState.nameNode.getBoundingClientRect();
- dndState.rectWidth = rect.width;
- dndState.rectHeight = rect.height;
- 
- dndState.startX = clientX;
- dndState.startY = clientY;
- dndState.isDragging = false;
+let draggable = e.target.closest('.dnd-draggable');
+if(!draggable) return;
+
+dndState.el = draggable;
+dndState.nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
+
+const rect = dndState.nameNode.getBoundingClientRect();
+dndState.rectWidth = rect.width;
+dndState.rectHeight = rect.height;
+
+dndState.startX = clientX;
+dndState.startY = clientY;
+dndState.isDragging = false;
 }
 
 function moveDrag(e, clientX, clientY, isTouch) {
- if (!dndState.el) return;
+if (!dndState.el) return;
 
- const deltaX = Math.abs(clientX - dndState.startX);
- const deltaY = Math.abs(clientY - dndState.startY);
+const deltaX = Math.abs(clientX - dndState.startX);
+const deltaY = Math.abs(clientY - dndState.startY);
 
- // If user hasn't triggered drag, check direction of movement
- if (!dndState.isDragging) {
-     if (deltaX > 8 && deltaX > deltaY) {
-         // Horizontal swipe detected - activate drag immediately
-         dndState.isDragging = true;
-         
-         if(isTouch && navigator.vibrate) navigator.vibrate(20);
-         
-         dndState.el.classList.add('locked-for-drag');
-         
-         // Generate visually identical clone
-         dndState.clone = dndState.nameNode.cloneNode(true);
-         dndState.clone.classList.add('dragging-clone');
-         
-         // Force size to exact bounding box constraints so centering works perfectly
-         dndState.clone.style.width = dndState.rectWidth + 'px';
-         dndState.clone.style.height = dndState.rectHeight + 'px';
-         dndState.clone.style.margin = '0px';
-         
-         document.body.appendChild(dndState.clone);
-     } else if (deltaY > 8) {
-         // Vertical swipe detected - cancel drag to allow native scrolling
-         dndState.el = null;
-         return;
-     }
- }
+// If user hasn't triggered drag, check direction of movement
+if (!dndState.isDragging) {
+    if (deltaX > 8 && deltaX > deltaY) {
+        // Horizontal swipe detected - activate drag immediately
+        dndState.isDragging = true;
+        
+        if(isTouch && navigator.vibrate) navigator.vibrate(20);
+        
+        dndState.el.classList.add('locked-for-drag');
+        
+        // Generate visually identical clone
+        dndState.clone = dndState.nameNode.cloneNode(true);
+        dndState.clone.classList.add('dragging-clone');
+        
+        // Force size to exact bounding box constraints so centering works perfectly
+        dndState.clone.style.width = dndState.rectWidth + 'px';
+        dndState.clone.style.height = dndState.rectHeight + 'px';
+        dndState.clone.style.margin = '0px';
+        
+        document.body.appendChild(dndState.clone);
+    } else if (deltaY > 8) {
+        // Vertical swipe detected - cancel drag to allow native scrolling
+        dndState.el = null;
+        return;
+    }
+}
 
- if (dndState.isDragging && dndState.clone) {
-     if(e.cancelable) e.preventDefault(); // Stop native scrolling while dragging horizontally
-     
-     updateClonePosition(clientX, clientY);
-     
-     // Highlight valid drop zones
-     const elAtPoint = document.elementFromPoint(clientX, clientY);
-     const activeDz = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
+if (dndState.isDragging && dndState.clone) {
+    if(e.cancelable) e.preventDefault(); // Stop native scrolling while dragging horizontally
+    
+    updateClonePosition(clientX, clientY);
+    
+    // Highlight valid drop zones
+    const elAtPoint = document.elementFromPoint(clientX, clientY);
+    const activeDz = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
 
-     document.querySelectorAll('.dnd-dropzone').forEach(dz => {
-         if (dz === activeDz && dz.dataset.role !== dndState.el.dataset.role) {
-             dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
-         } else {
-             dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
-         }
-     });
- }
+    document.querySelectorAll('.dnd-dropzone').forEach(dz => {
+        if (dz === activeDz && dz.dataset.role !== dndState.el.dataset.role) {
+            dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+        } else {
+            dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+        }
+    });
+}
 }
 
 function endDrag(e, clientX, clientY) {
- if(dndState.el) dndState.el.classList.remove('locked-for-drag');
- 
- if (dndState.isDragging && dndState.clone) {
-     // Remove clone before finding the drop element underneath!
-     dndState.clone.remove(); 
-     dndState.clone = null; 
-     dndState.isDragging = false;
-     
-     document.querySelectorAll('.dnd-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary'));
+if(dndState.el) dndState.el.classList.remove('locked-for-drag');
 
-     // Robust element targeting regardless of DOM layout bounds
-     const elAtPoint = document.elementFromPoint(clientX, clientY);
-     const dropZone = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
-     
-     if(dropZone && dndState.el && dropZone.dataset.role !== dndState.el.dataset.role) {
-         const sourceNric = dndState.el.dataset.nric;
-         const sourceRole = dndState.el.dataset.role;
-         const targetNric = dropZone.dataset.nric;
-         if(sourceNric && targetNric) handleDndDrop(sourceNric, sourceRole, targetNric);
-     }
- }
- dndState.el = null;
- dndState.nameNode = null;
+if (dndState.isDragging && dndState.clone) {
+    // Remove clone before finding the drop element underneath!
+    dndState.clone.remove(); 
+    dndState.clone = null; 
+    dndState.isDragging = false;
+    
+    document.querySelectorAll('.dnd-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary'));
+
+    // Robust element targeting regardless of DOM layout bounds
+    const elAtPoint = document.elementFromPoint(clientX, clientY);
+    const dropZone = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
+    
+    if(dropZone && dndState.el && dropZone.dataset.role !== dndState.el.dataset.role) {
+        const sourceNric = dndState.el.dataset.nric;
+        const sourceRole = dndState.el.dataset.role;
+        const targetNric = dropZone.dataset.nric;
+        if(sourceNric && targetNric) handleDndDrop(sourceNric, sourceRole, targetNric);
+    }
+}
+dndState.el = null;
+dndState.nameNode = null;
 }
 
 function updateClonePosition(x, y) {
- if(dndState.clone) {
-     // Snap the absolute center of the clone exactly to the user's touch coordinate using hardware-accelerated translation
-     const centerX = x - (dndState.rectWidth / 2);
-     const centerY = y - (dndState.rectHeight / 2);
-     dndState.clone.style.transform = `translate3d(${centerX}px, ${centerY}px, 0px) scale(1.05)`;
- }
+if(dndState.clone) {
+    // Snap the absolute center of the clone exactly to the user's touch coordinate using hardware-accelerated translation
+    const centerX = x - (dndState.rectWidth / 2);
+    const centerY = y - (dndState.rectHeight / 2);
+    dndState.clone.style.transform = `translate3d(${centerX}px, ${centerY}px, 0px) scale(1.05)`;
+}
 }
 }
 
@@ -174,21 +175,21 @@ let traineeNric = sourceRole === 'TRAINEE' ? sourceNric : targetNric;
 let existing = globalLogistics.pairings.find(p => p.traineeNric === traineeNric && p.volNric === volNric);
 
 if(!existing || existing.status !== 'ACTIVE') {
- const ts = Date.now();
- const key = traineeNric + '_' + volNric;
- pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric, ts });
- 
- if(existing) {
-     existing.status = 'ACTIVE';
-     existing.ts = ts;
- } else {
-     globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
- }
- 
- renderPairings(); 
- triggerPairingSync();
+const ts = Date.now();
+const key = traineeNric + '_' + volNric;
+pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric, ts });
+
+if(existing) {
+    existing.status = 'ACTIVE';
+    existing.ts = ts;
 } else {
- showToast("Already paired!", true);
+    globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
+}
+
+renderPairings(); 
+triggerPairingSync();
+} else {
+showToast("Already paired!", true);
 }
 }
 
@@ -199,8 +200,8 @@ pendingPairingsMap.set(key, { action: 'REMOVE', traineeNric, volNric, ts });
 
 let existing = globalLogistics.pairings.find(p => p.traineeNric === traineeNric && p.volNric === volNric);
 if (existing) {
- existing.status = 'UNPAIRED';
- existing.ts = ts;
+existing.status = 'UNPAIRED';
+existing.ts = ts;
 }
 
 renderPairings(); 
@@ -218,21 +219,21 @@ const textSpan = btn.querySelector('.btn-text'); const spinner = btn.querySelect
 btn.className = "btn-sync-pairings text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
 spinner.className = "btn-spinner ml-1 !w-3 !h-3 hidden-force"; 
 if (state === 'loading') { 
- btn.classList.add('bg-gray-100', 'text-gray-500', 'border-gray-200', 'dark:bg-gray-800', 'dark:text-gray-400', 'dark:border-gray-700'); 
- textSpan.textContent = "Loading..."; 
- spinner.classList.remove('hidden-force'); 
- spinner.classList.add('spinner-primary'); 
+btn.classList.add('bg-gray-100', 'text-gray-500', 'border-gray-200', 'dark:bg-gray-800', 'dark:text-gray-400', 'dark:border-gray-700'); 
+textSpan.textContent = "Loading..."; 
+spinner.classList.remove('hidden-force'); 
+spinner.classList.add('spinner-primary'); 
 } else if(state === 'saving') { 
- btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); 
- textSpan.textContent = "Saving..."; 
- spinner.classList.remove('hidden-force'); 
- spinner.classList.add('spinner-yellow'); 
+btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); 
+textSpan.textContent = "Saving..."; 
+spinner.classList.remove('hidden-force'); 
+spinner.classList.add('spinner-yellow'); 
 } else if (state === 'saved') { 
- btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); 
- textSpan.textContent = "Saved"; 
+btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); 
+textSpan.textContent = "Saved"; 
 } else if (state === 'error') { 
- btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); 
- textSpan.textContent = "Save Failed"; 
+btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); 
+textSpan.textContent = "Save Failed"; 
 }
 });
 }
@@ -258,20 +259,28 @@ pendingPairingsMap.clear();
 try {
 const res = await callBackend('syncPairingUpdates', { updates: updates, takenBy: currentUser.name });
 
-// LAST-WRITE-WINS Merge
+// LAST-WRITE-WINS Granular Merge (Mutex Protection)
 if(res.pairings) {
-    res.pairings.forEach(sPair => {
-        let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
-        if (lPair) {
-            if (sPair.ts > lPair.ts) {
-                lPair.status = sPair.status;
-                lPair.ts = sPair.ts;
-            }
-        } else {
-            globalLogistics.pairings.push(sPair);
-        }
-    });
-    renderPairings();
+   res.pairings.forEach(sPair => {
+       const key = sPair.traineeNric + '_' + sPair.volNric;
+       // Only apply server state if we don't have a newer pending action locally
+       if (!pendingPairingsMap.has(key)) {
+           let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+           if (lPair) {
+               if (sPair.ts > lPair.ts) {
+                   lPair.status = sPair.status;
+                   lPair.ts = sPair.ts;
+               }
+           } else {
+               globalLogistics.pairings.push(sPair);
+           }
+       }
+   });
+   
+   // Avoid ripping the DOM while user is actively dragging
+   if (!dndState.el && !dndState.isDragging) {
+       renderPairings();
+   }
 }
 setSyncButtonState('saved');
 } catch(e) {
@@ -289,39 +298,43 @@ if (pairingPollInterval) clearInterval(pairingPollInterval);
 
 pairingPollInterval = setInterval(async () => {
 const logTab = document.getElementById('tab-logistics');
-if(!logTab || logTab.classList.contains('hidden-force')) return;
+if(!logTab || logTab.classList.contains('hidden-force') || isPairingSyncing || dndState.el || dndState.isDragging) return;
 
 try {
-    const res = await callBackend('fetchPairingsOnly');
-    if(res.pairings) {
-        const server = res.pairings;
-        let hasChanges = false;
-        
-        // LAST-WRITE-WINS Background Merge
-        server.forEach(sPair => {
-            let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
-            if (lPair) {
-                if (sPair.ts > lPair.ts) {
-                    lPair.status = sPair.status;
-                    lPair.ts = sPair.ts;
-                    hasChanges = true;
-                }
-            } else {
-                globalLogistics.pairings.push(sPair);
-                hasChanges = true;
-            }
-        });
-        
-        if (hasChanges) {
-            renderPairings();
-            // Re-filter bottom sheet if open
-            if(!document.getElementById('selectionBottomSheet').classList.contains('hidden-force')) {
-                openPairingSheet(currentPairingTarget, currentPairingSourceRole);
-            }
-        }
-    }
+   const res = await callBackend('fetchPairingsOnly');
+   if(res.pairings) {
+       const server = res.pairings;
+       let hasChanges = false;
+       
+       // LAST-WRITE-WINS Background Merge
+       server.forEach(sPair => {
+           const key = sPair.traineeNric + '_' + sPair.volNric;
+           // Block overwrites on locally mutating elements
+           if (!pendingPairingsMap.has(key)) {
+               let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+               if (lPair) {
+                   if (sPair.ts > lPair.ts) {
+                       lPair.status = sPair.status;
+                       lPair.ts = sPair.ts;
+                       hasChanges = true;
+                   }
+               } else {
+                   globalLogistics.pairings.push(sPair);
+                   hasChanges = true;
+               }
+           }
+       });
+       
+       if (hasChanges && !dndState.el && !dndState.isDragging) {
+           renderPairings();
+           // Re-filter bottom sheet if open
+           if(!document.getElementById('selectionBottomSheet').classList.contains('hidden-force')) {
+               openPairingSheet(currentPairingTarget, currentPairingSourceRole);
+           }
+       }
+   }
 } catch(e) {
-    // Silent fail on polling
+   // Silent fail on polling
 }
 }, 8000);
 }
@@ -341,21 +354,21 @@ document.getElementById('tab-logistics').innerHTML = `
 <!-- Drag & Drop Pairing UI -->
 <div id="log-pairings" class="flex-1 flex flex-col min-h-0 w-full relative">
 <div id="logLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 hidden-force flex flex-col justify-center items-center">
-  <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-  <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
+ <div class="loader !w-8 !h-8 border-primary mb-2"></div>
+ <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
 </div>
 
 <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 z-10 flex flex-col gap-1 shadow-sm">
 <div class="flex justify-between items-center px-1">
-  <div class="flex items-center gap-2">
-      <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Pairings</h3>
-      <button onclick="toggleAltSwap()" class="bg-gray-100 dark:bg-gray-800 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm" title="Swap Columns">
-         <svg class="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-      </button>
-  </div>
-  <button onclick="manualSyncPairings(this)" class="btn-sync-pairings text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
-    <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
-  </button>
+ <div class="flex items-center gap-2">
+     <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Pairings</h3>
+     <button onclick="toggleAltSwap()" class="bg-gray-100 dark:bg-gray-800 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm" title="Swap Columns">
+        <svg class="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+     </button>
+ </div>
+ <button onclick="manualSyncPairings(this)" class="btn-sync-pairings text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+   <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
+ </button>
 </div>
 <p class="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 px-1 leading-tight">Slide between columns to pair. Tap 'X' to unpair.</p>
 </div>
@@ -363,13 +376,13 @@ document.getElementById('tab-logistics').innerHTML = `
 <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 border-x border-b border-gray-200 dark:border-gray-800 rounded-b-xl md:rounded-none">
 <!-- Source Pool (Left Side: 50%) -->
 <div id="dnd-source-col" class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800">
-  <h4 id="dnd-source-title" class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b"></h4>
-  <div id="dnd-source-pool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar bg-opacity-50 pb-6"></div>
+ <h4 id="dnd-source-title" class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b"></h4>
+ <div id="dnd-source-pool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar bg-opacity-50 pb-6"></div>
 </div>
 <!-- Target Zones (Right Side: 50%) -->
 <div id="dnd-target-col" class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors">
-  <h4 id="dnd-target-title" class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b"></h4>
-  <div id="dnd-target-list" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6 bg-opacity-50"></div>
+ <h4 id="dnd-target-title" class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b"></h4>
+ <div id="dnd-target-list" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6 bg-opacity-50"></div>
 </div>
 </div>
 </div>
@@ -402,15 +415,15 @@ const res = await callBackend('fetchLogistics');
 globalLogistics = res; 
 
 if (typeof processDisplayNames === "function") {
-  processDisplayNames(globalLogistics.participants);
+ processDisplayNames(globalLogistics.participants);
 }
 if (typeof applyGlobalSorting === "function") {
-  globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
+ globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
 }
 renderPairings(); 
 
 if (typeof renderAttendanceLists === "function" && document.getElementById('attAssignmentSelect')) {
-  renderAttendanceLists();
+ renderAttendanceLists();
 }
 
 setSyncButtonState('saved');
@@ -428,10 +441,10 @@ function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairings(); }
 // Generates the visual paired pill. Uses smaller text, lower opacity.
 function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
 return `<div class="relative inline-block m-1 align-top pointer-events-auto">
- <div class="${targetColorClass} text-[9px] md:text-[10px] pl-1.5 pr-2.5 py-0.5 rounded shadow-sm border border-gray-300 dark:border-gray-600 font-bold opacity-90 leading-tight break-words whitespace-normal text-center" style="overflow-wrap: anywhere;">
-     ${targetName}
- </div>
- <div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
+<div class="${targetColorClass} text-[9px] md:text-[10px] pl-1.5 pr-2.5 py-0.5 rounded shadow-sm border border-gray-300 dark:border-gray-600 font-bold opacity-90 leading-tight break-words whitespace-normal text-center" style="overflow-wrap: anywhere;">
+    ${targetName}
+</div>
+<div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
 </div>`;
 }
 
@@ -447,11 +460,11 @@ const myPairings = item.role === 'TRAINEE' ? activePairings.filter(p => p.traine
 
 let pairedPills = '';
 myPairings.forEach(pair => {
- const pairedPerson = item.role === 'TRAINEE' ? vols.find(v => v.nric === pair.volNric) : trainees.find(t => t.nric === pair.traineeNric);
- if(pairedPerson) {
-     const pColor = getProjectColor(pairedPerson.group);
-     pairedPills += generatePillHtml(pairedPerson.displayName || pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
- }
+const pairedPerson = item.role === 'TRAINEE' ? vols.find(v => v.nric === pair.volNric) : trainees.find(t => t.nric === pair.traineeNric);
+if(pairedPerson) {
+    const pColor = getProjectColor(pairedPerson.group);
+    pairedPills += generatePillHtml(pairedPerson.displayName || pairedPerson.name, pColor, pair.traineeNric, pair.volNric);
+}
 });
 
 const btnLabel = item.role === 'TRAINEE' ? '+ Vol' : '+ Trn';
@@ -459,17 +472,17 @@ const displayName = item.displayName || item.name;
 
 return `
 <div class="dnd-draggable dnd-dropzone bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-md border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col min-h-[60px] gap-1" data-nric="${item.nric}" data-role="${item.role}">
- <!-- Unique Targetable class for cloning -->
- <div class="flex justify-between items-start w-full gap-1">
-   <div class="main-name-pill font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full inline-flex flex-wrap items-center gap-1 self-start min-w-0 leading-[1.1]">
-     <span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: break-word;">${displayName}</span>
-     ${famBadge}
-   </div>
-   <button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-1 rounded border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
- </div>
- <div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto bg-gray-50/50 dark:bg-gray-900/50 p-1 rounded min-h-[28px] border border-dashed border-gray-200 dark:border-gray-700 mt-0.5">
-     ${pairedPills || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 mt-0.5 ml-0.5 pointer-events-none">Drop pair here</span>'}
- </div>
+<!-- Unique Targetable class for cloning -->
+<div class="flex justify-between items-start w-full gap-1">
+  <div class="main-name-pill font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full inline-flex flex-wrap items-center gap-1 self-start min-w-0 leading-[1.1]">
+    <span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: break-word;">${displayName}</span>
+    ${famBadge}
+  </div>
+  <button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-1 rounded border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
+</div>
+<div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto bg-gray-50/50 dark:bg-gray-900/50 p-1 rounded min-h-[28px] border border-dashed border-gray-200 dark:border-gray-700 mt-0.5">
+    ${pairedPills || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 mt-0.5 ml-0.5 pointer-events-none">Drop pair here</span>'}
+</div>
 </div>
 `;
 }
@@ -485,9 +498,9 @@ const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status |
 // Determine family links dynamically by matching Caregiver's relatedTrainee
 const traineesWithCaregivers = new Set();
 globalLogistics.participants.forEach(p => {
- if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-     traineesWithCaregivers.add(p.relatedTrainee.trim().toLowerCase());
- }
+if (p.role === 'CAREGIVER' && p.relatedTrainee) {
+    traineesWithCaregivers.add(p.relatedTrainee.trim().toLowerCase());
+}
 });
 
 const isSourceVol = !altSwapMode;
@@ -566,10 +579,10 @@ const roleColor = t.role === 'VOLUNTEER' ? 'text-green-700 bg-green-100 dark:bg-
 const dName = t.displayName || t.name;
 
 html += `<div onclick="confirmPairing('${t.nric}')" class="pairing-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary dark:hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">
-  <div class="flex justify-between items-start w-full gap-2">
-    <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]" style="overflow-wrap: break-word;">${dName}</span>
-    <span class="text-[9px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${roleLabel}</span>
-  </div>
+ <div class="flex justify-between items-start w-full gap-2">
+   <span class="font-extrabold text-[11px] md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]" style="overflow-wrap: break-word;">${dName}</span>
+   <span class="text-[9px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${roleLabel}</span>
+ </div>
 </div>`;
 });
 
@@ -603,10 +616,10 @@ const key = traineeNric + '_' + volNric;
 pendingPairingsMap.set(key, { action: 'ADD', traineeNric, volNric, ts });
 
 if(existing) {
-    existing.status = 'ACTIVE';
-    existing.ts = ts;
+   existing.status = 'ACTIVE';
+   existing.ts = ts;
 } else {
-    globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
+   globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
 }
 
 renderPairings(); 
@@ -615,24 +628,29 @@ triggerPairingSync();
 }
 
 async function manualSyncPairings(btn) {
+if (pendingPairingsMap.size > 0) {
+   await executePairingSync();
+}
 setSyncButtonState('loading');
 try { 
 const res = await callBackend('fetchPairingsOnly'); 
 if(res.pairings) {
-    res.pairings.forEach(sPair => {
-        let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
-        if (lPair) {
-            if (sPair.ts > lPair.ts) {
-                lPair.status = sPair.status;
-                lPair.ts = sPair.ts;
-            }
-        } else {
-            globalLogistics.pairings.push(sPair);
-        }
-    });
-    renderPairings();
+   res.pairings.forEach(sPair => {
+       const key = sPair.traineeNric + '_' + sPair.volNric;
+       if (!pendingPairingsMap.has(key)) {
+           let lPair = globalLogistics.pairings.find(p => p.traineeNric === sPair.traineeNric && p.volNric === sPair.volNric);
+           if (lPair) {
+               if (sPair.ts > lPair.ts) {
+                   lPair.status = sPair.status;
+                   lPair.ts = sPair.ts;
+               }
+           } else {
+               globalLogistics.pairings.push(sPair);
+           }
+       }
+   });
+   renderPairings();
 }
-pendingPairingsMap.clear();
 setSyncButtonState('saved'); 
 showToast("Refreshed from server!"); 
 } 
