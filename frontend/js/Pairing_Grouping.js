@@ -983,9 +983,14 @@ filteredUnassigned.forEach(item => {
   const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
   const roleShort = item.role.substring(0,3).toUpperCase();
   
+  const sleepingIndicator = item.sleeping ? `<button onclick="openSleepingModal('${item.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="Has Sleeping Request"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
+  
   unHtml += `
   <div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex items-center gap-1.5" data-nric="${item.nric}" data-role="${item.role}">
-      <span class="main-name-pill font-bold text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} min-w-0 flex-1 truncate">${dName}</span>
+      <span class="main-name-pill font-bold text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} min-w-0 flex-1 truncate flex items-center justify-between">
+          <span class="truncate">${dName}</span>
+          ${sleepingIndicator}
+      </span>
       <span class="text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0">${roleShort}</span>
   </div>
   `;
@@ -1023,10 +1028,13 @@ roomsToRender.forEach(room => {
           }
           const matchClass = isMatch ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800 scale-105 z-10' : '';
           
+          const sleepingIndicator = p.sleeping ? `<button onclick="openSleepingModal('${p.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="Has Sleeping Request"><svg class="w-3.5 h-3.5 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
+          
           occHtml += `
           <div class="dnd-room-draggable relative inline-block m-1 cursor-grab active:cursor-grabbing hover:scale-105 transition-transform pointer-events-auto" data-nric="${p.nric}">
-              <div class="main-name-pill ${dynColor} ${matchClass} text-[10px] px-1.5 py-0.5 rounded shadow-sm border font-bold opacity-90 leading-tight">
-                  ${dName}
+              <div class="main-name-pill ${dynColor} ${matchClass} text-[10px] px-1.5 py-0.5 rounded shadow-sm border font-bold opacity-90 leading-tight flex items-center pr-3">
+                  <span class="truncate">${dName}</span>
+                  ${sleepingIndicator}
               </div>
               <div class="remove-x" onclick="unassignFromRoom('${p.nric}', '${room.id}')">×</div>
           </div>`;
@@ -1056,6 +1064,26 @@ roomsToRender.forEach(room => {
 });
 
 document.getElementById('roomListContainer').innerHTML = roomHtml || '<div class="flex justify-center items-center h-20 text-xs font-bold text-gray-400">No rooms match criteria.</div>';
+}
+
+function openSleepingModal(nric) {
+if (!globalLogistics) return;
+const p = globalLogistics.participants.find(x => x.nric === nric);
+if (!p || !p.sleeping) return;
+
+const modalTitle = document.getElementById('sleepingModalTitle');
+const modalContent = document.getElementById('sleepingModalContent');
+
+if (modalTitle) modalTitle.textContent = `Request: ${p.displayName || p.name}`;
+if (modalContent) modalContent.textContent = p.sleeping;
+
+const modal = document.getElementById('sleepingInfoModal');
+if (modal) modal.classList.remove('hidden-force');
+}
+
+function closeSleepingModal() {
+const modal = document.getElementById('sleepingInfoModal');
+if (modal) modal.classList.add('hidden-force');
 }
 
 // ---------------------------------------------------------
