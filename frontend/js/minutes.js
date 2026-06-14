@@ -3,6 +3,7 @@ let pendingMinutesUpdates = new Map();
 let minutesSyncTimeout = null;
 let minutesPollInterval = null;
 let isMinutesSyncing = false;
+let minutesSearchQuery = '';
 
 function generateUUID() {
    return 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -35,9 +36,13 @@ function buildMinutesUI() {
            </div>
            
            <div class="flex w-full md:w-auto items-center gap-2 justify-end">
-               <button onclick="addMinuteNote()" class="w-full md:w-auto bg-primary text-white text-[10px] md:text-xs font-bold px-3 py-2 rounded-md hover:bg-blue-600 transition flex items-center justify-center shadow-sm focus:outline-none shrink-0">
-                   <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-                   New Note
+               <div class="relative w-full md:w-48 shrink-0">
+                   <input type="text" id="minutesSearchInput" oninput="handleMinutesSearch()" placeholder="Fuzzy search notes..." class="w-full p-2 pl-8 border border-gray-300 dark:border-gray-700 rounded-md text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm transition">
+                   <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+               </div>
+               <button onclick="addMinuteNote()" class="w-auto bg-primary text-white text-[10px] md:text-xs font-bold px-3 py-2 rounded-md hover:bg-blue-600 transition flex items-center justify-center shadow-sm focus:outline-none shrink-0">
+                   <svg class="w-3.5 h-3.5 md:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                   <span class="hidden md:inline">New Note</span>
                </button>
            </div>
        </div>
@@ -77,6 +82,11 @@ async function loadInitialMinutes() {
    }
 }
 
+function handleMinutesSearch() {
+   minutesSearchQuery = document.getElementById('minutesSearchInput').value.toLowerCase().trim();
+   renderAllMinutes();
+}
+
 function addMinuteNote() {
    const d = new Date();
    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -94,19 +104,27 @@ function addMinuteNote() {
    minutesMap.set(newNote.id, newNote);
    queueMinuteUpdate(newNote.id);
    
-   // Inject at the top immediately
+   // Clear search if they are adding a new note so it doesn't get filtered out
+   const searchInput = document.getElementById('minutesSearchInput');
+   if (searchInput && searchInput.value) {
+       searchInput.value = '';
+       minutesSearchQuery = '';
+       renderAllMinutes();
+   }
+   
+   // Inject at the top immediately if not fully re-rendered
    const container = document.getElementById('minutesListContainer');
-   if(container) {
-       // Remove empty state message if exists
+   if(container && !minutesSearchQuery) {
        const emptyMsg = container.querySelector('.empty-notes-msg');
        if(emptyMsg) emptyMsg.remove();
        
        const noteEl = createNoteDOM(newNote);
-       container.insertBefore(noteEl, container.firstChild);
+       if (!document.getElementById(`min-card-${newNote.id}`)) {
+           container.insertBefore(noteEl, container.firstChild);
+       }
        
-       // Focus the newly created textarea
        setTimeout(() => {
-           const ta = noteEl.querySelector('textarea');
+           const ta = document.getElementById(`min-card-${newNote.id}`)?.querySelector('textarea');
            if(ta) ta.focus();
        }, 50);
    }
@@ -224,12 +242,25 @@ function renderAllMinutes() {
    const container = document.getElementById('minutesListContainer');
    if (!container) return;
    
-   const sorted = Array.from(minutesMap.values())
+   let sorted = Array.from(minutesMap.values())
        .filter(n => !n.isDeleted)
        .sort((a, b) => b.ts - a.ts); // Newest first
        
+   if (minutesSearchQuery) {
+       sorted = sorted.filter(n => {
+           return (n.content && n.content.toLowerCase().includes(minutesSearchQuery)) ||
+                  (n.assignedTo && n.assignedTo.toLowerCase().includes(minutesSearchQuery)) ||
+                  (n.date && n.date.toLowerCase().includes(minutesSearchQuery)) ||
+                  (n.updatedBy && n.updatedBy.toLowerCase().includes(minutesSearchQuery));
+       });
+   }
+       
    if (sorted.length === 0) {
-       container.innerHTML = `<div class="empty-notes-msg w-full py-10 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><p class="text-xs font-bold uppercase tracking-widest">No meeting notes found</p></div>`;
+       if (minutesSearchQuery) {
+           container.innerHTML = `<div class="empty-notes-msg w-full py-10 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500"><p class="text-xs font-bold uppercase tracking-widest">No matching notes found.</p></div>`;
+       } else {
+           container.innerHTML = `<div class="empty-notes-msg w-full py-10 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><p class="text-xs font-bold uppercase tracking-widest">No meeting notes found</p></div>`;
+       }
        return;
    }
    
@@ -242,13 +273,26 @@ function renderAllMinutes() {
 function updateNoteDOM(note) {
    const card = document.getElementById(`min-card-${note.id}`);
    
+   // If it's deleted, remove it.
    if (note.isDeleted) {
        if (card) card.remove();
        return;
    }
    
+   // If search query active, check if it still matches
+   if (minutesSearchQuery) {
+       const matches = (note.content && note.content.toLowerCase().includes(minutesSearchQuery)) ||
+                       (note.assignedTo && note.assignedTo.toLowerCase().includes(minutesSearchQuery)) ||
+                       (note.date && note.date.toLowerCase().includes(minutesSearchQuery)) ||
+                       (note.updatedBy && note.updatedBy.toLowerCase().includes(minutesSearchQuery));
+       if (!matches) {
+           if (card) card.remove();
+           return;
+       }
+   }
+   
    if (!card) {
-       // Exists in data but not DOM (likely added from another user via poll)
+       // Exists in data but not DOM (likely added from another user via poll or now matches search)
        const container = document.getElementById('minutesListContainer');
        if (container) {
            const emptyMsg = container.querySelector('.empty-notes-msg');

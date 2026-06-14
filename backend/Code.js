@@ -451,15 +451,61 @@ return { status: 'success', data: jsonData, rates: ratesObj };
 }
 
 function saveFinance(payload) {
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(10000);
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Finance Options");
 if (!sheet) {
-sheet = ss.insertSheet("Finance Options");
-sheet.getRange("A1").setValue("JSON Data - Do Not Edit");
-setupFinanceRates(sheet);
+ sheet = ss.insertSheet("Finance Options");
+ sheet.getRange("A1").setValue("JSON Data - Do Not Edit");
+ setupFinanceRates(sheet);
 }
-sheet.getRange(2, 1).setValue(JSON.stringify(payload));
-return { status: 'success' };
+
+let existingStr = sheet.getRange(2, 1).getValue();
+let existingData = { options: [], config: {} };
+try { if(existingStr) existingData = JSON.parse(existingStr); } catch(e){}
+
+let changed = false;
+
+if (payload.config && payload.config.ts) {
+ if (!existingData.config || !existingData.config.ts || payload.config.ts > existingData.config.ts) {
+   existingData.config = payload.config;
+   changed = true;
+ }
+} else if (payload.config) {
+ existingData.config = payload.config;
+ changed = true;
+}
+
+if (payload.updates && Array.isArray(payload.updates)) {
+ let optMap = {};
+ if(existingData.options) existingData.options.forEach(o => optMap[o.id] = o);
+ 
+ payload.updates.forEach(u => {
+   let ext = optMap[u.id];
+   if (!ext || !ext.ts || !u.ts || u.ts > ext.ts) {
+     optMap[u.id] = u;
+     changed = true;
+   }
+ });
+ existingData.options = Object.values(optMap);
+} else if (payload.options) {
+ // Fallback for old save behavior
+ existingData.options = payload.options;
+ changed = true;
+}
+
+if(changed) {
+ sheet.getRange(2, 1).setValue(JSON.stringify(existingData));
+}
+
+return fetchFinance();
+} catch(e) {
+return { status: 'error', message: e.message };
+} finally {
+lock.releaseLock();
+}
 }
 
 function fetchMinutes() {

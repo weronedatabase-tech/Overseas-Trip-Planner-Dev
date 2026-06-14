@@ -1,10 +1,15 @@
 let financeOptions = [];
+let pendingFinanceUpdates = new Map(); // Map of optId -> option Object to merge
 let globalFinanceRates = { "SGD": 1, "MYR": 0.28 };
 let financeConfig = {
    globalPaxMode: 'individual', // 'individual', 'manual', 'auto'
-   globalPaxCount: 0
+   globalPaxCount: 0,
+   ts: 0
 };
 let isFinanceCollapsed = false;
+let financeSyncTimeout = null;
+let financePollInterval = null;
+let isFinanceSyncing = false;
 
 // Custom Drag & Drop State for Categories
 let finDndState = { active: false, row: null, placeholder: null, container: null, optId: null, yOffset: 0, xOffset: 0 };
@@ -54,6 +59,177 @@ function toggleIndividualFinanceCollapse(id) {
    }
 }
 
+// -----------------------------------------------------------
+// DATA SYNC & POLLING LOGIC
+// -----------------------------------------------------------
+function setFinanceSyncButtonState(state) {
+   const btn = document.getElementById('btn-sync-finance');
+   if(!btn) return;
+   
+   const textSpan = btn.querySelector('.btn-text'); 
+   const spinner = btn.querySelector('.btn-spinner');
+   
+   btn.className = "text-[10px] md:text-xs px-3 py-1.5 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
+   spinner.className = "btn-spinner ml-1.5 !w-3 !h-3 hidden-force border-2"; 
+   
+   if (state === 'loading') { 
+       btn.classList.add('bg-gray-100', 'text-gray-500', 'border-gray-200', 'dark:bg-gray-800', 'dark:text-gray-400', 'dark:border-gray-700'); 
+       textSpan.textContent = "Loading..."; 
+       spinner.classList.remove('hidden-force'); 
+       spinner.classList.add('spinner-primary'); 
+   } else if(state === 'saving') { 
+       btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); 
+       textSpan.textContent = "Saving..."; 
+       spinner.classList.remove('hidden-force'); 
+       spinner.classList.add('spinner-yellow'); 
+   } else if (state === 'saved') { 
+       btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); 
+       textSpan.textContent = "Saved"; 
+   } else if (state === 'error') { 
+       btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); 
+       textSpan.textContent = "Error"; 
+   }
+}
+
+function queueFinanceUpdate(optId = null) {
+   if (optId) {
+       const opt = financeOptions.find(o => o.id === optId);
+       if (opt) {
+           opt.ts = Date.now();
+           pendingFinanceUpdates.set(optId, opt);
+       }
+   }
+   financeConfig.ts = Date.now();
+   
+   setFinanceSyncButtonState('saving');
+   if (financeSyncTimeout) clearTimeout(financeSyncTimeout);
+   financeSyncTimeout = setTimeout(() => { executeFinanceSync(); }, 1500); 
+}
+
+async function executeFinanceSync() {
+   if (pendingFinanceUpdates.size === 0 && !financeConfig.ts) return;
+   
+   isFinanceSyncing = true;
+   setFinanceSyncButtonState('saving');
+   
+   const updates = Array.from(pendingFinanceUpdates.values());
+   pendingFinanceUpdates.clear();
+   
+   const payload = {
+       updates: updates,
+       config: financeConfig
+   };
+   
+   try {
+       const res = await callBackend('saveFinance', { payload: payload });
+       // LWW Merge Response
+       if (res.data) {
+           if (res.data.config && res.data.config.ts > financeConfig.ts) {
+               financeConfig = res.data.config;
+               renderFinanceGlobalSettings();
+           }
+           
+           if (res.data.options && Array.isArray(res.data.options)) {
+               let hasChanges = false;
+               res.data.options.forEach(sOpt => {
+                   let lOpt = financeOptions.find(o => o.id === sOpt.id);
+                   if (!lOpt || !sOpt.ts || sOpt.ts > (lOpt.ts || 0)) {
+                       if (lOpt) sOpt._isCollapsed = lOpt._isCollapsed; // Preserve UI State
+                       hasChanges = true;
+                   }
+               });
+               if(hasChanges) {
+                   // Replace local options with server merged truth
+                   res.data.options.forEach(sOpt => {
+                       const lIdx = financeOptions.findIndex(o => o.id === sOpt.id);
+                       if (lIdx > -1) {
+                           sOpt._isCollapsed = financeOptions[lIdx]._isCollapsed;
+                           financeOptions[lIdx] = sOpt;
+                       } else {
+                           sOpt._isCollapsed = isFinanceCollapsed;
+                           financeOptions.push(sOpt);
+                       }
+                   });
+                   // Also clean up any local options that were deleted on the server
+                   const serverIds = res.data.options.map(o => o.id);
+                   financeOptions = financeOptions.filter(o => serverIds.includes(o.id));
+                   
+                   renderFinanceOptions();
+               }
+           }
+       }
+       setFinanceSyncButtonState('saved');
+   } catch (e) {
+       setFinanceSyncButtonState('error');
+       updates.forEach(u => pendingFinanceUpdates.set(u.id, u));
+   } finally {
+       isFinanceSyncing = false;
+   }
+}
+
+function startFinancePolling() {
+   if (financePollInterval) clearInterval(financePollInterval);
+   
+   financePollInterval = setInterval(async () => {
+       const tab = document.getElementById('tab-finance');
+       if(!tab || tab.classList.contains('hidden-force') || isFinanceSyncing) return;
+       
+       try {
+           const res = await callBackend('fetchFinance');
+           if (res.data) {
+               let hasChanges = false;
+               
+               if (res.data.config && res.data.config.ts > (financeConfig.ts || 0)) {
+                   financeConfig = res.data.config;
+                   renderFinanceGlobalSettings();
+                   hasChanges = true;
+               }
+               
+               if (res.data.options && Array.isArray(res.data.options)) {
+                   res.data.options.forEach(sOpt => {
+                       let lOpt = financeOptions.find(o => o.id === sOpt.id);
+                       if (!lOpt || !sOpt.ts || sOpt.ts > (lOpt.ts || 0)) {
+                           if (lOpt) sOpt._isCollapsed = lOpt._isCollapsed;
+                           hasChanges = true;
+                       }
+                   });
+                   
+                   if (hasChanges) {
+                       res.data.options.forEach(sOpt => {
+                           const lIdx = financeOptions.findIndex(o => o.id === sOpt.id);
+                           if (lIdx > -1) {
+                               sOpt._isCollapsed = financeOptions[lIdx]._isCollapsed;
+                               financeOptions[lIdx] = sOpt;
+                           } else {
+                               sOpt._isCollapsed = isFinanceCollapsed;
+                               financeOptions.push(sOpt);
+                           }
+                       });
+                       const serverIds = res.data.options.map(o => o.id);
+                       financeOptions = financeOptions.filter(o => serverIds.includes(o.id));
+                       
+                       renderFinanceOptions();
+                       if (pendingFinanceUpdates.size === 0) setFinanceSyncButtonState('saved');
+                   }
+               }
+           }
+       } catch (e) {
+           // silent
+       }
+   }, 8000);
+}
+
+async function manualFinanceSync(btn) {
+   setFinanceSyncButtonState('loading');
+   try {
+       await executeFinanceSync();
+       showToast("Refreshed from server!");
+   } catch(e) {
+       showToast("Sync failed.", true);
+   }
+}
+// -----------------------------------------------------------
+
 async function buildFinanceUI() {
    document.getElementById('tab-finance').innerHTML = `
    <div class="flex flex-col h-full w-full relative">
@@ -65,8 +241,8 @@ async function buildFinanceUI() {
                <button onclick="addFinanceOption()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2 py-1.5 rounded-md hover:bg-blue-100 transition shadow-sm focus:outline-none shrink-0">
                    + Add Option
                </button>
-               <button id="btn-save-finance" onclick="saveFinanceConfig(this)" class="bg-primary text-white text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-md hover:bg-blue-600 transition flex items-center shadow-sm focus:outline-none shrink-0">
-                   <span class="btn-text">Save</span>
+               <button id="btn-sync-finance" onclick="manualFinanceSync(this)" class="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-md hover:bg-green-100 transition flex items-center shadow-sm focus:outline-none shrink-0 border">
+                   <span class="btn-text">Saved</span>
                    <div class="btn-spinner spinner-white ml-1.5 !w-3 !h-3 hidden-force border-2"></div>
                </button>
            </div>
@@ -94,7 +270,7 @@ async function buildFinanceUI() {
        globalFinanceRates = res.rates || { "SGD": 1, "MYR": 0.28 };
        
        const rawOptions = res.data?.options || (Array.isArray(res.data) ? res.data : []);
-       financeConfig = res.data?.config || { globalPaxMode: 'individual', globalPaxCount: 0 };
+       financeConfig = res.data?.config || { globalPaxMode: 'individual', globalPaxCount: 0, ts: Date.now() };
        
        financeOptions = rawOptions.map(opt => {
            if (opt.fields && !Array.isArray(opt.fields)) {
@@ -112,6 +288,7 @@ async function buildFinanceUI() {
            }
            if(!opt.displayCurrency) opt.displayCurrency = 'SGD';
            if(!opt.pax) opt.pax = 0;
+           if(!opt.ts) opt.ts = Date.now();
            if(opt._isCollapsed === undefined) opt._isCollapsed = isFinanceCollapsed;
            return opt;
        });
@@ -122,6 +299,7 @@ async function buildFinanceUI() {
        
        renderFinanceGlobalSettings();
        renderFinanceOptions();
+       startFinancePolling();
    } catch (e) {
        showToast("Failed to load finance data.", true);
    } finally {
@@ -169,10 +347,12 @@ function renderFinanceGlobalSettings() {
 function updateFinanceConfig(key, value) {
    if (key === 'globalPaxMode') {
        financeConfig[key] = value;
+       queueFinanceUpdate();
        renderFinanceGlobalSettings();
        renderFinanceOptions();
    } else if (key === 'globalPaxCount') {
        financeConfig[key] = parseInt(value) || 0;
+       queueFinanceUpdate();
        financeOptions.forEach(o => updateTotals(o.id));
        renderFinanceOptions();
    }
@@ -191,6 +371,7 @@ function updateFinanceOption(optId, key, value) {
        opt.displayCurrency = value;
        updateTotals(optId);
    }
+   queueFinanceUpdate(optId);
 }
 
 function updateFinanceField(optId, fieldId, key, value) {
@@ -210,6 +391,7 @@ function updateFinanceField(optId, fieldId, key, value) {
    } else if (key === 'remarks') {
        field.remarks = value;
    }
+   queueFinanceUpdate(optId);
 }
 
 function updateTotals(optId) {
@@ -241,6 +423,7 @@ function addFinanceOption(title = "New Option", reRender = true) {
        title: title,
        pax: 0,
        displayCurrency: 'SGD',
+       ts: Date.now(),
        _isCollapsed: false,
        fields: []
    };
@@ -256,6 +439,7 @@ function addFinanceOption(title = "New Option", reRender = true) {
    });
 
    financeOptions.unshift(newOpt);
+   queueFinanceUpdate(newOpt.id);
    if (reRender) renderFinanceOptions();
 }
 
@@ -266,16 +450,39 @@ function duplicateFinanceOption(id) {
    const copy = JSON.parse(JSON.stringify(opt));
    copy.id = generateFinanceUUID();
    copy.title = opt.title + " (Copy)";
+   copy.ts = Date.now();
    copy._isCollapsed = false;
    copy.fields.forEach(f => f.id = generateFinanceUUID()); 
    
    financeOptions.unshift(copy);
+   queueFinanceUpdate(copy.id);
    renderFinanceOptions();
 }
 
 function removeFinanceOption(id) {
    if (!confirm("Are you sure you want to remove this option?")) return;
    financeOptions = financeOptions.filter(o => o.id !== id);
+   
+   // We must trigger a global save config to ensure the deletion persists securely across clients
+   financeConfig.ts = Date.now();
+   
+   // Wipe pending updates for this opt just in case
+   pendingFinanceUpdates.delete(id);
+   
+   setFinanceSyncButtonState('saving');
+   if (financeSyncTimeout) clearTimeout(financeSyncTimeout);
+   financeSyncTimeout = setTimeout(async () => {
+       isFinanceSyncing = true;
+       try {
+           await callBackend('saveFinance', { payload: { options: financeOptions, config: financeConfig } });
+           setFinanceSyncButtonState('saved');
+       } catch(e) {
+           setFinanceSyncButtonState('error');
+       } finally {
+           isFinanceSyncing = false;
+       }
+   }, 500);
+
    renderFinanceOptions();
 }
 
@@ -290,6 +497,7 @@ function addFinanceCategory(optId) {
        currency: 'MYR',
        remarks: ''
    });
+   queueFinanceUpdate(optId);
    renderFinanceOptions();
 }
 
@@ -298,6 +506,7 @@ function removeFinanceCategory(optId, fieldId) {
    if(!opt) return;
    
    opt.fields = opt.fields.filter(f => f.id !== fieldId);
+   queueFinanceUpdate(optId);
    renderFinanceOptions();
 }
 
@@ -413,7 +622,7 @@ function reorderFieldsInModel(optId) {
        if(field) newFields.push(field);
    });
    opt.fields = newFields;
-   // No need to re-render everything as DOM is already visually accurate. Total/values haven't changed.
+   queueFinanceUpdate(optId);
 }
 // -----------------------------------------------------------
 
@@ -529,20 +738,4 @@ function renderFinanceOptions() {
    });
 
    container.innerHTML = html;
-}
-
-async function saveFinanceConfig(btn) {
-   setBtnLoading(btn, true);
-   try {
-       const payload = {
-           options: financeOptions,
-           config: financeConfig
-       };
-       await callBackend('saveFinance', { payload: payload });
-       showToast("Finance options saved successfully!");
-   } catch(e) {
-       showToast("Failed to save finance configurations.", true);
-   } finally {
-       setBtnLoading(btn, false);
-   }
 }
