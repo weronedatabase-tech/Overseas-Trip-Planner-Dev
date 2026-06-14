@@ -217,11 +217,11 @@ if (isFamilyMember) {
 let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
 family.push({
-  email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
-  group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
-  nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
-  emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
-  shortName: data[i][22] || ''
+ email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+ group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
+ nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
+ emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
+ shortName: data[i][22] || ''
 });
 }
 }
@@ -274,29 +274,29 @@ const results = [];
 for(let i = 1; i < data.length; i++) {
 if(data[i][11]) { 
 results.push({
-  timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
-  email: data[i][1],
-  role: data[i][2],
-  fullName: data[i][3],
-  relatedTrainee: data[i][4],
-  relationship: data[i][5],
-  group: data[i][6],
-  gender: data[i][7],
-  contact: data[i][8],
-  address: data[i][9],
-  nationality: data[i][10],
-  nric: data[i][11],
-  passportNo: data[i][12],
-  passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
-  dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
-  diet: data[i][15],
-  emergencyName: data[i][16],
-  emergencyContact: data[i][17],
-  emergencyRelation: data[i][18],
-  sleeping: data[i][19],
-  otherPoints: data[i][20],
-  pocNric: data[i][21],
-  shortName: data[i][22]
+ timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
+ email: data[i][1],
+ role: data[i][2],
+ fullName: data[i][3],
+ relatedTrainee: data[i][4],
+ relationship: data[i][5],
+ group: data[i][6],
+ gender: data[i][7],
+ contact: data[i][8],
+ address: data[i][9],
+ nationality: data[i][10],
+ nric: data[i][11],
+ passportNo: data[i][12],
+ passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
+ dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
+ diet: data[i][15],
+ emergencyName: data[i][16],
+ emergencyContact: data[i][17],
+ emergencyRelation: data[i][18],
+ sleeping: data[i][19],
+ otherPoints: data[i][20],
+ pocNric: data[i][21],
+ shortName: data[i][22]
 });
 }
 }
@@ -314,7 +314,8 @@ relatedTrainee: pData[i][4] ? String(pData[i][4]).trim() : '',
 shortName: pData[i][22] ? String(pData[i][22]).trim() : '',
 group: String(pData[i][6]).trim(), 
 nric: String(pData[i][11]).trim().toUpperCase(),
-pocNric: String(pData[i][21]).trim().toUpperCase()
+pocNric: String(pData[i][21]).trim().toUpperCase(),
+sleeping: pData[i][19] ? String(pData[i][19]).trim() : ''
 });
 }
 }
@@ -347,16 +348,16 @@ const roomData = roomSheet.getDataRange().getValues();
 for(let i=1; i<roomData.length; i++) {
 const id = String(roomData[i][0]).trim();
 if(id && id !== "Room ID") {
-  let occ = [];
-  try { occ = JSON.parse(roomData[i][3] || '[]'); } catch(e){}
-  rooms.push({
-      id: id,
-      name: String(roomData[i][1]),
-      capacity: parseInt(roomData[i][2]) || 0,
-      occupants: occ,
-      ts: new Date(roomData[i][4]).getTime() || 0,
-      isDeleted: String(roomData[i][6]).toUpperCase() === 'TRUE'
-  });
+ let occ = [];
+ try { occ = JSON.parse(roomData[i][3] || '[]'); } catch(e){}
+ rooms.push({
+     id: id,
+     name: String(roomData[i][1]),
+     capacity: parseInt(roomData[i][2]) || 0,
+     occupants: occ,
+     ts: new Date(roomData[i][4]).getTime() || 0,
+     isDeleted: String(roomData[i][6]).toUpperCase() === 'TRUE'
+ });
 }
 }
 }
@@ -439,16 +440,16 @@ const rData = roomSheet.getDataRange().getValues();
 for(let i=1; i<rData.length; i++) {
 const id = String(rData[i][0]).trim();
 if(id && id !== "Room ID") {
-  let occ = [];
-  try { occ = JSON.parse(rData[i][3] || '[]'); } catch(e){}
-  rooms.push({
-      id: id,
-      name: String(rData[i][1]),
-      capacity: parseInt(rData[i][2]) || 0,
-      occupants: occ,
-      ts: new Date(rData[i][4]).getTime() || 0,
-      isDeleted: String(rData[i][6]).toUpperCase() === 'TRUE'
-  });
+ let occ = [];
+ try { occ = JSON.parse(rData[i][3] || '[]'); } catch(e){}
+ rooms.push({
+     id: id,
+     name: String(rData[i][1]),
+     capacity: parseInt(rData[i][2]) || 0,
+     occupants: occ,
+     ts: new Date(rData[i][4]).getTime() || 0,
+     isDeleted: String(rData[i][6]).toUpperCase() === 'TRUE'
+ });
 }
 }
 }
@@ -480,16 +481,16 @@ const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
 const occStr = JSON.stringify(u.occupants || []);
 
 if (existingMap[u.id]) {
-  const rowIndex = existingMap[u.id];
-  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
-  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
-  
-  if (u.ts > existingTs) {
-      sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.name, u.capacity, occStr, tsDate, takenBy, isDel]]);
-  }
+ const rowIndex = existingMap[u.id];
+ const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+ const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+ 
+ if (u.ts > existingTs) {
+     sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.name, u.capacity, occStr, tsDate, takenBy, isDel]]);
+ }
 } else {
-  sheet.appendRow([u.id, u.name, u.capacity, occStr, tsDate, takenBy, isDel]);
-  existingMap[u.id] = sheet.getLastRow();
+ sheet.appendRow([u.id, u.name, u.capacity, occStr, tsDate, takenBy, isDel]);
+ existingMap[u.id] = sheet.getLastRow();
 }
 });
 
@@ -498,17 +499,17 @@ SpreadsheetApp.flush();
 const freshData = sheet.getDataRange().getValues();
 const roomsList = [];
 for(let i=1; i<freshData.length; i++) {
- const id = String(freshData[i][0]).trim();
- if(id && String(freshData[i][6]).toUpperCase() !== 'TRUE') {
-     let occ = [];
-     try { occ = JSON.parse(freshData[i][3] || '[]'); } catch(e){}
-     roomsList.push({
-         rowIdx: i + 1,
-         id: id,
-         occupants: occ,
-         ts: new Date(freshData[i][4]).getTime() || 0
-     });
- }
+const id = String(freshData[i][0]).trim();
+if(id && String(freshData[i][6]).toUpperCase() !== 'TRUE') {
+    let occ = [];
+    try { occ = JSON.parse(freshData[i][3] || '[]'); } catch(e){}
+    roomsList.push({
+        rowIdx: i + 1,
+        id: id,
+        occupants: occ,
+        ts: new Date(freshData[i][4]).getTime() || 0
+    });
+}
 }
 
 // Sort by TS desc so latest assignments win
@@ -520,17 +521,17 @@ roomsList.forEach(r => {
 const newOcc = [];
 let changed = false;
 r.occupants.forEach(n => {
-  if(!seenNrics.has(n)) {
-      seenNrics.add(n);
-      newOcc.push(n);
-  } else {
-      changed = true; // Dupe found and removed silently
-  }
+ if(!seenNrics.has(n)) {
+     seenNrics.add(n);
+     newOcc.push(n);
+ } else {
+     changed = true; // Dupe found and removed silently
+ }
 });
 
 if(changed) {
-  sheet.getRange(r.rowIdx, 4, 1, 2).setValues([[JSON.stringify(newOcc), new Date()]]);
-  needsFlush = true;
+ sheet.getRange(r.rowIdx, 4, 1, 2).setValues([[JSON.stringify(newOcc), new Date()]]);
+ needsFlush = true;
 }
 });
 
@@ -615,8 +616,8 @@ let changed = false;
 
 if (payload.config && payload.config.ts) {
 if (!existingData.config || !existingData.config.ts || payload.config.ts > existingData.config.ts) {
-  existingData.config = payload.config;
-  changed = true;
+ existingData.config = payload.config;
+ changed = true;
 }
 } else if (payload.config) {
 existingData.config = payload.config;
@@ -628,11 +629,11 @@ let optMap = {};
 if(existingData.options) existingData.options.forEach(o => optMap[o.id] = o);
 
 payload.updates.forEach(u => {
-  let ext = optMap[u.id];
-  if (!ext || !ext.ts || !u.ts || u.ts > ext.ts) {
-    optMap[u.id] = u;
-    changed = true;
-  }
+ let ext = optMap[u.id];
+ if (!ext || !ext.ts || !u.ts || u.ts > ext.ts) {
+   optMap[u.id] = u;
+   changed = true;
+ }
 });
 existingData.options = Object.values(optMap);
 } else if (payload.options) {
@@ -714,16 +715,16 @@ const tsDate = new Date(u.ts);
 const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
 
 if (existingMap[id]) {
-  const rowIndex = existingMap[id];
-  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
-  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
-  
-  if (u.ts > existingTs) {
-    sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
-  }
+ const rowIndex = existingMap[id];
+ const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+ const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+ 
+ if (u.ts > existingTs) {
+   sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
+ }
 } else {
-  sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
-  existingMap[id] = sheet.getLastRow();
+ sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
+ existingMap[id] = sheet.getLastRow();
 }
 });
 
@@ -844,9 +845,9 @@ try {
 const tId = f.getTargetId();
 const tMime = f.getTargetMimeType();
 if (tMime === 'application/vnd.google-apps.folder') {
-  url = `https://drive.google.com/drive/folders/${tId}`;
+ url = `https://drive.google.com/drive/folders/${tId}`;
 } else {
-  url = `https://drive.google.com/open?id=${tId}`;
+ url = `https://drive.google.com/open?id=${tId}`;
 }
 mime = tMime; 
 } catch(e) { } 
@@ -1031,9 +1032,9 @@ results.success.push(email);
 } else if (actionType === 'remove') {
 if (access[email]) {
 if (access[email] === 'editor') {
-  folder.removeEditor(email);
+ folder.removeEditor(email);
 } else {
-  folder.removeViewer(email);
+ folder.removeViewer(email);
 }
 delete access[email];
 results.success.push(email);
