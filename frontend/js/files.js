@@ -2,7 +2,8 @@
 // Google Drive File & Folder Manager
 // ==========================================
 let currentDrivePath = []; // Stores { id: 'folderId', name: 'Folder Name' }
-let driveClipboard = null; // Stores { id: string, name: string, isFolder: boolean }
+let driveClipboard = null; // Stores { action: 'copy'|'move', items: [{ id, name, isFolder }] }
+let selectedDriveItems = new Map(); // Stores id -> { id, isFolder, name }
 
 // Close add menu if clicked outside
 document.addEventListener('click', (e) => {
@@ -71,6 +72,17 @@ document.getElementById('tab-files').innerHTML = `
   </div>
 </div>
 
+<!-- Bulk Actions Toolbar -->
+<div id="driveBulkActions" class="hidden-force bg-blue-50 dark:bg-blue-900/30 p-2 md:p-3 shrink-0 flex justify-between items-center border-b border-blue-200 dark:border-blue-800 z-10 transition-all">
+  <span id="driveBulkCount" class="text-xs md:text-sm font-black text-blue-800 dark:text-blue-300">0 selected</span>
+  <div class="flex items-center gap-1.5 md:gap-2">
+      <button onclick="bulkCopySelected()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none">Copy</button>
+      <button onclick="bulkMoveSelected()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded shadow-sm hover:bg-orange-50 transition focus:outline-none">Move</button>
+      <button onclick="bulkDeleteSelected()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded shadow-sm hover:bg-red-50 transition focus:outline-none">Delete</button>
+      <button onclick="clearDriveSelection()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded shadow-sm hover:bg-gray-100 transition focus:outline-none ml-2">Cancel</button>
+  </div>
+</div>
+
 <!-- Loading Overlay -->
 <div id="driveLoadingOverlay" class="absolute inset-0 top-[50px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 hidden-force flex flex-col justify-center items-center">
    <div class="loader !w-8 !h-8 border-primary mb-2"></div>
@@ -95,19 +107,83 @@ if (menu) {
 }
 }
 
-function copyToDriveClipboard(id, isFolder, name) {
-driveClipboard = { id, isFolder, name };
-showToast(`Copied "${name}" to clipboard.`);
+// ------------------------------------------------------------------
+// MULTI-SELECTION & BULK ACTIONS
+// ------------------------------------------------------------------
+
+function toggleDriveItemSelection(event, id, isFolder, name) {
+event.stopPropagation();
+if (event.target.checked) {
+  selectedDriveItems.set(id, { id, isFolder, name });
+} else {
+  selectedDriveItems.delete(id);
+}
+updateBulkActionsBar();
+}
+
+function updateBulkActionsBar() {
+const bar = document.getElementById('driveBulkActions');
+const countLbl = document.getElementById('driveBulkCount');
+if (!bar || !countLbl) return;
+
+if (selectedDriveItems.size > 0) {
+  bar.classList.remove('hidden-force');
+  countLbl.textContent = `${selectedDriveItems.size} item(s) selected`;
+} else {
+  bar.classList.add('hidden-force');
+}
+}
+
+function clearDriveSelection() {
+selectedDriveItems.clear();
+document.querySelectorAll('.drive-item-checkbox').forEach(cb => cb.checked = false);
+updateBulkActionsBar();
+}
+
+function setDriveClipboard(action, itemsArray) {
+driveClipboard = { action, items: itemsArray };
+showToast(`${action === 'copy' ? 'Copied' : 'Moving'} ${itemsArray.length} item(s). Navigate to target folder and paste.`);
+clearDriveSelection();
 updatePasteButtonState();
 }
+
+function bulkCopySelected() { setDriveClipboard('copy', Array.from(selectedDriveItems.values())); }
+function bulkMoveSelected() { setDriveClipboard('move', Array.from(selectedDriveItems.values())); }
+async function bulkDeleteSelected() {
+if (!confirm(`Move ${selectedDriveItems.size} item(s) to Trash?`)) return;
+const items = Array.from(selectedDriveItems.values());
+clearDriveSelection();
+const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
+await executeBulkAction('delete', items, current.id);
+}
+
+// Quick Actions (Single Items)
+function actionSingleCopy(id, isFolder, name) { setDriveClipboard('copy', [{id, isFolder, name}]); }
+function actionSingleMove(id, isFolder, name) { setDriveClipboard('move', [{id, isFolder, name}]); }
+
+async function promptDeleteDriveItem(id, isFolder, name) {
+if (!confirm(`Are you sure you want to delete the ${isFolder ? 'folder' : 'file'} "${name}"?\nThis will move it to the Drive Trash.`)) return;
+const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
+await executeBulkAction('delete', [{id, isFolder, name}], current.id);
+}
+
+// ------------------------------------------------------------------
 
 function updatePasteButtonState() {
 const btn = document.getElementById('btnDrivePaste');
 const lbl = document.getElementById('lblDrivePaste');
 if (btn && lbl) {
-  if (driveClipboard) {
+  if (driveClipboard && driveClipboard.items.length > 0) {
       btn.classList.remove('hidden-force');
-      btn.title = `Paste: ${driveClipboard.name}`;
+      if (driveClipboard.action === 'copy') {
+          lbl.textContent = `Paste (${driveClipboard.items.length})`;
+          btn.classList.remove('text-orange-600', 'hover:bg-orange-50');
+          btn.classList.add('text-green-600', 'hover:bg-green-50');
+      } else {
+          lbl.textContent = `Move Here (${driveClipboard.items.length})`;
+          btn.classList.remove('text-green-600', 'hover:bg-green-50');
+          btn.classList.add('text-orange-600', 'hover:bg-orange-50');
+      }
   } else {
       btn.classList.add('hidden-force');
   }
@@ -115,44 +191,48 @@ if (btn && lbl) {
 }
 
 async function pasteFromDriveClipboard() {
-if (!driveClipboard) return;
-
-// Prevent cyclic folder paste (pasting a folder into itself or its direct subfolders)
-if (driveClipboard.isFolder) {
-  const isCyclic = currentDrivePath.some(f => f.id === driveClipboard.id);
-  if (isCyclic) {
-      showToast("Cannot paste a folder into itself or its subfolders.", true);
-      return;
-  }
-}
+if (!driveClipboard || driveClipboard.items.length === 0) return;
 
 const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
-const defaultName = `Copy of ${driveClipboard.name}`;
 
-const newName = prompt(`Pasting ${driveClipboard.isFolder ? 'folder' : 'file'} "${driveClipboard.name}".\nEnter name for the copy:`, defaultName);
-if (!newName || !newName.trim()) return;
+let singleNewName = null;
+if (driveClipboard.items.length === 1) {
+  const item = driveClipboard.items[0];
+  const defaultName = driveClipboard.action === 'copy' ? `Copy of ${item.name}` : item.name;
+  singleNewName = prompt(`${driveClipboard.action === 'copy' ? 'Pasting' : 'Moving'} "${item.name}".\nEnter name:`, defaultName);
+  if (!singleNewName || !singleNewName.trim()) return;
+}
 
+await executeBulkAction(driveClipboard.action, driveClipboard.items, current.id, singleNewName?.trim());
+
+// Clear clipboard only if successfully initiated (re-render will clean up UI)
+driveClipboard = null;
+updatePasteButtonState();
+}
+
+async function executeBulkAction(actionType, items, targetFolderId, singleNewName = null) {
 const overlay = document.getElementById('driveLoadingOverlay');
 const loadText = document.getElementById('driveLoadingText');
 
 if (overlay) {
   overlay.classList.remove('hidden-force');
-  loadText.textContent = `Pasting ${driveClipboard.isFolder ? 'folder' : 'file'}...`;
+  if (actionType === 'delete') loadText.textContent = `Deleting ${items.length} item(s)...`;
+  else if (actionType === 'move') loadText.textContent = `Moving ${items.length} item(s)...`;
+  else loadText.textContent = `Copying ${items.length} item(s)...`;
 }
 
 try {
-  const res = await callBackend('copyDriveItem', { 
-      itemId: driveClipboard.id, 
-      isFolder: driveClipboard.isFolder, 
-      targetFolderId: current.id, 
-      newName: newName.trim() 
+  const res = await callBackend('bulkDriveOperation', { 
+      actionType, 
+      items, 
+      targetFolderId, 
+      singleNewName 
   });
-  
   if (res.status === 'error') throw new Error(res.message);
   renderDriveContents(res.folders, res.files);
-  showToast("Pasted successfully.");
+  showToast("Operation successful.");
 } catch(e) {
-  showToast("Failed to paste: " + e.message, true);
+  showToast("Failed: " + e.message, true);
 } finally {
   if (overlay) overlay.classList.add('hidden-force');
 }
@@ -237,7 +317,6 @@ if (selectedFiles.length === 0) return;
 let validFiles = [];
 let skippedFiles = [];
 
-// 4MB limit (Google Apps Script Payload Safety Limit)
 for (let f of selectedFiles) {
 if (f.size > 4194304) {
     skippedFiles.push(f.name);
@@ -266,7 +345,6 @@ overlay.classList.remove('hidden-force');
 let successCount = 0;
 let lastRes = null;
 
-// Upload files sequentially to avoid rate limiting and payload collision
 for (let i = 0; i < validFiles.length; i++) {
 const file = validFiles[i];
 if (loadText) {
@@ -290,7 +368,6 @@ try {
 }
 }
 
-// Refresh the UI with the final folder contents state
 if (lastRes) {
 renderDriveContents(lastRes.folders, lastRes.files);
 }
@@ -326,30 +403,6 @@ renderDriveContents(res.folders, res.files);
 showToast("Item renamed successfully.");
 } catch(e) {
 showToast("Failed to rename item.", true);
-} finally {
-if (overlay) overlay.classList.add('hidden-force');
-}
-}
-
-async function promptDeleteDriveItem(id, isFolder, name) {
-if (!confirm(`Are you sure you want to delete the ${isFolder ? 'folder' : 'file'} "${name}"?\nThis will move it to the Drive Trash.`)) return;
-
-const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root' };
-const overlay = document.getElementById('driveLoadingOverlay');
-const loadText = document.getElementById('driveLoadingText');
-
-if (overlay) {
-overlay.classList.remove('hidden-force');
-loadText.textContent = "Deleting item...";
-}
-
-try {
-const res = await callBackend('deleteDriveItem', { itemId: id, isFolder: isFolder, currentFolderId: current.id });
-if (res.status === 'error') throw new Error(res.message);
-renderDriveContents(res.folders, res.files);
-showToast("Item moved to Trash.");
-} catch(e) {
-showToast("Failed to delete.", true);
 } finally {
 if (overlay) overlay.classList.add('hidden-force');
 }
@@ -415,6 +468,7 @@ if (currentDrivePath.length > 1) {
 currentDrivePath.pop();
 const target = currentDrivePath[currentDrivePath.length - 1];
 loadDriveFolder(target.id, target.name, true);
+clearDriveSelection();
 }
 }
 
@@ -424,10 +478,10 @@ const current = currentDrivePath[currentDrivePath.length - 1] || { id: 'root', n
 loadDriveFolder(current.id, current.name, true).finally(() => {
 setBtnLoading(btn, false);
 });
+clearDriveSelection();
 }
 
 function openDriveFile(url) {
-// Inject an anchor tag to cleanly trigger native intent handling (opens Google Drive App natively on iOS/Android)
 const a = document.createElement('a');
 a.href = url;
 a.target = '_blank';
@@ -447,28 +501,36 @@ return;
 }
 
 const copyIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+const moveIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path></svg>`;
 const trashIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
 const pencilIcon = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
 
 // Render Folders
 folders.forEach(f => {
 const safeName = f.name.replace(/'/g, "\\'");
+const isChecked = selectedDriveItems.has(f.id) ? 'checked' : '';
 html += `
-  <div class="flex items-center gap-1 bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:border-primary transition group">
+  <div class="flex items-center gap-1 bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:border-primary transition group">
+     <div class="flex items-center pl-2 shrink-0" onclick="event.stopPropagation()">
+        <input type="checkbox" class="drive-item-checkbox w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer" ${isChecked} onchange="toggleDriveItemSelection(event, '${f.id}', true, '${safeName}')">
+     </div>
      <div onclick="loadDriveFolder('${f.id}', '${safeName}')" class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none active:scale-[0.98] px-2 py-1">
          <div class="w-8 h-8 rounded bg-yellow-50 dark:bg-yellow-900/30 flex items-center justify-center shrink-0">
            <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
          </div>
          <span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>
      </div>
-     <div class="flex items-center gap-0.5 shrink-0">
-         <button onclick="copyToDriveClipboard('${f.id}', true, '${safeName}')" class="p-2.5 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Copy Folder">
+     <div class="flex items-center gap-0.5 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+         <button onclick="actionSingleCopy('${f.id}', true, '${safeName}')" class="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Copy Folder">
             ${copyIcon}
          </button>
-         <button onclick="promptRenameDriveItem('${f.id}', true, '${safeName}')" class="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Rename Folder">
+         <button onclick="actionSingleMove('${f.id}', true, '${safeName}')" class="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Move Folder">
+            ${moveIcon}
+         </button>
+         <button onclick="promptRenameDriveItem('${f.id}', true, '${safeName}')" class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Rename Folder">
             ${pencilIcon}
          </button>
-         <button onclick="promptDeleteDriveItem('${f.id}', true, '${safeName}')" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete Folder">
+         <button onclick="promptDeleteDriveItem('${f.id}', true, '${safeName}')" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete Folder">
             ${trashIcon}
          </button>
      </div>
@@ -479,6 +541,7 @@ html += `
 // Render Files & Shortcuts
 files.forEach(f => {
 const safeName = f.name.replace(/'/g, "\\'");
+const isChecked = selectedDriveItems.has(f.id) ? 'checked' : '';
 let iconHtml = '';
 let bgClass = 'bg-gray-50 dark:bg-gray-700';
 
@@ -507,7 +570,10 @@ const nameHtml = f.isShortcut
    : `<span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>`;
 
 html += `
-  <div class="flex items-center gap-1 bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-300 dark:hover:border-gray-500 transition group">
+  <div class="flex items-center gap-1 bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-300 dark:hover:border-gray-500 transition group">
+     <div class="flex items-center pl-2 shrink-0" onclick="event.stopPropagation()">
+        <input type="checkbox" class="drive-item-checkbox w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer" ${isChecked} onchange="toggleDriveItemSelection(event, '${f.id}', false, '${safeName}')">
+     </div>
      <div onclick="openDriveFile('${f.url}')" class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none active:scale-[0.98] px-2 py-1">
          <div class="relative w-8 h-8 rounded ${bgClass} flex items-center justify-center shrink-0">
            ${iconHtml}
@@ -515,14 +581,17 @@ html += `
          </div>
          ${nameHtml}
      </div>
-     <div class="flex items-center gap-0.5 shrink-0">
-         <button onclick="copyToDriveClipboard('${f.id}', false, '${safeName}')" class="p-2.5 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Copy File">
+     <div class="flex items-center gap-0.5 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+         <button onclick="actionSingleCopy('${f.id}', false, '${safeName}')" class="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Copy File">
             ${copyIcon}
          </button>
-         <button onclick="promptRenameDriveItem('${f.id}', false, '${safeName}')" class="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Rename File">
+         <button onclick="actionSingleMove('${f.id}', false, '${safeName}')" class="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Move File">
+            ${moveIcon}
+         </button>
+         <button onclick="promptRenameDriveItem('${f.id}', false, '${safeName}')" class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Rename File">
             ${pencilIcon}
          </button>
-         <button onclick="promptDeleteDriveItem('${f.id}', false, '${safeName}')" class="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete File">
+         <button onclick="promptDeleteDriveItem('${f.id}', false, '${safeName}')" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-md transition focus:outline-none shrink-0" title="Delete File">
             ${trashIcon}
          </button>
      </div>

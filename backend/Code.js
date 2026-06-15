@@ -97,7 +97,7 @@ case 'createDriveFolder': result = createDriveFolder(data.parentFolderId, data.f
 case 'createGoogleDoc': result = createGoogleDoc(data.folderId, data.fileName, data.docType); break;
 case 'renameDriveItem': result = renameDriveItem(data.itemId, data.isFolder, data.newName, data.currentFolderId); break;
 case 'deleteDriveItem': result = deleteDriveItem(data.itemId, data.isFolder, data.currentFolderId); break;
-case 'copyDriveItem': result = copyDriveItem(data.itemId, data.isFolder, data.targetFolderId, data.newName); break;
+case 'bulkDriveOperation': result = bulkDriveOperation(data.actionType, data.items, data.targetFolderId, data.singleNewName); break;
 case 'fetchLogistics': result = fetchLogistics(); break;
 case 'syncPairingUpdates': result = syncPairingUpdates(data.updates, data.takenBy || 'Admin'); break;
 case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
@@ -960,17 +960,43 @@ return { status: 'error', message: e.message };
 }
 }
 
-function copyDriveItem(itemId, isFolder, targetFolderId, newName) {
+function bulkDriveOperation(actionType, items, targetFolderId, singleNewName) {
 try {
-let targetFolder = targetFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(targetFolderId);
+let targetFolder = null;
+if (actionType === 'copy' || actionType === 'move') {
+  targetFolder = targetFolderId === 'root' ? getTripFolder() : DriveApp.getFolderById(targetFolderId);
+}
 
-if (!isFolder) {
-let sourceFile = DriveApp.getFileById(itemId);
-sourceFile.makeCopy(newName, targetFolder);
-} else {
-let sourceFolder = DriveApp.getFolderById(itemId);
-let newFolder = targetFolder.createFolder(newName);
-copyFolderRecursive(sourceFolder, newFolder);
+for (let i = 0; i < items.length; i++) {
+  const item = items[i];
+  const nameToUse = (items.length === 1 && singleNewName) ? singleNewName : item.name;
+
+  if (actionType === 'delete') {
+      if (item.isFolder) {
+          DriveApp.getFolderById(item.id).setTrashed(true);
+      } else {
+          DriveApp.getFileById(item.id).setTrashed(true);
+      }
+  } else if (actionType === 'move') {
+      if (item.isFolder) {
+          let folder = DriveApp.getFolderById(item.id);
+          folder.moveTo(targetFolder);
+          if (folder.getName() !== nameToUse) folder.setName(nameToUse);
+      } else {
+          let file = DriveApp.getFileById(item.id);
+          file.moveTo(targetFolder);
+          if (file.getName() !== nameToUse) file.setName(nameToUse);
+      }
+  } else if (actionType === 'copy') {
+      if (item.isFolder) {
+          let sourceFolder = DriveApp.getFolderById(item.id);
+          let newFolder = targetFolder.createFolder(nameToUse);
+          copyFolderRecursive(sourceFolder, newFolder);
+      } else {
+          let sourceFile = DriveApp.getFileById(item.id);
+          sourceFile.makeCopy(nameToUse, targetFolder);
+      }
+  }
 }
 
 Utilities.sleep(1500);
