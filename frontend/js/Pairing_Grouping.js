@@ -762,6 +762,43 @@ try {
 }
 
 
+async function manualSyncRooms(btn) {
+if (pendingRoomUpdates.size > 0) {
+    await executeRoomSync();
+}
+setRoomSyncButtonState('loading');
+try {
+    const res = await callBackend('fetchRoomsOnly');
+    if(res.rooms) {
+        let hasChanges = false;
+        res.rooms.forEach(sRoom => {
+            if (!pendingRoomUpdates.has(sRoom.id)) {
+                let lRoom = globalLogistics.rooms.find(r => r.id === sRoom.id);
+                if (lRoom) {
+                    if (sRoom.ts > (lRoom.ts || 0)) {
+                        lRoom.name = sRoom.name;
+                        lRoom.capacity = sRoom.capacity;
+                        lRoom.occupants = sRoom.occupants;
+                        lRoom.isDeleted = sRoom.isDeleted;
+                        lRoom.ts = sRoom.ts;
+                        hasChanges = true;
+                    }
+                } else {
+                    globalLogistics.rooms.push(sRoom);
+                    hasChanges = true;
+                }
+            }
+        });
+        if(hasChanges) renderRooms();
+    }
+    setRoomSyncButtonState('saved');
+    showToast("Refreshed from server!");
+} catch (e) {
+    setRoomSyncButtonState('error');
+}
+}
+
+
 // ==========================================
 // UI RENDERERS
 // ==========================================
@@ -827,7 +864,7 @@ document.getElementById('tab-logistics').innerHTML = `
             <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
         </button>
     </div>
-    <button id="btn-sync-rooms" class="text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+    <button id="btn-sync-rooms" onclick="manualSyncRooms(this)" class="text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
       <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
     </button>
 </div>
@@ -1045,7 +1082,7 @@ const sleepingTooltip = item.sleeping ? `Request: ${item.sleeping.replace(/"/g, 
 const sleepingIndicator = item.sleeping ? `<button onclick="openSleepingModal('${item.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none shrink-0" title="${sleepingTooltip}"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
 
 unHtml += `
-<div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" data-role="${item.role}">
+<div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" data-role="${item.role}">
     <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-1 rounded shadow-sm border ${dynColor} w-full flex items-start justify-between gap-1">
         <span class="break-words whitespace-normal text-left flex-1">${dName}</span>
         ${sleepingIndicator}
@@ -1088,7 +1125,7 @@ room.occupants.forEach(nric => {
         const matchClass = isMatch ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800 scale-105 z-10' : '';
         
         const pSleepingTooltip = p.sleeping ? `Request: ${p.sleeping.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}` : '';
-        const sleepingIndicator = p.sleeping ? `<button onclick="openSleepingModal('${p.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none shrink-0" title="${pSleepingTooltip}"><svg class="w-3.5 h-3.5 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
+        const sleepingIndicator = p.sleeping ? `<button onclick="openSleepingModal('${p.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none shrink-0" title="${pSleepingTooltip}"><svg class="w-3 h-3 md:w-3.5 md:h-3.5 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
         
         occHtml += `
         <div class="dnd-room-draggable relative flex w-full cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform pointer-events-auto" data-nric="${p.nric}">
