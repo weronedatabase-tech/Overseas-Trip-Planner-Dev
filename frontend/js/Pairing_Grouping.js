@@ -104,13 +104,13 @@ const deltaY = Math.abs(clientY - dndState.startY);
 
 // If user hasn't triggered drag, check direction of movement
 if (!dndState.isDragging) {
-// For rooms, we allow dragging into columns below or beside, so any substantial movement triggers it
-const threshold = dndState.type === 'rooming' ? 10 : 8;
+// Allow dragging into columns beside or below (for side-by-side rooming & pairing)
+const threshold = 8;
 
 if ((dndState.type === 'pairing' && deltaX > threshold && deltaX > deltaY) || (dndState.type === 'rooming' && (deltaX > threshold || deltaY > threshold))) {
     
+    // For pairing mostly horizontal intent is required
     if (dndState.type === 'pairing' && deltaY > 8 && deltaY > deltaX) {
-        // Cancel horizontal swipe if vertical swipe is prominent in pairing
         dndState.el = null;
         return;
     }
@@ -845,15 +845,15 @@ document.getElementById('tab-logistics').innerHTML = `
 </div>
 </div>
 
-<div class="flex flex-col md:flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 rounded-b-xl md:rounded-none">
-<!-- Unassigned Pool (Top on mobile, Left on Desktop) -->
-<div class="flex-1 md:w-1/3 md:max-w-xs md:flex-none flex flex-col min-h-[35%] md:min-h-0 overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/50">
+<div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 rounded-b-xl md:rounded-none">
+<!-- Unassigned Pool -->
+<div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden border-r border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/50">
 <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">Unassigned (<span id="unassignedCount">0</span>)</h4>
-<div id="roomUnassignedPool" class="space-y-1.5 flex-grow overflow-y-auto p-2 custom-scrollbar"></div>
+<div id="roomUnassignedPool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6"></div>
 </div>
-<!-- Rooms Display (Bottom on mobile, Right on Desktop) -->
-<div class="flex-[2] md:flex-1 flex flex-col h-full overflow-hidden relative">
-<div id="roomListContainer" class="flex-grow overflow-y-auto p-2 md:p-3 custom-scrollbar flex flex-col gap-3"></div>
+<!-- Rooms Display -->
+<div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
+<div id="roomListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
 </div>
 </div>
 </div>
@@ -1042,15 +1042,17 @@ const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' :
 const roleShort = item.role.substring(0,3).toUpperCase();
 
 const sleepingTooltip = item.sleeping ? `Request: ${item.sleeping.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}` : '';
-const sleepingIndicator = item.sleeping ? `<button onclick="openSleepingModal('${item.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="${sleepingTooltip}"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
+const sleepingIndicator = item.sleeping ? `<button onclick="openSleepingModal('${item.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="${sleepingTooltip}"><svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
 
 unHtml += `
-<div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex items-center gap-1.5" data-nric="${item.nric}" data-role="${item.role}">
-    <span class="main-name-pill font-bold text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} min-w-0 flex-1 truncate flex items-center justify-between">
-        <span class="truncate">${dName}</span>
-        ${sleepingIndicator}
-    </span>
-    <span class="text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0">${roleShort}</span>
+<div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" data-role="${item.role}">
+    <div class="flex justify-between items-start w-full gap-1">
+        <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} min-w-0 flex-1 truncate flex items-center justify-between">
+            <span class="truncate">${dName}</span>
+            ${sleepingIndicator}
+        </div>
+    </div>
+    <span class="text-[7px] md:text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1 py-0.5 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0 self-start w-max">${roleShort}</span>
 </div>
 `;
 });
@@ -1088,12 +1090,12 @@ room.occupants.forEach(nric => {
         const matchClass = isMatch ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800 scale-105 z-10' : '';
         
         const pSleepingTooltip = p.sleeping ? `Request: ${p.sleeping.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}` : '';
-        const sleepingIndicator = p.sleeping ? `<button onclick="openSleepingModal('${p.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="${pSleepingTooltip}"><svg class="w-3.5 h-3.5 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
+        const sleepingIndicator = p.sleeping ? `<button onclick="openSleepingModal('${p.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="${pSleepingTooltip}"><svg class="w-3 h-3 md:w-3.5 md:h-3.5 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
         
         occHtml += `
-        <div class="dnd-room-draggable relative inline-block m-1 cursor-grab active:cursor-grabbing hover:scale-105 transition-transform pointer-events-auto" data-nric="${p.nric}">
-            <div class="main-name-pill ${dynColor} ${matchClass} text-[10px] px-1.5 py-0.5 rounded shadow-sm border font-bold opacity-90 leading-tight flex items-center pr-3">
-                <span class="truncate">${dName}</span>
+        <div class="dnd-room-draggable relative inline-block cursor-grab active:cursor-grabbing hover:scale-105 transition-transform pointer-events-auto" data-nric="${p.nric}">
+            <div class="main-name-pill ${dynColor} ${matchClass} text-[9px] md:text-[10px] px-1.5 py-0.5 rounded shadow-sm border font-bold opacity-90 leading-tight flex items-center pr-3">
+                <span class="truncate max-w-[80px] md:max-w-[120px]">${dName}</span>
                 ${sleepingIndicator}
             </div>
             <div class="remove-x" onclick="unassignFromRoom('${p.nric}', '${room.id}')">×</div>
@@ -1105,18 +1107,18 @@ const occDisplay = isFull ? `<span class="text-green-600 dark:text-green-400 fon
 
 roomHtml += `
 <div class="dnd-room-dropzone flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors" data-room-id="${room.id}">
-    <div class="flex justify-between items-center bg-gray-50/80 dark:bg-gray-900/50 p-2 border-b border-gray-100 dark:border-gray-700 rounded-t-xl shrink-0">
-        <div class="flex items-center gap-2 min-w-0">
-            <span class="font-black text-xs text-gray-900 dark:text-white truncate">${room.name}</span>
-            <span class="text-[9px] bg-gray-200/50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shrink-0">${occDisplay}</span>
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-gray-50/80 dark:bg-gray-900/50 p-1.5 md:p-2 border-b border-gray-100 dark:border-gray-700 rounded-t-xl shrink-0 gap-1.5">
+        <div class="flex items-center justify-between w-full lg:w-auto gap-2 min-w-0">
+            <span class="font-black text-[11px] md:text-xs text-gray-900 dark:text-white truncate flex-1">${room.name}</span>
+            <span class="text-[8px] md:text-[9px] bg-gray-200/50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shrink-0">${occDisplay}</span>
         </div>
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="flex items-center gap-1 shrink-0 w-full lg:w-auto justify-end">
             <button onclick="openRoomAddSheet('${room.id}')" class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 font-bold px-1.5 py-0.5 rounded hover:bg-blue-100 transition focus:outline-none" ${isFull ? 'disabled style="opacity:0.5;"' : ''}>+ Add</button>
-            <button onclick="promptEditRoom('${room.id}')" class="text-gray-400 hover:text-primary transition p-0.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-            <button onclick="deleteRoom('${room.id}')" class="text-gray-400 hover:text-red-500 transition p-0.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+            <button onclick="promptEditRoom('${room.id}')" class="text-gray-400 hover:text-primary transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+            <button onclick="deleteRoom('${room.id}')" class="text-gray-400 hover:text-red-500 transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
         </div>
     </div>
-    <div class="p-1.5 min-h-[40px] flex flex-wrap content-start items-start pointer-events-auto bg-transparent">
+    <div class="p-1.5 min-h-[40px] flex flex-wrap content-start items-start pointer-events-auto bg-transparent gap-1">
         ${occHtml || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 m-1 pointer-events-none">Drop here...</span>'}
     </div>
 </div>
