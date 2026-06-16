@@ -918,8 +918,8 @@ function toggleAltSwap() { altSwapMode = !altSwapMode; renderPairings(); }
 // PAIRING RENDERERS
 // ---------------------------------------------------------
 function generatePillHtml(targetName, targetColorClass, traineeNric, volNric) {
-return `<div class="relative inline-block m-1 align-top pointer-events-auto">
-<div class="${targetColorClass} text-[9px] md:text-[10px] pl-1.5 pr-2.5 py-0.5 rounded shadow-sm border border-gray-300 dark:border-gray-600 font-bold opacity-90 leading-tight break-words whitespace-normal text-center" style="overflow-wrap: anywhere;">
+return `<div class="relative flex w-full align-top pointer-events-auto">
+<div class="${targetColorClass} text-[10px] md:text-[11px] pl-2 pr-6 py-1 rounded shadow-sm border border-gray-300 dark:border-gray-600 font-bold opacity-90 leading-tight break-words whitespace-normal text-left w-full">
 ${targetName}
 </div>
 <div class="remove-x" onclick="unpairTrainee('${traineeNric}', '${volNric}')">×</div>
@@ -950,13 +950,13 @@ return `
 <div class="dnd-draggable dnd-dropzone bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-md border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col min-h-[60px] gap-1" data-nric="${item.nric}" data-role="${item.role}">
 <div class="flex justify-between items-start w-full gap-1">
 <div class="main-name-pill font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full inline-flex flex-wrap items-center gap-1 self-start min-w-0 leading-[1.1]">
-<span class="break-words whitespace-normal min-w-0 text-left" style="overflow-wrap: break-word;">${displayName}</span>
+<span class="break-words whitespace-normal min-w-0 text-left">${displayName}</span>
 ${famBadge}
 </div>
 <button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-1 rounded border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
 </div>
-<div class="flex flex-wrap flex-grow items-start content-start pointer-events-auto bg-gray-50/50 dark:bg-gray-900/50 p-1 rounded min-h-[28px] border border-dashed border-gray-200 dark:border-gray-700 mt-0.5">
-${pairedPills || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 mt-0.5 ml-0.5 pointer-events-none">Drop pair here</span>'}
+<div class="flex flex-col pointer-events-auto bg-gray-50/50 dark:bg-gray-900/50 p-1.5 rounded min-h-[36px] border border-dashed border-gray-200 dark:border-gray-700 mt-1 w-full gap-1.5">
+${pairedPills || '<span class="text-[9px] md:text-[10px] font-medium text-gray-400 dark:text-gray-500 mt-0.5 pointer-events-none text-center w-full py-1">Drop pair here</span>'}
 </div>
 </div>
 `;
@@ -1042,17 +1042,15 @@ const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' :
 const roleShort = item.role.substring(0,3).toUpperCase();
 
 const sleepingTooltip = item.sleeping ? `Request: ${item.sleeping.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}` : '';
-const sleepingIndicator = item.sleeping ? `<button onclick="openSleepingModal('${item.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="${sleepingTooltip}"><svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
+const sleepingIndicator = item.sleeping ? `<button onclick="openSleepingModal('${item.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none shrink-0" title="${sleepingTooltip}"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
 
 unHtml += `
-<div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" data-role="${item.role}">
-    <div class="flex justify-between items-start w-full gap-1">
-        <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} min-w-0 flex-1 truncate flex items-center justify-between">
-            <span class="truncate">${dName}</span>
-            ${sleepingIndicator}
-        </div>
+<div class="dnd-room-draggable bg-white dark:bg-gray-800 p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" data-role="${item.role}">
+    <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-1 rounded shadow-sm border ${dynColor} w-full flex items-start justify-between gap-1">
+        <span class="break-words whitespace-normal text-left flex-1">${dName}</span>
+        ${sleepingIndicator}
     </div>
-    <span class="text-[7px] md:text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1 py-0.5 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0 self-start w-max">${roleShort}</span>
+    <span class="text-[7px] md:text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1.5 py-0.5 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0 self-start w-max">${roleShort}</span>
 </div>
 `;
 });
@@ -1090,12 +1088,12 @@ room.occupants.forEach(nric => {
         const matchClass = isMatch ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800 scale-105 z-10' : '';
         
         const pSleepingTooltip = p.sleeping ? `Request: ${p.sleeping.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}` : '';
-        const sleepingIndicator = p.sleeping ? `<button onclick="openSleepingModal('${p.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none" title="${pSleepingTooltip}"><svg class="w-3 h-3 md:w-3.5 md:h-3.5 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
+        const sleepingIndicator = p.sleeping ? `<button onclick="openSleepingModal('${p.nric}')" class="ml-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 pointer-events-auto transition-transform hover:scale-110 focus:outline-none shrink-0" title="${pSleepingTooltip}"><svg class="w-3.5 h-3.5 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>` : '';
         
         occHtml += `
-        <div class="dnd-room-draggable relative inline-block cursor-grab active:cursor-grabbing hover:scale-105 transition-transform pointer-events-auto" data-nric="${p.nric}">
-            <div class="main-name-pill ${dynColor} ${matchClass} text-[9px] md:text-[10px] px-1.5 py-0.5 rounded shadow-sm border font-bold opacity-90 leading-tight flex items-center pr-3">
-                <span class="truncate max-w-[80px] md:max-w-[120px]">${dName}</span>
+        <div class="dnd-room-draggable relative flex w-full cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform pointer-events-auto" data-nric="${p.nric}">
+            <div class="main-name-pill ${dynColor} ${matchClass} text-[10px] md:text-[11px] px-2 py-1.5 rounded shadow-sm border font-bold opacity-90 leading-tight flex items-start justify-between w-full pr-5 gap-1">
+                <span class="break-words whitespace-normal text-left flex-1">${dName}</span>
                 ${sleepingIndicator}
             </div>
             <div class="remove-x" onclick="unassignFromRoom('${p.nric}', '${room.id}')">×</div>
@@ -1107,10 +1105,10 @@ const occDisplay = isFull ? `<span class="text-green-600 dark:text-green-400 fon
 
 roomHtml += `
 <div class="dnd-room-dropzone flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors" data-room-id="${room.id}">
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-gray-50/80 dark:bg-gray-900/50 p-1.5 md:p-2 border-b border-gray-100 dark:border-gray-700 rounded-t-xl shrink-0 gap-1.5">
-        <div class="flex items-center justify-between w-full lg:w-auto gap-2 min-w-0">
-            <span class="font-black text-[11px] md:text-xs text-gray-900 dark:text-white truncate flex-1">${room.name}</span>
-            <span class="text-[8px] md:text-[9px] bg-gray-200/50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shrink-0">${occDisplay}</span>
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-gray-50/80 dark:bg-gray-900/50 p-2 border-b border-gray-100 dark:border-gray-700 rounded-t-xl shrink-0 gap-2 w-full">
+        <div class="flex items-start justify-between w-full lg:w-auto gap-2 flex-1">
+            <span class="font-black text-[12px] md:text-sm text-gray-900 dark:text-white break-words whitespace-normal leading-tight">${room.name}</span>
+            <span class="text-[9px] bg-gray-200/50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shrink-0 mt-0.5">${occDisplay}</span>
         </div>
         <div class="flex items-center gap-1 shrink-0 w-full lg:w-auto justify-end">
             <button onclick="openRoomAddSheet('${room.id}')" class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 font-bold px-1.5 py-0.5 rounded hover:bg-blue-100 transition focus:outline-none" ${isFull ? 'disabled style="opacity:0.5;"' : ''}>+ Add</button>
@@ -1118,8 +1116,8 @@ roomHtml += `
             <button onclick="deleteRoom('${room.id}')" class="text-gray-400 hover:text-red-500 transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
         </div>
     </div>
-    <div class="p-1.5 min-h-[40px] flex flex-wrap content-start items-start pointer-events-auto bg-transparent gap-1">
-        ${occHtml || '<span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 m-1 pointer-events-none">Drop here...</span>'}
+    <div class="p-1.5 min-h-[40px] flex flex-col pointer-events-auto bg-transparent gap-1.5 w-full">
+        ${occHtml || '<span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 m-1 pointer-events-none text-center py-2 w-full">Drop here...</span>'}
     </div>
 </div>
 `;
