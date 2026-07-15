@@ -15,9 +15,9 @@
 <div id="app-header"></div>
 
 <main class="flex-1 w-full max-w-4xl mx-auto p-4 md:p-6 pb-12">
-    <div id="tab-profile" class="w-full space-y-4">
-        <!-- Profile UI injected here -->
-    </div>
+   <div id="tab-profile" class="w-full space-y-4">
+       <!-- Profile UI injected here -->
+   </div>
 </main>
 
 <div id="modalContainer"></div>
@@ -32,30 +32,9 @@
 <script>
 // [CONSIDERATION - HYDRATION & ISOLATION]
 document.addEventListener('DOMContentLoaded', () => {
-    AppCore.renderHeader("My Profile");
-    
-    // Setup generic Datepicker modals used by the Profile edit logic
-    document.getElementById('modalContainer').innerHTML = `
-        <div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end">
-            <div class="bg-white dark:bg-zinc-900 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t border-zinc-200 dark:border-zinc-800">
-                <div class="flex justify-between items-center p-5 border-b border-zinc-200 dark:border-zinc-800">
-                    <span class="font-bold text-lg text-zinc-800 dark:text-zinc-100">Select Date</span>
-                    <button type="button" onclick="closePicker()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 text-2xl font-bold px-2 focus:outline-none">&times;</button>
-                </div>
-                <div class="relative flex h-[200px] text-lg font-bold bg-white dark:bg-zinc-950">
-                    <div class="picker-highlight absolute top-[80px] h-[40px] w-full bg-blue-500/10 border-y border-blue-500/30 pointer-events-none z-10"></div>
-                    <div class="flex-1 picker-col" id="colDay"></div>
-                    <div class="flex-1 picker-col" id="colMonth"></div>
-                    <div class="flex-1 picker-col" id="colYear"></div>
-                </div>
-                <div class="p-5 border-t border-zinc-200 dark:border-zinc-800">
-                    <button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-lg shadow-md focus:outline-none hover:bg-blue-600 transition transform active:scale-95">Done</button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    loadProfileData();
+   AppCore.renderHeader("My Profile");
+   // Date picker is now dynamically injected via rolodex.js when openDatePicker is called.
+   loadProfileData();
 });
 </script>
 </body>
