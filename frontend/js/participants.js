@@ -10,179 +10,179 @@ let rosterSortAsc = true;
 let rosterSearchQuery = '';
 
 function buildParticipantsUI() {
-   document.getElementById('tab-participants').innerHTML = `
-   <div class="flex flex-col h-full w-full relative bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-       <div class="p-3 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-2 shrink-0">
-           <h3 class="font-black text-zinc-900 dark:text-white text-base md:text-lg">Participant Directory</h3>
-           <button onclick="loadParticipantsData()" class="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition focus:outline-none shadow-sm" title="Refresh Roster">
-               <svg class="w-5 h-5 text-zinc-600 dark:text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-           </button>
-       </div>
-       
-       <div class="p-3 bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center gap-2">
-           <div class="relative w-full">
-               <input type="text" id="rosterSearch" oninput="handleRosterSearch()" placeholder="Fuzzy search by name, NRIC, role, project..." class="w-full p-2 pl-9 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm font-semibold bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
-               <svg class="w-4 h-4 absolute left-3 top-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-           </div>
-       </div>
-       
-       <div class="flex-1 overflow-auto custom-scrollbar relative" id="rosterTableContainer">
-           <table class="w-full text-left border-collapse min-w-[900px]">
-               <thead class="sticky top-0 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[10px] uppercase font-black tracking-wider z-10 shadow-sm border-b border-zinc-200 dark:border-zinc-700">
-                   <tr>
-                       <th class="p-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition" onclick="sortRoster('fullName')">Full Name <span class="text-zinc-400 ml-1">↕</span></th>
-                       <th class="p-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition" onclick="sortRoster('role')">Role <span class="text-zinc-400 ml-1">↕</span></th>
-                       <th class="p-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition" onclick="sortRoster('group')">Project <span class="text-zinc-400 ml-1">↕</span></th>
-                       <th class="p-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition" onclick="sortRoster('nric')">NRIC <span class="text-zinc-400 ml-1">↕</span></th>
-                       <th class="p-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition" onclick="sortRoster('passportNo')">Passport No <span class="text-zinc-400 ml-1">↕</span></th>
-                       <th class="p-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition" onclick="sortRoster('passportExpiry')">Expiry <span class="text-zinc-400 ml-1">↕</span></th>
-                       <th class="p-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition" onclick="sortRoster('dob')">DOB <span class="text-zinc-400 ml-1">↕</span></th>
-                   </tr>
-               </thead>
-               <tbody id="rosterTableBody" class="text-sm divide-y divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                   <!-- Rows will populate here -->
-               </tbody>
-           </table>
-           
-           <div id="rosterLoading" class="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 flex flex-col justify-center items-center z-[50]">
-               <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-               <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-3 py-1 rounded-full">Fetching Directory...</span>
-           </div>
-       </div>
-   </div>
-   `;
-   loadParticipantsData();
+  document.getElementById('tab-participants').innerHTML = `
+  <div class="flex flex-col h-full w-full relative bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <div class="p-4 md:p-5 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-3 shrink-0 bg-white dark:bg-zinc-900 z-20 relative">
+          <h3 class="font-black text-zinc-900 dark:text-white text-lg md:text-xl tracking-tight">Participant Directory</h3>
+          <button onclick="loadParticipantsData()" class="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition focus:outline-none shadow-sm flex items-center justify-center shrink-0" title="Refresh Roster">
+              <i class="fa-solid fa-arrows-rotate text-zinc-600 dark:text-zinc-300"></i>
+          </button>
+      </div>
+      
+      <div class="p-4 bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center gap-3 relative z-10">
+          <div class="relative w-full">
+              <input type="text" id="rosterSearch" oninput="handleRosterSearch()" placeholder="Fuzzy search by name, NRIC, role, project..." class="w-full p-3 pl-10 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-semibold bg-white dark:bg-black text-zinc-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-zinc-400 dark:text-zinc-500"></i>
+          </div>
+      </div>
+      
+      <div class="flex-1 overflow-auto custom-scrollbar relative bg-white dark:bg-zinc-900" id="rosterTableContainer">
+          <table class="w-full text-left border-collapse min-w-[1000px]">
+              <thead class="sticky top-0 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[10px] uppercase font-black tracking-widest z-10 shadow-sm border-b border-zinc-200 dark:border-zinc-700">
+                  <tr>
+                      <th class="p-4 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap" onclick="sortRoster('fullName')">Full Name <i class="fa-solid fa-sort text-zinc-400 ml-1"></i></th>
+                      <th class="p-4 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap" onclick="sortRoster('role')">Role <i class="fa-solid fa-sort text-zinc-400 ml-1"></i></th>
+                      <th class="p-4 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap" onclick="sortRoster('group')">Project <i class="fa-solid fa-sort text-zinc-400 ml-1"></i></th>
+                      <th class="p-4 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap" onclick="sortRoster('nric')">NRIC <i class="fa-solid fa-sort text-zinc-400 ml-1"></i></th>
+                      <th class="p-4 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap" onclick="sortRoster('passportNo')">Passport No <i class="fa-solid fa-sort text-zinc-400 ml-1"></i></th>
+                      <th class="p-4 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap" onclick="sortRoster('passportExpiry')">Expiry <i class="fa-solid fa-sort text-zinc-400 ml-1"></i></th>
+                      <th class="p-4 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap" onclick="sortRoster('dob')">DOB <i class="fa-solid fa-sort text-zinc-400 ml-1"></i></th>
+                  </tr>
+              </thead>
+              <tbody id="rosterTableBody" class="text-sm divide-y divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                  <!-- Rows will populate here -->
+              </tbody>
+          </table>
+          
+          <div id="rosterLoading" class="absolute inset-0 bg-white/80 dark:bg-zinc-950/80 flex flex-col justify-center items-center z-[50] backdrop-blur-sm">
+              <div class="loader !w-10 !h-10 border-primary mb-3"></div>
+              <span class="text-primary dark:text-blue-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-4 py-1.5 rounded-full">Fetching Directory...</span>
+          </div>
+      </div>
+  </div>
+  `;
+  loadParticipantsData();
 }
 
 async function loadParticipantsData() {
-   const loader = document.getElementById('rosterLoading');
-   if(loader) loader.classList.remove('hidden-force');
-   
-   try {
-       const res = await AppCore.apiFetch('fetchAdminRoster');
-       adminRosterData = res.roster || [];
-       
-       if (typeof window.processDisplayNames === "function") window.processDisplayNames(adminRosterData);
-       if (typeof window.applyGlobalSorting === "function") adminRosterData = window.applyGlobalSorting(adminRosterData);
-       
-       renderRosterTable();
-   } catch(e) {
-       AppCore.showToast("Failed to load roster.", true);
-   } finally {
-       if(loader) loader.classList.add('hidden-force');
-   }
+  const loader = document.getElementById('rosterLoading');
+  if(loader) loader.classList.remove('hidden-force');
+  
+  try {
+      const res = await AppCore.apiFetch('fetchAdminRoster');
+      adminRosterData = res.roster || [];
+      
+      if (typeof window.processDisplayNames === "function") window.processDisplayNames(adminRosterData);
+      if (typeof window.applyGlobalSorting === "function") adminRosterData = window.applyGlobalSorting(adminRosterData);
+      
+      renderRosterTable();
+  } catch(e) {
+      AppCore.showToast("Failed to load roster.", true);
+  } finally {
+      if(loader) loader.classList.add('hidden-force');
+  }
 }
 
 function handleRosterSearch() {
-   rosterSearchQuery = document.getElementById('rosterSearch').value.toLowerCase().trim();
-   renderRosterTable();
+  rosterSearchQuery = document.getElementById('rosterSearch').value.toLowerCase().trim();
+  renderRosterTable();
 }
 
 function sortRoster(col) {
-   if (rosterSortCol === col) {
-       rosterSortAsc = !rosterSortAsc;
-   } else {
-       rosterSortCol = col;
-       rosterSortAsc = true;
-   }
-   renderRosterTable();
+  if (rosterSortCol === col) {
+      rosterSortAsc = !rosterSortAsc;
+  } else {
+      rosterSortCol = col;
+      rosterSortAsc = true;
+  }
+  renderRosterTable();
 }
 
 function renderRosterTable() {
-   let data = [...adminRosterData];
-   
-   // Fuzzy Search
-   if (rosterSearchQuery) {
-       data = data.filter(p => {
-           return (p.fullName && p.fullName.toLowerCase().includes(rosterSearchQuery)) ||
-                  (p.shortName && p.shortName.toLowerCase().includes(rosterSearchQuery)) ||
-                  (p.nric && p.nric.toLowerCase().includes(rosterSearchQuery)) ||
-                  (p.role && p.role.toLowerCase().includes(rosterSearchQuery)) ||
-                  (p.group && p.group.toLowerCase().includes(rosterSearchQuery));
-       });
-   }
-   
-   // Sorting Algorithm
-   data.sort((a, b) => {
-       let valA = a[rosterSortCol] || '';
-       let valB = b[rosterSortCol] || '';
-       
-       if (rosterSortCol === 'passportExpiry' || rosterSortCol === 'dob') {
-           valA = new Date(valA).getTime() || 0;
-           valB = new Date(valB).getTime() || 0;
-       } else {
-           valA = valA.toString().toLowerCase();
-           valB = valB.toString().toLowerCase();
-       }
-       
-       if (valA < valB) return rosterSortAsc ? -1 : 1;
-       if (valA > valB) return rosterSortAsc ? 1 : -1;
-       return 0;
-   });
+  let data = [...adminRosterData];
+  
+  // Fuzzy Search
+  if (rosterSearchQuery) {
+      data = data.filter(p => {
+          return (p.fullName && p.fullName.toLowerCase().includes(rosterSearchQuery)) ||
+                 (p.shortName && p.shortName.toLowerCase().includes(rosterSearchQuery)) ||
+                 (p.nric && p.nric.toLowerCase().includes(rosterSearchQuery)) ||
+                 (p.role && p.role.toLowerCase().includes(rosterSearchQuery)) ||
+                 (p.group && p.group.toLowerCase().includes(rosterSearchQuery));
+      });
+  }
+  
+  // Sorting Algorithm
+  data.sort((a, b) => {
+      let valA = a[rosterSortCol] || '';
+      let valB = b[rosterSortCol] || '';
+      
+      if (rosterSortCol === 'passportExpiry' || rosterSortCol === 'dob') {
+          valA = new Date(valA).getTime() || 0;
+          valB = new Date(valB).getTime() || 0;
+      } else {
+          valA = valA.toString().toLowerCase();
+          valB = valB.toString().toLowerCase();
+      }
+      
+      if (valA < valB) return rosterSortAsc ? -1 : 1;
+      if (valA > valB) return rosterSortAsc ? 1 : -1;
+      return 0;
+  });
 
-   const tbody = document.getElementById('rosterTableBody');
-   let html = '';
-   
-   // Prepare Passport Validation Threshold (Trip End Date + 6 Months)
-   let tripEnd = AppCore.appSettings?.tripEndDate ? new Date(AppCore.appSettings.tripEndDate) : null;
-   let minExpiry = null;
-   if (tripEnd && !isNaN(tripEnd.getTime())) {
-       minExpiry = new Date(tripEnd);
-       minExpiry.setMonth(minExpiry.getMonth() + 6);
-   }
+  const tbody = document.getElementById('rosterTableBody');
+  let html = '';
+  
+  // Prepare Passport Validation Threshold (Trip End Date + 6 Months)
+  let tripEnd = AppCore.appSettings?.tripEndDate ? new Date(AppCore.appSettings.tripEndDate) : null;
+  let minExpiry = null;
+  if (tripEnd && !isNaN(tripEnd.getTime())) {
+      minExpiry = new Date(tripEnd);
+      minExpiry.setMonth(minExpiry.getMonth() + 6);
+  }
 
-   data.forEach(p => {
-       let expiryHighlight = false;
-       let formattedExpiry = p.passportExpiry;
-       
-       // Safely parse Google Sheets dates or dd Mmm YYYY formats
-       if (p.passportExpiry) {
-           const expD = new Date(p.passportExpiry);
-           if (!isNaN(expD.getTime())) {
-               formattedExpiry = `${expD.getFullYear()}-${String(expD.getMonth()+1).padStart(2,'0')}-${String(expD.getDate()).padStart(2,'0')}`;
-               
-               // Flag if expiry is less than 6 months from Trip End Date
-               if (minExpiry && expD < minExpiry) {
-                   expiryHighlight = true;
-               }
-           }
-       }
+  data.forEach(p => {
+      let expiryHighlight = false;
+      let formattedExpiry = p.passportExpiry;
+      
+      // Safely parse Google Sheets dates or dd Mmm YYYY formats
+      if (p.passportExpiry) {
+          const expD = new Date(p.passportExpiry);
+          if (!isNaN(expD.getTime())) {
+              formattedExpiry = `${expD.getFullYear()}-${String(expD.getMonth()+1).padStart(2,'0')}-${String(expD.getDate()).padStart(2,'0')}`;
+              
+              // Flag if expiry is less than 6 months from Trip End Date
+              if (minExpiry && expD < minExpiry) {
+                  expiryHighlight = true;
+              }
+          }
+      }
 
-       let formattedDob = p.dob;
-       if (p.dob) {
-           const dD = new Date(p.dob);
-           if (!isNaN(dD.getTime())) {
-               formattedDob = `${dD.getFullYear()}-${String(dD.getMonth()+1).padStart(2,'0')}-${String(dD.getDate()).padStart(2,'0')}`;
-           }
-       }
+      let formattedDob = p.dob;
+      if (p.dob) {
+          const dD = new Date(p.dob);
+          if (!isNaN(dD.getTime())) {
+              formattedDob = `${dD.getFullYear()}-${String(dD.getMonth()+1).padStart(2,'0')}-${String(dD.getDate()).padStart(2,'0')}`;
+          }
+      }
 
-       const nameClass = expiryHighlight ? 'text-red-600 dark:text-red-400 font-extrabold' : 'font-bold text-zinc-900 dark:text-zinc-100';
-       const expClass = expiryHighlight 
-           ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-[11px] uppercase tracking-wider' 
-           : 'text-zinc-800 dark:text-zinc-200 whitespace-nowrap text-xs font-medium';
-       
-       const roleStr = p.role.substring(0, 3).toUpperCase();
-       const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
-       
-       html += `
-       <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition border-b border-zinc-100 dark:border-zinc-800 last:border-0">
-           <td class="p-3">
-               <div class="${nameClass} text-xs md:text-sm leading-tight">${p.fullName}</div>
-               <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">${p.shortName || ''}</div>
-           </td>
-           <td class="p-3">
-               <span class="text-[9px] font-black ${roleColor} bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 uppercase tracking-wider">${roleStr}</span>
-           </td>
-           <td class="p-3">
-               <span class="px-2 py-0.5 rounded border shadow-sm text-[10px] font-bold ${typeof window.getProjectColor === 'function' ? window.getProjectColor(p.group) : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white border-zinc-300 dark:border-zinc-600'} whitespace-nowrap">${p.group || 'None'}</span>
-           </td>
-           <td class="p-3 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">${p.nric}</td>
-           <td class="p-3 text-xs font-mono uppercase text-zinc-700 dark:text-zinc-300">${p.passportNo || '-'}</td>
-           <td class="p-3"><span class="${expClass}">${formattedExpiry || '-'}</span></td>
-           <td class="p-3 text-xs font-medium text-zinc-800 dark:text-zinc-200 whitespace-nowrap">${formattedDob || '-'}</td>
-       </tr>
-       `;
-   });
-   
-   tbody.innerHTML = html || '<tr><td colspan="7" class="p-6 text-center text-[11px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 font-bold">No participants found matching the criteria.</td></tr>';
+      const nameClass = expiryHighlight ? 'text-red-600 dark:text-red-400 font-extrabold' : 'font-bold text-zinc-900 dark:text-zinc-100';
+      const expClass = expiryHighlight 
+          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-[11px] uppercase tracking-wider' 
+          : 'text-zinc-800 dark:text-zinc-200 whitespace-nowrap text-xs font-semibold';
+      
+      const roleStr = p.role.substring(0, 3).toUpperCase();
+      const roleColor = p.role === 'TRAINEE' ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : (p.role === 'CAREGIVER' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800' : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800');
+      
+      html += `
+      <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+          <td class="p-4">
+              <div class="${nameClass} text-sm leading-tight">${p.fullName}</div>
+              <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-semibold uppercase tracking-wider">${p.shortName || ''}</div>
+          </td>
+          <td class="p-4">
+              <span class="text-[10px] font-black ${roleColor} px-2 py-1 rounded-md border uppercase tracking-wider shadow-sm">${roleStr}</span>
+          </td>
+          <td class="p-4">
+              <span class="px-2.5 py-1 rounded-md border shadow-sm text-xs font-bold ${typeof window.getProjectColor === 'function' ? window.getProjectColor(p.group) : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white border-zinc-300 dark:border-zinc-600'} whitespace-nowrap">${p.group || 'None'}</span>
+          </td>
+          <td class="p-4 text-sm font-mono font-bold text-zinc-700 dark:text-zinc-300">${p.nric}</td>
+          <td class="p-4 text-sm font-mono uppercase text-zinc-700 dark:text-zinc-300">${p.passportNo || '-'}</td>
+          <td class="p-4"><span class="${expClass}">${formattedExpiry || '-'}</span></td>
+          <td class="p-4 text-sm font-semibold text-zinc-800 dark:text-zinc-200 whitespace-nowrap">${formattedDob || '-'}</td>
+      </tr>
+      `;
+  });
+  
+  tbody.innerHTML = html || '<tr><td colspan="7" class="p-10 text-center text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400 font-bold"><i class="fa-solid fa-ghost text-2xl mb-2 block opacity-50"></i>No participants found matching the criteria.</td></tr>';
 }
