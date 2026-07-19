@@ -94,7 +94,7 @@ const newNote = {
     content: '',
     assignedTo: '',
     ts: Date.now(),
-    updatedBy: currentUser.name || 'Admin',
+    updatedBy: (currentUser.name || 'ADMIN').toUpperCase(),
     isDeleted: false
 };
 
@@ -126,7 +126,7 @@ const note = minutesMap.get(id);
 if(note) {
     note.isDeleted = true;
     note.ts = Date.now();
-    note.updatedBy = currentUser.name || 'Admin';
+    note.updatedBy = (currentUser.name || 'ADMIN').toUpperCase();
     queueMinuteUpdate(id);
     
     const el = document.getElementById(`min-card-${id}`);
@@ -142,7 +142,7 @@ const note = minutesMap.get(id);
 if(note) {
     note[field] = value;
     note.ts = Date.now();
-    note.updatedBy = currentUser.name || 'Admin';
+    note.updatedBy = (currentUser.name || 'ADMIN').toUpperCase();
     queueMinuteUpdate(id);
     
     const byEl = document.getElementById(`min-by-${id}`);
@@ -295,7 +295,7 @@ if (document.activeElement !== assignedEl) assignedEl.value = note.assignedTo;
 
 if (metaEl) {
     const timeStr = new Date(note.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    metaEl.textContent = `${timeStr} by ${note.updatedBy}`;
+    metaEl.textContent = `${timeStr} by ${(note.updatedBy||'').toUpperCase()}`;
 }
 }
 
@@ -312,7 +312,7 @@ div.innerHTML = `
             <input type="date" value="${formatYMD(note.date)}" 
                 class="note-date min-w-[120px] [color-scheme:light] dark:[color-scheme:dark] text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 shadow-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
                 onchange="handleMinuteInput('${note.id}', 'date', this.value)">
-            <span id="min-by-${note.id}" class="note-meta text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide hidden md:inline-block">${timeStr} by ${note.updatedBy}</span>
+            <span id="min-by-${note.id}" class="note-meta text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide hidden md:inline-block">${timeStr} by ${(note.updatedBy||'').toUpperCase()}</span>
         </div>
         <button onclick="deleteMinuteNote('${note.id}')" class="text-gray-400 hover:text-red-500 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-1.5 rounded shadow-sm hover:bg-red-50 dark:hover:bg-gray-700 transition focus:outline-none">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>

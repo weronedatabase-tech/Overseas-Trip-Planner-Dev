@@ -60,7 +60,7 @@ async function loadMedicalData() {
      traineeShortNames = {};
      medicalRosterData.forEach(p => {
          if(p.role === 'TRAINEE') {
-             traineeShortNames[p.fullName.toLowerCase()] = p.shortName || p.fullName;
+             traineeShortNames[p.fullName.toLowerCase()] = (p.shortName || p.fullName).toUpperCase();
          }
      });
 
@@ -209,16 +209,19 @@ function renderMedicalTable() {
      
      let famTag = '';
      if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-         const tShort = traineeShortNames[p.relatedTrainee.toLowerCase()] || p.relatedTrainee;
+         const tShort = (traineeShortNames[p.relatedTrainee.toLowerCase()] || p.relatedTrainee).toUpperCase();
          famTag = `<div class="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 leading-tight whitespace-normal break-words">[${tShort}]</div>`;
      }
 
-     html += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+     const fullNameUpper = (p.fullName || '').toUpperCase();
+     const shortNameUpper = (p.shortName || '').toUpperCase();
+
+     html += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
          <td class="p-3 align-top med-col-fullName" style="width: 250px; min-width: 250px; max-width: 250px;">
-             <div class="font-bold text-gray-900 dark:text-gray-100 text-sm leading-tight whitespace-normal break-words">${p.fullName}</div>
+             <div class="font-bold text-gray-900 dark:text-gray-100 text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
              <div class="flex items-center gap-1 mt-1 flex-wrap">
                  <span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span>
-                 <span class="px-1.5 py-0.5 rounded border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${p.group || 'None'}</span>
+                 <span class="px-1.5 py-0.5 rounded border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span>
              </div>
              ${famTag}
          </td>`;
@@ -230,16 +233,16 @@ function renderMedicalTable() {
              
              if (c.id === 'diet') {
                  const hasDiet = p.diet && p.diet.trim() && p.diet.trim().toLowerCase() !== 'nil' && p.diet.trim().toLowerCase() !== 'none';
-                 const dietHtml = hasDiet ? `<span class="text-red-700 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap">${p.diet}</span>` : `<span class="text-gray-400 dark:text-gray-600 italic">None</span>`;
+                 const dietHtml = hasDiet ? `<span class="text-red-700 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap">${p.diet}</span>` : `<span class="text-gray-400 dark:text-gray-600 italic">NONE</span>`;
                  html += `<td class="${baseClass} border-l border-gray-100 dark:border-gray-800/50" ${styleStr}>${dietHtml}</td>`;
              } else if (c.id === 'otherPoints') {
                  const hasNotes = p.otherPoints && p.otherPoints.trim() && p.otherPoints.trim().toLowerCase() !== 'nil' && p.otherPoints.trim().toLowerCase() !== 'none';
-                 const notesHtml = hasNotes ? `<span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap">${p.otherPoints}</span>` : `<span class="text-gray-400 dark:text-gray-600 italic">None</span>`;
+                 const notesHtml = hasNotes ? `<span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap">${p.otherPoints}</span>` : `<span class="text-gray-400 dark:text-gray-600 italic">NONE</span>`;
                  html += `<td class="${baseClass} border-l border-gray-100 dark:border-gray-800/50" ${styleStr}>${notesHtml}</td>`;
              } else if (c.id === 'emergencyName') {
                  html += `<td class="${baseClass} border-l border-gray-100 dark:border-gray-800/50" ${styleStr}>
-                     <div class="font-bold text-gray-800 dark:text-gray-200">${p.emergencyName || '-'}</div>
-                     <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">${p.emergencyRelation || '-'}</div>
+                     <div class="font-bold text-gray-800 dark:text-gray-200">${(p.emergencyName || '-').toUpperCase()}</div>
+                     <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">${(p.emergencyRelation || '-').toUpperCase()}</div>
                      <div class="font-mono text-blue-600 dark:text-blue-400 font-bold">${p.emergencyContact || '-'}</div>
                  </td>`;
              }

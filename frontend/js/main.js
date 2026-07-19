@@ -214,3 +214,50 @@ async function silentHydration() {
    if(viewLoading) viewLoading.classList.add('hidden-force');
  }
 }
+
+function processDisplayNames(participants) {
+ if(!participants) return;
+ const nameCounts = {};
+ participants.forEach(p => {
+     p.shortName = (p.shortName || '').trim().toUpperCase();
+     p.name = (p.name || '').trim().toUpperCase();
+     const sName = p.shortName || p.name;
+     nameCounts[sName] = (nameCounts[sName] || 0) + 1;
+ });
+ participants.forEach(p => {
+     const sName = p.shortName || p.name;
+     if (nameCounts[sName] > 1) {
+         const roleChar = p.role ? p.role.charAt(0).toUpperCase() : 'U';
+         const projAcr = p.group ? getProjectAbbreviation(p.group) : 'N/A';
+         p.displayName = `${sName} (${roleChar}) (${projAcr})`;
+     } else {
+         p.displayName = sName;
+     }
+ });
+ const displayCounts = {};
+ participants.forEach(p => { displayCounts[p.displayName] = (displayCounts[p.displayName] || 0) + 1; });
+ participants.forEach(p => {
+     if (displayCounts[p.displayName] > 1) {
+         const sName = p.shortName || p.name;
+         const roleChar = p.role ? p.role.charAt(0).toUpperCase() : 'U';
+         const projAcr = p.group ? getProjectAbbreviation(p.group) : 'N/A';
+         const words = p.name.split(' ');
+         let extraChar = '';
+         if (words.length > 1) {
+             const diffWord = words.find(w => w !== sName);
+             if(diffWord) extraChar = diffWord.charAt(0) + '.';
+             else extraChar = words[1].charAt(0) + '.';
+         } else {
+             extraChar = p.name.charAt(0) + '.';
+         }
+         p.displayName = `${sName} ${extraChar} (${roleChar}) (${projAcr})`;
+     }
+ });
+ const finalCounts = {};
+ participants.forEach(p => { finalCounts[p.displayName] = (finalCounts[p.displayName] || 0) + 1; });
+ participants.forEach(p => {
+     if (finalCounts[p.displayName] > 1 && p.nric) {
+         p.displayName = `${p.displayName} [${p.nric.slice(-4)}]`;
+     }
+ });
+}

@@ -142,7 +142,7 @@ if (!ss.getSheetByName(name)) {
     sheet.appendRow([""]);
     sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
   } else if (name === "Receipts") {
-    sheet.appendRow(["Receipt ID", "Timestamp", "Uploader NRIC", "Currency", "Amount", "Rate", "SGD Amount", "Category ID", "File URL", "Remarks", "Is Deleted"]);
+    sheet.appendRow(["Receipt ID", "Timestamp", "Uploader NRIC", "Currency", "Amount", "Rate", "SGD Amount", "Category ID", "File URL", "Remarks", "Is Deleted", "Paid By NRIC", "Is Reimbursed"]);
     sheet.setFrozenRows(1);
   } else if (name === "Rooms") {
     sheet.appendRow(["Room ID", "Room Name", "Capacity", "Occupants", "Last Updated", "Updated By", "Is Deleted"]);
@@ -259,12 +259,12 @@ const genPass = props.getProperty('PASS_GENERAL');
 const adminPassPrefix = props.getProperty('PASS_ADMIN');
 nric = nric.trim().toUpperCase();
 
-if (nric === 'ADMIN' && password === adminPassPrefix) return { status: 'success', role: 'admin', name: 'Main Admin' };
+if (nric === 'ADMIN' && password === adminPassPrefix) return { status: 'success', role: 'admin', name: 'MAIN ADMIN' };
 
 const committeeList = props.getProperty('COMMITTEE_LIST') ? JSON.parse(props.getProperty('COMMITTEE_LIST')) : [];
 const commMember = committeeList.find(c => c.nric === nric);
 if (commMember) {
-if (password === (adminPassPrefix + nric)) return { status: 'success', role: 'admin', name: commMember.name };
+if (password === (adminPassPrefix + nric)) return { status: 'success', role: 'admin', name: commMember.name.toUpperCase() };
 else return { status: 'error', message: 'Incorrect committee password.' };
 }
 
@@ -272,7 +272,7 @@ const ss = getDatabase();
 const data = ss.getSheetByName("Raw Data").getDataRange().getValues();
 for (let i = 1; i < data.length; i++) {
 if (String(data[i][11]).trim().toUpperCase() === nric) {
-  if (password === genPass) return { status: 'success', role: 'user', name: data[i][3] };
+  if (password === genPass) return { status: 'success', role: 'user', name: String(data[i][3]).toUpperCase() };
   else return { status: 'error', message: 'Incorrect password.' };
 }
 }
@@ -317,11 +317,11 @@ if (isFamilyMember) {
   let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
   let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
   family.push({
-    email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+    email: data[i][1], role: data[i][2], fullName: String(data[i][3]).toUpperCase(), relatedTrainee: String(data[i][4]||'').toUpperCase(), relationship: data[i][5],
     group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
     nric: data[i][11], passportNo: data[i][12], passportExpiry: expRaw, dob: dobRaw, diet: data[i][15],
-    emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
-    pocNric: data[i][21], shortName: data[i][22] || ''
+    emergencyName: String(data[i][16]||'').toUpperCase(), emergencyContact: data[i][17], emergencyRelation: data[i][18], sleeping: data[i][19], otherPoints: data[i][20],
+    pocNric: data[i][21], shortName: String(data[i][22]||'').toUpperCase()
   });
 }
 }
@@ -351,7 +351,7 @@ function getParticipantSummary(nric) {
   
   const pairingNames = myPairings.map(n => {
       const per = logRes.participants.find(x => x.nric === n);
-      return per ? (per.shortName || per.name) : n;
+      return per ? (per.shortName || per.name).toUpperCase() : n;
   });
 
   const finConfig = finRes.data?.config || {};
@@ -370,8 +370,8 @@ function getParticipantSummary(nric) {
   return {
       status: 'success',
       summary: {
-          fullName: p.name,
-          shortName: p.shortName,
+          fullName: p.name.toUpperCase(),
+          shortName: p.shortName.toUpperCase(),
           role: p.role,
           group: p.group,
           gender: p.gender,
@@ -457,12 +457,12 @@ for(let i = 1; i < data.length; i++) {
 if(data[i][11]) { 
   results.push({
     timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
-    email: data[i][1], role: data[i][2], fullName: data[i][3], relatedTrainee: data[i][4], relationship: data[i][5],
+    email: data[i][1], role: data[i][2], fullName: String(data[i][3]).toUpperCase(), relatedTrainee: String(data[i][4]||'').toUpperCase(), relationship: data[i][5],
     group: data[i][6], gender: data[i][7], contact: data[i][8], address: data[i][9], nationality: data[i][10],
     nric: data[i][11], passportNo: data[i][12], passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
     dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
-    diet: data[i][15], emergencyName: data[i][16], emergencyContact: data[i][17], emergencyRelation: data[i][18],
-    sleeping: data[i][19], otherPoints: data[i][20], pocNric: data[i][21], shortName: data[i][22]
+    diet: data[i][15], emergencyName: String(data[i][16]||'').toUpperCase(), emergencyContact: data[i][17], emergencyRelation: data[i][18],
+    sleeping: data[i][19], otherPoints: data[i][20], pocNric: data[i][21], shortName: String(data[i][22]||'').toUpperCase()
   });
 }
 }
@@ -488,9 +488,9 @@ for(let i=1; i<pData.length; i++) {
 if(pData[i][11]) {
   participants.push({ 
     role: String(pData[i][2]).trim().toUpperCase(), 
-    name: pData[i][3], 
-    relatedTrainee: pData[i][4] ? String(pData[i][4]).trim() : '',
-    shortName: pData[i][22] ? String(pData[i][22]).trim() : '',
+    name: String(pData[i][3]).toUpperCase(), 
+    relatedTrainee: pData[i][4] ? String(pData[i][4]).trim().toUpperCase() : '',
+    shortName: pData[i][22] ? String(pData[i][22]).trim().toUpperCase() : '',
     group: String(pData[i][6]).trim(), 
     gender: String(pData[i][7]).trim(),
     nric: String(pData[i][11]).trim().toUpperCase(),
@@ -873,7 +873,9 @@ for (let i = 1; i < data.length; i++) {
     categoryId: String(data[i][7] || ''),
     fileUrl: String(data[i][8] || ''),
     remarks: String(data[i][9] || ''),
-    isDeleted: String(data[i][10]).toUpperCase() === 'TRUE'
+    isDeleted: String(data[i][10]).toUpperCase() === 'TRUE',
+    paidByNric: String(data[i][11] || ''),
+    isReimbursed: String(data[i][12]).toUpperCase() === 'TRUE'
   });
 }
 const res = { status: 'success', receipts };
@@ -886,14 +888,12 @@ const lock = LockService.getScriptLock();
 try {
 lock.waitLock(15000);
 
-// Ensure Receipts folder exists
 const tripFolder = getTripFolder();
 let receiptsFolder;
 const folders = tripFolder.getFoldersByName("Receipts");
 if (folders.hasNext()) receiptsFolder = folders.next();
 else receiptsFolder = tripFolder.createFolder("Receipts");
 
-// Save file
 let fileUrl = "";
 if (payload.fileData) {
   const blob = Utilities.newBlob(Utilities.base64Decode(payload.fileData), payload.mimeType, payload.fileName);
@@ -907,7 +907,7 @@ const newId = "rec_" + Date.now() + "_" + Math.random().toString(36).substr(2,5)
 
 sheet.appendRow([
   newId, new Date(), payload.uploaderNric, payload.currency, payload.amount, payload.rate, 
-  payload.sgdAmount, payload.categoryId, fileUrl, payload.remarks, false
+  payload.sgdAmount, payload.categoryId, fileUrl, payload.remarks, false, payload.paidByNric || payload.uploaderNric, false
 ]);
 
 fetchReceipts(true);
@@ -932,13 +932,14 @@ for (let i = 1; i < data.length; i++) {
 
 updates.forEach(u => {
   const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
+  const isReim = u.isReimbursed ? 'TRUE' : 'FALSE';
   if (existingMap[u.id]) {
     const rowIndex = existingMap[u.id];
     const existingTsVal = new Date(data[rowIndex - 1][1]).getTime();
     const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
     if (u.ts > existingTs) {
-      sheet.getRange(rowIndex, 2, 1, 10).setValues([[
-        new Date(u.ts), u.uploaderNric, u.currency, u.amount, u.rate, u.sgdAmount, u.categoryId, u.fileUrl, u.remarks, isDel
+      sheet.getRange(rowIndex, 2, 1, 12).setValues([[
+        new Date(u.ts), u.uploaderNric, u.currency, u.amount, u.rate, u.sgdAmount, u.categoryId, u.fileUrl, u.remarks, isDel, u.paidByNric || u.uploaderNric, isReim
       ]]);
     }
   }
@@ -1056,7 +1057,7 @@ function getCommitteeList() { return { status: 'success', list: JSON.parse(Prope
 function modifyCommitteeList(nric, isAdding, name = "", phone = "") {
 const props = PropertiesService.getScriptProperties(); nric = nric.trim().toUpperCase();
 let list = JSON.parse(props.getProperty('COMMITTEE_LIST') || '[]');
-if (isAdding) { if (!list.find(c => c.nric === nric)) list.push({ nric, name: name.trim(), phone: phone.trim() }); }
+if (isAdding) { if (!list.find(c => c.nric === nric)) list.push({ nric, name: name.trim().toUpperCase(), phone: phone.trim() }); }
 else { list = list.filter(c => c.nric !== nric); }
 props.setProperty('COMMITTEE_LIST', JSON.stringify(list)); return getCommitteeList();
 }

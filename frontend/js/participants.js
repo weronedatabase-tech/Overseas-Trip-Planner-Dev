@@ -129,14 +129,14 @@ async function loadParticipantsData() {
      traineeShortNames = {};
      adminRosterData.forEach(p => {
          if(p.role === 'TRAINEE') {
-             traineeShortNames[p.fullName.toLowerCase()] = p.shortName || p.fullName;
+             traineeShortNames[p.fullName.toLowerCase()] = (p.shortName || p.fullName).toUpperCase();
          }
      });
 
      const roomsMap = {};
      if (logisticsData.rooms) {
          logisticsData.rooms.filter(r => !r.isDeleted).forEach(r => {
-             r.occupants.forEach(n => roomsMap[n] = r.name);
+             r.occupants.forEach(n => roomsMap[n] = r.name.toUpperCase());
          });
      }
      
@@ -149,14 +149,14 @@ async function loadParticipantsData() {
              const v = adminRosterData.find(x => x.nric === pair.volNric);
              const t = adminRosterData.find(x => x.nric === pair.traineeNric);
              
-             if(v) pairingsMap[pair.traineeNric].push(v.shortName || v.fullName);
-             if(t) pairingsMap[pair.volNric].push(t.shortName || t.fullName);
+             if(v) pairingsMap[pair.traineeNric].push((v.shortName || v.fullName).toUpperCase());
+             if(t) pairingsMap[pair.volNric].push((t.shortName || t.fullName).toUpperCase());
          });
      }
 
      adminRosterData.forEach(p => {
-         p.room = roomsMap[p.nric] || 'Unassigned';
-         p.pairings = pairingsMap[p.nric] ? pairingsMap[p.nric].join(', ') : 'None';
+         p.room = roomsMap[p.nric] || 'UNASSIGNED';
+         p.pairings = pairingsMap[p.nric] ? pairingsMap[p.nric].join(', ') : 'NONE';
      });
 
      renderRosterTable();
@@ -257,7 +257,6 @@ function onMouseMove(e) {
  let newWidth = Math.max(50, startWidth + diff);
  
  if (resizingCol === 'fullName') {
-     // For main column if we decide to store it, but let's just live update DOM
      const cells = document.querySelectorAll(`.roster-col-fullName`);
      cells.forEach(c => { c.style.width = newWidth + 'px'; c.style.minWidth = newWidth + 'px'; c.style.maxWidth = newWidth + 'px'; });
  } else {
@@ -407,6 +406,9 @@ function renderRosterTable() {
          }
      }
 
+     const fullNameUpper = (p.fullName || '').toUpperCase();
+     const shortNameUpper = (p.shortName || '').toUpperCase();
+
      const nameClass = expiryHighlight ? 'text-red-600 dark:text-red-400 font-extrabold' : 'font-bold text-gray-900 dark:text-gray-100';
      const expClass = expiryHighlight 
          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-[11px] uppercase tracking-wider inline-block' 
@@ -417,14 +419,14 @@ function renderRosterTable() {
      
      let famTag = '';
      if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-         const tShort = traineeShortNames[p.relatedTrainee.toLowerCase()] || p.relatedTrainee;
+         const tShort = (traineeShortNames[p.relatedTrainee.toLowerCase()] || p.relatedTrainee).toUpperCase();
          famTag = `<div class="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 leading-tight whitespace-normal break-words">[${tShort}]</div>`;
      }
 
-     html += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+     html += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
          <td class="p-3 align-top roster-col-fullName" style="width: 200px; min-width: 200px; max-width: 200px;">
-             <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${p.fullName}</div>
-             <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${p.shortName || ''}</div>
+             <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
+             <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>
              ${famTag}
          </td>`;
          
@@ -436,27 +438,29 @@ function renderRosterTable() {
              if (c.id === 'role') {
                  html += `<td class="${baseClass}" ${styleStr}><span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span></td>`;
              } else if (c.id === 'group') {
-                 html += `<td class="${baseClass}" ${styleStr}><span class="px-2 py-0.5 rounded border shadow-sm text-[10px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${p.group || 'None'}</span></td>`;
+                 html += `<td class="${baseClass}" ${styleStr}><span class="px-2 py-0.5 rounded border shadow-sm text-[10px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span></td>`;
              } else if (c.id === 'nric') {
-                 html += `<td class="${baseClass} font-mono font-bold text-gray-700 dark:text-gray-300" ${styleStr}>${p.nric}</td>`;
+                 html += `<td class="${baseClass} font-mono font-bold text-gray-700 dark:text-gray-300" ${styleStr}>${(p.nric||'').toUpperCase()}</td>`;
              } else if (c.id === 'passportNo') {
-                 html += `<td class="${baseClass} font-mono uppercase text-gray-700 dark:text-gray-300" ${styleStr}>${p.passportNo || '-'}</td>`;
+                 html += `<td class="${baseClass} font-mono uppercase text-gray-700 dark:text-gray-300" ${styleStr}>${(p.passportNo || '-').toUpperCase()}</td>`;
              } else if (c.id === 'passportExpiry') {
                  html += `<td class="${baseClass}" ${styleStr}><span class="${expClass}">${formattedExpiry || '-'}</span></td>`;
              } else if (c.id === 'dob') {
                  html += `<td class="${baseClass}" ${styleStr}>${formattedDob || '-'}</td>`;
              } else if (c.id === 'diet') {
                  const hasDiet = p.diet && p.diet.trim() && p.diet.trim().toLowerCase() !== 'nil' && p.diet.trim().toLowerCase() !== 'none';
-                 html += `<td class="${baseClass}" ${styleStr}>${hasDiet ? `<span class="text-red-700 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap leading-tight">${p.diet}</span>` : `<span class="text-gray-400 italic">None</span>`}</td>`;
+                 html += `<td class="${baseClass}" ${styleStr}>${hasDiet ? `<span class="text-red-700 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap leading-tight">${p.diet}</span>` : `<span class="text-gray-400 italic">NONE</span>`}</td>`;
              } else if (c.id === 'otherPoints') {
                  const hasNotes = p.otherPoints && p.otherPoints.trim() && p.otherPoints.trim().toLowerCase() !== 'nil' && p.otherPoints.trim().toLowerCase() !== 'none';
-                 html += `<td class="${baseClass}" ${styleStr}>${hasNotes ? `<span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap leading-tight">${p.otherPoints}</span>` : `<span class="text-gray-400 italic">None</span>`}</td>`;
+                 html += `<td class="${baseClass}" ${styleStr}>${hasNotes ? `<span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap leading-tight">${p.otherPoints}</span>` : `<span class="text-gray-400 italic">NONE</span>`}</td>`;
              } else if (c.id === 'room') {
-                 html += `<td class="${baseClass} font-bold" ${styleStr}>${p.room || 'Unassigned'}</td>`;
+                 html += `<td class="${baseClass} font-bold" ${styleStr}>${(p.room || 'UNASSIGNED').toUpperCase()}</td>`;
              } else if (c.id === 'pairings') {
-                 html += `<td class="${baseClass}" ${styleStr}>${p.pairings || 'None'}</td>`;
+                 html += `<td class="${baseClass}" ${styleStr}>${(p.pairings || 'NONE').toUpperCase()}</td>`;
+             } else if (c.id === 'emergencyName') {
+                 html += `<td class="${baseClass}" ${styleStr}>${(p.emergencyName || '-').toUpperCase()}</td>`;
              } else {
-                 html += `<td class="${baseClass}" ${styleStr}>${p[c.id] || '-'}</td>`;
+                 html += `<td class="${baseClass}" ${styleStr}>${(p[c.id] || '-').toString().toUpperCase()}</td>`;
              }
          }
      });

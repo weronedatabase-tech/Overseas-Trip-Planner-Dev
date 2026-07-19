@@ -894,19 +894,34 @@ function renderReceiptsBrowser() {
      const catName = optMap[r.categoryId] || 'Unknown Category';
      
      let uploaderName = r.uploaderNric;
+     let payerName = r.paidByNric || r.uploaderNric;
+     
      if(globalLogistics && globalLogistics.participants) {
-         const p = globalLogistics.participants.find(x => x.nric === r.uploaderNric);
-         if(p) uploaderName = p.shortName || p.name;
+         const up = globalLogistics.participants.find(x => x.nric === r.uploaderNric);
+         if(up) uploaderName = up.shortName || up.name;
+         
+         const pp = globalLogistics.participants.find(x => x.nric === payerName);
+         if(pp) payerName = pp.shortName || pp.name;
      }
+
+     const isReimClass = r.isReimbursed ? 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-800 shadow-sm' : 'text-gray-500 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700';
 
      rowsHtml += `
      <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
          <td class="p-3 text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">${dateStr}</td>
-         <td class="p-3 text-xs font-bold text-gray-800 dark:text-gray-200">${uploaderName}</td>
+         <td class="p-3 text-xs leading-tight">
+            <div class="font-bold text-gray-800 dark:text-gray-200">Up: ${uploaderName}</div>
+            <div class="font-black text-blue-600 dark:text-blue-400 text-[10px] uppercase mt-0.5">Paid: ${payerName}</div>
+         </td>
          <td class="p-3 text-xs font-bold text-primary max-w-[150px] truncate" title="${catName}">${catName}</td>
          <td class="p-3 text-xs font-bold text-gray-800 dark:text-gray-200 text-right whitespace-nowrap">${r.currency} ${r.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
          <td class="p-3 text-[11px] font-black text-purple-600 dark:text-purple-400 text-right whitespace-nowrap">SGD ${r.sgdAmount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
          <td class="p-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="${r.remarks}">${r.remarks || '-'}</td>
+         <td class="p-3 text-center">
+             <button onclick="toggleReceiptReimbursed('${r.id}', ${!r.isReimbursed})" class="text-[10px] font-bold px-2 py-1 rounded border transition focus:outline-none uppercase tracking-wider whitespace-nowrap ${isReimClass}">
+                 ${r.isReimbursed ? 'Reimbursed' : 'Pending'}
+             </button>
+         </td>
          <td class="p-3 text-xs text-center">
              ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 font-bold underline px-2">View</a>` : '-'}
          </td>
@@ -923,11 +938,12 @@ function renderReceiptsBrowser() {
              <thead class="bg-gray-100 dark:bg-gray-800 text-[10px] uppercase font-black text-gray-500 dark:text-gray-400 tracking-wider border-b border-gray-200 dark:border-gray-700">
                  <tr>
                      <th class="p-3">Date</th>
-                     <th class="p-3">Uploader</th>
+                     <th class="p-3">Users</th>
                      <th class="p-3">Category</th>
                      <th class="p-3 text-right">Orig Amount</th>
                      <th class="p-3 text-right">SGD Value</th>
                      <th class="p-3">Remarks</th>
+                     <th class="p-3 text-center">Status</th>
                      <th class="p-3 text-center">File</th>
                      <th class="p-3 text-center">Action</th>
                  </tr>
@@ -938,6 +954,15 @@ function renderReceiptsBrowser() {
          </table>
      </div>
  </div>`;
+}
+
+function toggleReceiptReimbursed(id, status) {
+ const rec = globalReceipts.find(r => r.id === id);
+ if(rec) {
+     rec.isReimbursed = status;
+     queueReceiptUpdate(rec);
+     renderReceiptsBrowser();
+ }
 }
 
 function deleteReceipt(id) {
@@ -964,20 +989,31 @@ function renderFeeTracker() {
  if(!cont || cont.classList.contains('hidden-force')) return;
  if(!globalLogistics || !globalLogistics.participants) return;
 
- const familyGroups = {};
+ const groups = {};
  globalLogistics.participants.forEach(p => {
-     if(!familyGroups[p.pocNric]) familyGroups[p.pocNric] = [];
-     familyGroups[p.pocNric].push(p);
+     if(!groups[p.pocNric]) groups[p.pocNric] = [];
+     groups[p.pocNric].push(p);
  });
 
  const baseFee = financeConfig.perPersonFee || 0;
  let totalExpected = 0;
  let totalCollected = 0;
-
  let cardsData = [];
 
- Object.keys(familyGroups).forEach(poc => {
-     const members = familyGroups[poc];
+ Object.keys(groups).forEach(poc => {
+     const members = groups[poc];
+     const hasCaregiver = members.some(m => m.role === 'CAREGIVER');
+     
+     if (hasCaregiver || members.length === 1) {
+         processFeeCard(poc, members);
+     } else {
+         members.forEach(m => {
+             processFeeCard(m.nric, [m]);
+         });
+     }
+ });
+
+ function processFeeCard(poc, members) {
      const size = members.length;
      const dev = financeConfig.feeDeviations?.[poc]?.amount || 0;
      const rem = financeConfig.feeDeviations?.[poc]?.remarks || '';
@@ -988,7 +1024,6 @@ function renderFeeTracker() {
      totalExpected += finalExpected;
      if (isPaid) totalCollected += finalExpected;
 
-     // Search filtering
      let match = true;
      if (finSearchQuery) {
          match = members.some(m => {
@@ -998,10 +1033,10 @@ function renderFeeTracker() {
      }
 
      if (match) cardsData.push({ poc, members, size, dev, rem, isPaid, finalExpected });
- });
+ }
 
  cardsData.sort((a,b) => {
-     if (a.isPaid !== b.isPaid) return a.isPaid ? 1 : -1; // Unpaid first
+     if (a.isPaid !== b.isPaid) return a.isPaid ? 1 : -1; 
      return b.size - a.size;
  });
 
@@ -1095,7 +1130,6 @@ function updateFeeDeviation(poc, field, value) {
 
  queueFinanceUpdate();
  
- // Debounce re-render to avoid losing input focus
  clearTimeout(window.feeRenderTimeout);
  window.feeRenderTimeout = setTimeout(() => { renderFeeTracker(); }, 800);
 }

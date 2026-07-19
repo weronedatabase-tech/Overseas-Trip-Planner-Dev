@@ -11,10 +11,11 @@ async function loadProfileData() {
  tabProfile.innerHTML = `<div class="loader w-8 h-8 border-primary mx-auto my-12"></div>`;
 
  try {
-   const [profRes, finRes, recRes] = await Promise.all([
+   const [profRes, finRes, recRes, logRes] = await Promise.all([
        apiCall('getProfile', { nric: currentUser.nric }),
        apiCall('fetchFinance'),
-       apiCall('fetchReceipts')
+       apiCall('fetchReceipts'),
+       apiCall('fetchLogistics')
    ]);
 
    loadedFamily = profRes.family || [];
@@ -22,6 +23,7 @@ async function loadProfileData() {
    finOptions = finRes.data?.options || [];
    globalFinanceRates = finRes.rates || { "SGD": 1 };
    myReceipts = (recRes.receipts || []).filter(r => r.uploaderNric === currentUser.nric && !r.isDeleted);
+   globalLogistics = logRes || null;
 
    renderProfileFullView();
 
@@ -189,18 +191,23 @@ function renderProfileFullView() {
  </div>
  `;
 
- tabProfile.innerHTML = `<div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-3"><h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Personal Details</h3></div>` + html;
+ tabProfile.innerHTML = `<div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-3"><h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Personal Details</h3></div>` + profilesHtml + html;
 }
 
 function generatePaymentPortalHtml() {
- const pocNric = loadedFamily.length > 0 ? loadedFamily[0].pocNric : currentUser.nric;
- const baseFee = finConfig.perPersonFee || 0;
- const size = loadedFamily.length;
- const dev = finConfig.feeDeviations?.[pocNric]?.amount || 0;
- const finalExpected = (size * baseFee) + dev;
- const isPaid = finConfig.feesReceived?.[pocNric] === true;
+ const hasCaregiver = loadedFamily.some(m => m.role === 'CAREGIVER');
+ const isFamily = hasCaregiver || loadedFamily.length > 1;
 
- let membersListHtml = loadedFamily.map(m => {
+ const targetNric = isFamily ? loadedFamily[0].pocNric : currentUser.nric;
+ const targetMembers = isFamily ? loadedFamily : loadedFamily.filter(m => m.nric === currentUser.nric);
+
+ const baseFee = finConfig.perPersonFee || 0;
+ const size = targetMembers.length;
+ const dev = finConfig.feeDeviations?.[targetNric]?.amount || 0;
+ const finalExpected = (size * baseFee) + dev;
+ const isPaid = finConfig.feesReceived?.[targetNric] === true;
+
+ let membersListHtml = targetMembers.map(m => {
      const roleColor = m.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
      return `<span class="inline-block mr-1.5"><span class="${roleColor} font-black text-[9px] mr-0.5 border border-current px-0.5 rounded">${m.role.substring(0,3)}</span><span class="font-bold text-xs text-gray-800 dark:text-gray-200">${m.shortName || m.fullName}</span></span>`;
  }).join('');
@@ -221,14 +228,14 @@ function generatePaymentPortalHtml() {
      `;
  }
 
- const orderNo = pocNric.substring(0, 4) + "-" + Date.now().toString().slice(-4);
+ const orderNo = targetNric.substring(0, 4) + "-" + Date.now().toString().slice(-4);
  const qrStr = generatePayNowStr('2', '201234567M', finalExpected, orderNo); 
  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrStr)}`;
 
  return `
  <div class="flex flex-col gap-3">
      <div class="bg-gray-50 dark:bg-gray-950 p-3 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-         <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Total Fee for Family Group</p>
+         <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Total Fee</p>
          <p class="text-2xl font-black text-blue-700 dark:text-blue-400 leading-none">SGD ${finalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</p>
          <div class="mt-2 text-left">${membersListHtml}</div>
      </div>
@@ -258,6 +265,14 @@ function generateReceiptFormHtml() {
  currencies.forEach(c => { curOptionsHtml += `<option value="${c}">${c}</option>`; });
 
  const rateVal = globalFinanceRates['SGD'] || 1;
+ 
+ let paidByOpts = `<option value="${currentUser.nric}">Myself</option>`;
+ if (globalLogistics && globalLogistics.participants) {
+     const volunteers = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER' && p.nric !== currentUser.nric);
+     volunteers.forEach(v => {
+         paidByOpts += `<option value="${v.nric}">${v.shortName || v.name}</option>`;
+     });
+ }
 
  return `
  <form id="receiptForm" onsubmit="event.preventDefault(); submitReceipt(this.querySelector('button[type=submit]'));" class="flex flex-col gap-3 h-full">
@@ -268,6 +283,13 @@ function generateReceiptFormHtml() {
          </select>
      </div>
      
+     <div>
+         <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Paid By</label>
+         <select id="recPaidBy" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm" ${!finalOpt ? 'disabled' : ''}>
+             ${paidByOpts}
+         </select>
+     </div>
+
      <div class="grid grid-cols-2 gap-3">
          <div>
              <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Currency</label>
@@ -335,6 +357,7 @@ async function submitReceipt(btn) {
  const sgd = parseFloat(document.getElementById('recSgd').value) || 0;
  const rem = document.getElementById('recRemarks').value;
  const fileInput = document.getElementById('recFile');
+ const paidBy = document.getElementById('recPaidBy') ? document.getElementById('recPaidBy').value : currentUser.nric;
 
  if (!cat || amt <= 0 || !fileInput.files || fileInput.files.length === 0) {
      showToast("Please fill all required fields and select a file.", true);
@@ -359,6 +382,7 @@ async function submitReceipt(btn) {
 
      const payload = {
          uploaderNric: currentUser.nric,
+         paidByNric: paidBy,
          categoryId: cat,
          currency: cur,
          amount: amt,
@@ -402,8 +426,10 @@ function generateMyReceiptsHtml() {
          <tr>
              <th class="p-2">Date</th>
              <th class="p-2">Category</th>
+             <th class="p-2">Paid By</th>
              <th class="p-2 text-right">Amount</th>
              <th class="p-2 text-right">SGD</th>
+             <th class="p-2 text-center">Status</th>
              <th class="p-2">Remarks</th>
              <th class="p-2 text-center">File</th>
          </tr>
@@ -421,14 +447,27 @@ function generateMyReceiptsHtml() {
          }
      }
      
+     let payerName = r.paidByNric || r.uploaderNric;
+     if(globalLogistics && globalLogistics.participants) {
+         const pp = globalLogistics.participants.find(x => x.nric === payerName);
+         if(pp) payerName = pp.shortName || pp.name;
+     }
+     
      const dateStr = new Date(r.ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+     const isReimClass = r.isReimbursed ? 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-800 shadow-sm' : 'text-gray-500 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600';
      
      html += `
      <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
          <td class="p-2 text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">${dateStr}</td>
          <td class="p-2 text-xs font-bold text-primary max-w-[120px] truncate" title="${catName}">${catName}</td>
+         <td class="p-2 text-xs font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">${payerName}</td>
          <td class="p-2 text-xs font-bold text-gray-800 dark:text-gray-200 text-right whitespace-nowrap">${r.currency} ${r.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
          <td class="p-2 text-[11px] font-black text-purple-600 dark:text-purple-400 text-right whitespace-nowrap">SGD ${r.sgdAmount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+         <td class="p-2 text-center">
+             <span class="text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider whitespace-nowrap ${isReimClass}">
+                 ${r.isReimbursed ? 'Reimbursed' : 'Pending'}
+             </span>
+         </td>
          <td class="p-2 text-[10px] font-medium text-gray-600 dark:text-gray-400 max-w-[100px] truncate" title="${r.remarks}">${r.remarks || '-'}</td>
          <td class="p-2 text-xs text-center">
              ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 font-bold underline">View</a>` : '-'}
