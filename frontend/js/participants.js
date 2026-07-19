@@ -1,23 +1,28 @@
 let adminRosterData = [];
-let rosterSortCol = 'fullName';
-let rosterSortAsc = true;
 let rosterSearchQuery = '';
 
-let activeColumns = ['role', 'group', 'nric', 'passportNo', 'passportExpiry', 'dob'];
-const availableColumns = [
- { id: 'role', label: 'Role' },
- { id: 'group', label: 'Project' },
- { id: 'gender', label: 'Gender' },
- { id: 'nationality', label: 'Nationality' },
- { id: 'nric', label: 'NRIC' },
- { id: 'passportNo', label: 'Passport No' },
- { id: 'passportExpiry', label: 'Expiry' },
- { id: 'dob', label: 'DOB' },
- { id: 'contact', label: 'Contact' },
- { id: 'address', label: 'Address' },
- { id: 'emergencyName', label: 'Emerg. Name' },
- { id: 'emergencyContact', label: 'Emerg. Contact' }
+let rosterSortRules = JSON.parse(localStorage.getItem('rosterSortRules')) || [{ col: 'fullName', asc: true }];
+
+let rosterCols = JSON.parse(localStorage.getItem('rosterCols')) || [
+ { id: 'role', label: 'Role', width: 90, visible: true },
+ { id: 'group', label: 'Project', width: 100, visible: true },
+ { id: 'room', label: 'Room', width: 120, visible: true },
+ { id: 'pairings', label: 'Pairing(s)', width: 150, visible: true },
+ { id: 'gender', label: 'Gender', width: 80, visible: true },
+ { id: 'nationality', label: 'Nationality', width: 110, visible: true },
+ { id: 'nric', label: 'NRIC', width: 100, visible: true },
+ { id: 'passportNo', label: 'Passport No', width: 110, visible: true },
+ { id: 'passportExpiry', label: 'Expiry', width: 100, visible: true },
+ { id: 'dob', label: 'DOB', width: 100, visible: true },
+ { id: 'contact', label: 'Contact', width: 100, visible: true },
+ { id: 'address', label: 'Address', width: 220, visible: true },
+ { id: 'emergencyName', label: 'Emerg. Name', width: 140, visible: true },
+ { id: 'emergencyContact', label: 'Emerg. Contact', width: 120, visible: true },
+ { id: 'diet', label: 'Dietary', width: 180, visible: true },
+ { id: 'otherPoints', label: 'Med/Other Notes', width: 220, visible: true }
 ];
+
+let traineeShortNames = {};
 
 function buildParticipantsUI() {
  document.getElementById('tab-participants').innerHTML = `
@@ -37,17 +42,29 @@ function buildParticipantsUI() {
      
      <div class="p-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center gap-2">
          <div class="relative w-full flex-1">
-             <input type="text" id="rosterSearch" oninput="handleRosterSearch()" placeholder="Fuzzy search across all fields..." class="w-full p-2 pl-9 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
-             <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+             <input type="text" id="rosterSearch" oninput="handleRosterSearch()" placeholder="Fuzzy search across all fields..." class="w-full p-2 pl-9 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+             <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+             <button onclick="clearSearch('rosterSearch', 'handleRosterSearch')" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+         </div>
+         <div class="relative">
+             <button onclick="toggleSortSelector()" class="p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition focus:outline-none flex items-center gap-1">
+                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg> Sort
+             </button>
+             <div id="sortSelector" class="hidden-force absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-40 p-3">
+                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Advanced Sort</h4>
+                <div id="sortRulesContainer" class="space-y-2 mb-3"></div>
+                <button onclick="addSortRule()" class="w-full text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-700 rounded py-1 mb-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Level</button>
+                <button onclick="applySortRules(); toggleSortSelector();" class="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg shadow-sm hover:bg-blue-600 transition">Apply Sort</button>
+             </div>
          </div>
          <div class="relative">
              <button onclick="toggleColumnSelector()" class="p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition focus:outline-none flex items-center gap-1">
                  Columns <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
              </button>
-             <div id="columnSelector" class="hidden-force absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-30 p-2 grid grid-cols-1 gap-1">
-                ${availableColumns.map(c => `
+             <div id="columnSelector" class="hidden-force absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-30 p-2 flex flex-col gap-1 max-h-96 overflow-y-auto custom-scrollbar">
+                ${rosterCols.map(c => `
                   <label class="flex items-center gap-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer transition">
-                    <input type="checkbox" value="${c.id}" ${activeColumns.includes(c.id) ? 'checked' : ''} onchange="toggleRosterColumn('${c.id}', this.checked)" class="w-4 h-4 text-primary rounded border-gray-300">
+                    <input type="checkbox" value="${c.id}" ${c.visible ? 'checked' : ''} onchange="toggleRosterColumn('${c.id}', this.checked)" class="w-4 h-4 text-primary rounded border-gray-300">
                     <span class="text-xs font-bold text-gray-700 dark:text-gray-200">${c.label}</span>
                   </label>
                 `).join('')}
@@ -56,15 +73,14 @@ function buildParticipantsUI() {
      </div>
      
      <div class="flex-1 overflow-auto custom-scrollbar relative" id="rosterTableContainer">
-         <table class="w-full text-left border-collapse min-w-[900px]">
-             <thead id="rosterTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-10 shadow-sm border-b border-gray-200 dark:border-gray-700">
+         <table class="table-fixed-layout text-left border-collapse border-b border-gray-200 dark:border-gray-800">
+             <thead id="rosterTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-20 shadow-sm border-b border-gray-200 dark:border-gray-700">
              </thead>
              <tbody id="rosterTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
-                 <!-- Rows will populate here -->
              </tbody>
          </table>
          
-         <div id="rosterLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col justify-center items-center z-20">
+         <div id="rosterLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col justify-center items-center z-30">
              <div class="loader !w-8 !h-8 border-primary mb-2"></div>
              <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Fetching Directory...</span>
          </div>
@@ -73,25 +89,27 @@ function buildParticipantsUI() {
  `;
  
  document.addEventListener('click', (e) => {
-     const selector = document.getElementById('columnSelector');
-     if(selector && !selector.classList.contains('hidden-force') && !e.target.closest('#columnSelector') && !e.target.closest('button[onclick="toggleColumnSelector()"]')) {
-         selector.classList.add('hidden-force');
+     const colSel = document.getElementById('columnSelector');
+     if(colSel && !colSel.classList.contains('hidden-force') && !e.target.closest('#columnSelector') && !e.target.closest('button[onclick="toggleColumnSelector()"]')) {
+         colSel.classList.add('hidden-force');
+     }
+     const sortSel = document.getElementById('sortSelector');
+     if(sortSel && !sortSel.classList.contains('hidden-force') && !e.target.closest('#sortSelector') && !e.target.closest('button[onclick="toggleSortSelector()"]')) {
+         sortSel.classList.add('hidden-force');
      }
  });
 
+ renderSortRulesUI();
  loadParticipantsData();
 }
 
-function toggleColumnSelector() {
- document.getElementById('columnSelector').classList.toggle('hidden-force');
-}
+function toggleColumnSelector() { document.getElementById('columnSelector').classList.toggle('hidden-force'); }
+function toggleSortSelector() { document.getElementById('sortSelector').classList.toggle('hidden-force'); }
 
-function toggleRosterColumn(colId, isChecked) {
- if (isChecked) {
-     if (!activeColumns.includes(colId)) activeColumns.push(colId);
- } else {
-     activeColumns = activeColumns.filter(c => c !== colId);
- }
+function toggleRosterColumn(colId, isVisible) {
+ const c = rosterCols.find(x => x.id === colId);
+ if(c) c.visible = isVisible;
+ localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
  renderRosterTable();
 }
 
@@ -100,8 +118,47 @@ async function loadParticipantsData() {
  if(loader) loader.classList.remove('hidden-force');
  
  try {
-     const res = await apiCall('fetchAdminRoster');
-     adminRosterData = res.roster || [];
+     const [rostRes, logRes] = await Promise.all([
+         apiCall('fetchAdminRoster'),
+         apiCall('fetchLogistics')
+     ]);
+     
+     adminRosterData = rostRes.roster || [];
+     const logisticsData = logRes || { rooms: [], pairings: [] };
+     
+     traineeShortNames = {};
+     adminRosterData.forEach(p => {
+         if(p.role === 'TRAINEE') {
+             traineeShortNames[p.fullName.toLowerCase()] = p.shortName || p.fullName;
+         }
+     });
+
+     const roomsMap = {};
+     if (logisticsData.rooms) {
+         logisticsData.rooms.filter(r => !r.isDeleted).forEach(r => {
+             r.occupants.forEach(n => roomsMap[n] = r.name);
+         });
+     }
+     
+     const pairingsMap = {};
+     if (logisticsData.pairings) {
+         logisticsData.pairings.filter(p => p.status === 'ACTIVE').forEach(pair => {
+             if(!pairingsMap[pair.traineeNric]) pairingsMap[pair.traineeNric] = [];
+             if(!pairingsMap[pair.volNric]) pairingsMap[pair.volNric] = [];
+             
+             const v = adminRosterData.find(x => x.nric === pair.volNric);
+             const t = adminRosterData.find(x => x.nric === pair.traineeNric);
+             
+             if(v) pairingsMap[pair.traineeNric].push(v.shortName || v.fullName);
+             if(t) pairingsMap[pair.volNric].push(t.shortName || t.fullName);
+         });
+     }
+
+     adminRosterData.forEach(p => {
+         p.room = roomsMap[p.nric] || 'Unassigned';
+         p.pairings = pairingsMap[p.nric] ? pairingsMap[p.nric].join(', ') : 'None';
+     });
+
      renderRosterTable();
  } catch(e) {
      showToast("Failed to load roster.", true);
@@ -115,16 +172,156 @@ function handleRosterSearch() {
  renderRosterTable();
 }
 
-function sortRoster(col) {
- if (rosterSortCol === col) {
-     rosterSortAsc = !rosterSortAsc;
- } else {
-     rosterSortCol = col;
-     rosterSortAsc = true;
- }
+// ==========================================
+// ADVANCED SORTING
+// ==========================================
+const sortableFields = [
+ { id: 'fullName', label: 'Full Name' },
+ { id: 'role', label: 'Role' },
+ { id: 'group', label: 'Project' },
+ { id: 'room', label: 'Room' },
+ { id: 'gender', label: 'Gender' },
+ { id: 'nationality', label: 'Nationality' }
+];
+
+function renderSortRulesUI() {
+ const container = document.getElementById('sortRulesContainer');
+ if(!container) return;
+ 
+ let html = '';
+ rosterSortRules.forEach((rule, idx) => {
+     let opts = sortableFields.map(f => `<option value="${f.id}" ${rule.col === f.id ? 'selected' : ''}>${f.label}</option>`).join('');
+     html += `
+     <div class="flex items-center gap-1">
+         <select onchange="updateSortRule(${idx}, 'col', this.value)" class="flex-1 text-[10px] font-bold p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none">
+             ${opts}
+         </select>
+         <select onchange="updateSortRule(${idx}, 'asc', this.value === 'true')" class="w-16 text-[10px] font-bold p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none">
+             <option value="true" ${rule.asc ? 'selected' : ''}>ASC</option>
+             <option value="false" ${!rule.asc ? 'selected' : ''}>DESC</option>
+         </select>
+         <button onclick="removeSortRule(${idx})" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded transition"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+     </div>
+     `;
+ });
+ container.innerHTML = html;
+}
+
+function updateSortRule(idx, field, val) {
+ if(rosterSortRules[idx]) rosterSortRules[idx][field] = val;
+}
+
+function addSortRule() {
+ rosterSortRules.push({ col: 'fullName', asc: true });
+ renderSortRulesUI();
+}
+
+function removeSortRule(idx) {
+ rosterSortRules.splice(idx, 1);
+ if(rosterSortRules.length === 0) rosterSortRules.push({ col: 'fullName', asc: true });
+ renderSortRulesUI();
+}
+
+function applySortRules() {
+ localStorage.setItem('rosterSortRules', JSON.stringify(rosterSortRules));
  renderRosterTable();
 }
 
+function quickSort(colId) {
+ rosterSortRules = [{ col: colId, asc: true }];
+ localStorage.setItem('rosterSortRules', JSON.stringify(rosterSortRules));
+ renderSortRulesUI();
+ renderRosterTable();
+}
+
+// ==========================================
+// RESIZING & REORDERING
+// ==========================================
+let resizingCol = null;
+let startX = 0;
+let startWidth = 0;
+
+function initResize(e, colId) {
+ e.stopPropagation();
+ resizingCol = colId;
+ startX = e.clientX;
+ const colDef = colId === 'fullName' ? {width: 250} : rosterCols.find(c => c.id === colId);
+ startWidth = colDef.width || 150;
+ document.addEventListener('mousemove', onMouseMove);
+ document.addEventListener('mouseup', onMouseUp);
+}
+
+function onMouseMove(e) {
+ if (!resizingCol) return;
+ const diff = e.clientX - startX;
+ let newWidth = Math.max(50, startWidth + diff);
+ 
+ if (resizingCol === 'fullName') {
+     // For main column if we decide to store it, but let's just live update DOM
+     const cells = document.querySelectorAll(`.roster-col-fullName`);
+     cells.forEach(c => { c.style.width = newWidth + 'px'; c.style.minWidth = newWidth + 'px'; c.style.maxWidth = newWidth + 'px'; });
+ } else {
+     const cDef = rosterCols.find(c => c.id === resizingCol);
+     if (cDef) {
+         cDef.width = newWidth;
+         const cells = document.querySelectorAll(`.roster-col-${resizingCol}`);
+         cells.forEach(c => { c.style.width = newWidth + 'px'; c.style.minWidth = newWidth + 'px'; c.style.maxWidth = newWidth + 'px'; });
+     }
+ }
+}
+
+function onMouseUp() {
+ if (resizingCol && resizingCol !== 'fullName') {
+     localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
+ }
+ resizingCol = null;
+ document.removeEventListener('mousemove', onMouseMove);
+ document.removeEventListener('mouseup', onMouseUp);
+}
+
+let draggedColId = null;
+window.onColDragStart = function(e, colId) {
+ draggedColId = colId;
+ e.dataTransfer.effectAllowed = "move";
+ e.target.classList.add('opacity-50');
+}
+window.onColDragEnd = function(e) {
+ e.target.classList.remove('opacity-50');
+ document.querySelectorAll('th').forEach(th => th.classList.remove('bg-gray-200', 'dark:bg-gray-700'));
+}
+window.onColDragOver = function(e) {
+ e.preventDefault();
+ e.dataTransfer.dropEffect = "move";
+ const th = e.target.closest('th');
+ if(th && th.dataset.colId !== draggedColId && th.dataset.colId !== 'fullName') {
+     th.classList.add('bg-gray-200', 'dark:bg-gray-700');
+ }
+}
+window.onColDragLeave = function(e) {
+ const th = e.target.closest('th');
+ if(th) th.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+}
+window.onColDrop = function(e, targetColId) {
+ e.preventDefault();
+ const th = e.target.closest('th');
+ if(th) th.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+ 
+ if (!draggedColId || draggedColId === targetColId || targetColId === 'fullName' || draggedColId === 'fullName') return;
+ 
+ const fromIdx = rosterCols.findIndex(c => c.id === draggedColId);
+ const toIdx = rosterCols.findIndex(c => c.id === targetColId);
+ if(fromIdx > -1 && toIdx > -1) {
+     const [moved] = rosterCols.splice(fromIdx, 1);
+     rosterCols.splice(toIdx, 0, moved);
+     localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
+     renderRosterTable();
+ }
+}
+
+
+// ==========================================
+// RENDER TABLE
+// ==========================================
 function renderRosterTable() {
  let data = [...adminRosterData];
  
@@ -137,28 +334,42 @@ function renderRosterTable() {
  }
  
  data.sort((a, b) => {
-     let valA = a[rosterSortCol] || '';
-     let valB = b[rosterSortCol] || '';
-     
-     if (rosterSortCol === 'passportExpiry' || rosterSortCol === 'dob') {
-         valA = new Date(valA).getTime() || 0;
-         valB = new Date(valB).getTime() || 0;
-     } else {
-         valA = valA.toString().toLowerCase();
-         valB = valB.toString().toLowerCase();
+     for (let rule of rosterSortRules) {
+         let valA = a[rule.col] || '';
+         let valB = b[rule.col] || '';
+         
+         if (rule.col === 'passportExpiry' || rule.col === 'dob') {
+             valA = new Date(valA).getTime() || 0;
+             valB = new Date(valB).getTime() || 0;
+         } else {
+             valA = valA.toString().toLowerCase();
+             valB = valB.toString().toLowerCase();
+         }
+         
+         if (valA < valB) return rule.asc ? -1 : 1;
+         if (valA > valB) return rule.asc ? 1 : -1;
      }
-     
-     if (valA < valB) return rosterSortAsc ? -1 : 1;
-     if (valA > valB) return rosterSortAsc ? 1 : -1;
      return 0;
  });
 
  const thead = document.getElementById('rosterTableHead');
- let headHtml = `<tr><th class="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition" onclick="sortRoster('fullName')">Full Name <span class="text-gray-400 ml-1">↕</span></th>`;
+ let headHtml = `<tr>
+     <th class="p-3 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top" style="width: 200px; min-width: 200px; max-width: 200px;" data-col-id="fullName">
+         <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('fullName')">Full Name <span class="text-[8px]">↕</span></div>
+         <div class="resize-handle" onmousedown="initResize(event, 'fullName')"></div>
+     </th>`;
  
- availableColumns.forEach(c => {
-     if (activeColumns.includes(c.id)) {
-         headHtml += `<th class="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition" onclick="sortRoster('${c.id}')">${c.label} <span class="text-gray-400 ml-1">↕</span></th>`;
+ rosterCols.forEach(c => {
+     if (c.visible) {
+         headHtml += `
+         <th class="p-3 relative bg-gray-100 dark:bg-gray-800 roster-col-${c.id} align-top" 
+             style="width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px;" 
+             data-col-id="${c.id}" draggable="true" 
+             ondragstart="onColDragStart(event, '${c.id}')" ondragend="onColDragEnd(event)"
+             ondragover="onColDragOver(event)" ondragleave="onColDragLeave(event)" ondrop="onColDrop(event, '${c.id}')">
+             <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('${c.id}')">${c.label} <span class="text-[8px]">↕</span></div>
+             <div class="resize-handle" onmousedown="initResize(event, '${c.id}')"></div>
+         </th>`;
      }
  });
  headHtml += `</tr>`;
@@ -198,34 +409,54 @@ function renderRosterTable() {
 
      const nameClass = expiryHighlight ? 'text-red-600 dark:text-red-400 font-extrabold' : 'font-bold text-gray-900 dark:text-gray-100';
      const expClass = expiryHighlight 
-         ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-[11px] uppercase tracking-wider' 
+         ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-[11px] uppercase tracking-wider inline-block' 
          : 'text-gray-800 dark:text-gray-200 whitespace-nowrap text-xs font-medium';
      
      const roleStr = p.role.substring(0, 3).toUpperCase();
      const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
      
+     let famTag = '';
+     if (p.role === 'CAREGIVER' && p.relatedTrainee) {
+         const tShort = traineeShortNames[p.relatedTrainee.toLowerCase()] || p.relatedTrainee;
+         famTag = `<div class="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 leading-tight whitespace-normal break-words">[${tShort}]</div>`;
+     }
+
      html += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-         <td class="p-3">
-             <div class="${nameClass} text-xs md:text-sm leading-tight">${p.fullName}</div>
-             <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium">${p.shortName || ''}</div>
+         <td class="p-3 align-top roster-col-fullName" style="width: 200px; min-width: 200px; max-width: 200px;">
+             <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${p.fullName}</div>
+             <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${p.shortName || ''}</div>
+             ${famTag}
          </td>`;
          
-     availableColumns.forEach(c => {
-         if (activeColumns.includes(c.id)) {
+     rosterCols.forEach(c => {
+         if (c.visible) {
+             const styleStr = `style="width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px;"`;
+             const baseClass = `p-3 align-top roster-col-${c.id} text-xs font-medium text-gray-800 dark:text-gray-200 whitespace-normal break-words`;
+             
              if (c.id === 'role') {
-                 html += `<td class="p-3"><span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span></td>`;
+                 html += `<td class="${baseClass}" ${styleStr}><span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span></td>`;
              } else if (c.id === 'group') {
-                 html += `<td class="p-3"><span class="px-2 py-0.5 rounded border shadow-sm text-[10px] font-bold ${getProjectColor(p.group)} whitespace-nowrap">${p.group || 'None'}</span></td>`;
+                 html += `<td class="${baseClass}" ${styleStr}><span class="px-2 py-0.5 rounded border shadow-sm text-[10px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${p.group || 'None'}</span></td>`;
              } else if (c.id === 'nric') {
-                 html += `<td class="p-3 text-xs font-mono font-bold text-gray-700 dark:text-gray-300">${p.nric}</td>`;
+                 html += `<td class="${baseClass} font-mono font-bold text-gray-700 dark:text-gray-300" ${styleStr}>${p.nric}</td>`;
              } else if (c.id === 'passportNo') {
-                 html += `<td class="p-3 text-xs font-mono uppercase text-gray-700 dark:text-gray-300">${p.passportNo || '-'}</td>`;
+                 html += `<td class="${baseClass} font-mono uppercase text-gray-700 dark:text-gray-300" ${styleStr}>${p.passportNo || '-'}</td>`;
              } else if (c.id === 'passportExpiry') {
-                 html += `<td class="p-3"><span class="${expClass}">${formattedExpiry || '-'}</span></td>`;
+                 html += `<td class="${baseClass}" ${styleStr}><span class="${expClass}">${formattedExpiry || '-'}</span></td>`;
              } else if (c.id === 'dob') {
-                 html += `<td class="p-3 text-xs font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">${formattedDob || '-'}</td>`;
+                 html += `<td class="${baseClass}" ${styleStr}>${formattedDob || '-'}</td>`;
+             } else if (c.id === 'diet') {
+                 const hasDiet = p.diet && p.diet.trim() && p.diet.trim().toLowerCase() !== 'nil' && p.diet.trim().toLowerCase() !== 'none';
+                 html += `<td class="${baseClass}" ${styleStr}>${hasDiet ? `<span class="text-red-700 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap leading-tight">${p.diet}</span>` : `<span class="text-gray-400 italic">None</span>`}</td>`;
+             } else if (c.id === 'otherPoints') {
+                 const hasNotes = p.otherPoints && p.otherPoints.trim() && p.otherPoints.trim().toLowerCase() !== 'nil' && p.otherPoints.trim().toLowerCase() !== 'none';
+                 html += `<td class="${baseClass}" ${styleStr}>${hasNotes ? `<span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap leading-tight">${p.otherPoints}</span>` : `<span class="text-gray-400 italic">None</span>`}</td>`;
+             } else if (c.id === 'room') {
+                 html += `<td class="${baseClass} font-bold" ${styleStr}>${p.room || 'Unassigned'}</td>`;
+             } else if (c.id === 'pairings') {
+                 html += `<td class="${baseClass}" ${styleStr}>${p.pairings || 'None'}</td>`;
              } else {
-                 html += `<td class="p-3 text-xs font-medium text-gray-800 dark:text-gray-200 max-w-[200px] truncate" title="${p[c.id] || '-'}">${p[c.id] || '-'}</td>`;
+                 html += `<td class="${baseClass}" ${styleStr}>${p[c.id] || '-'}</td>`;
              }
          }
      });
@@ -233,5 +464,6 @@ function renderRosterTable() {
      html += `</tr>`;
  });
  
- tbody.innerHTML = html || `<tr><td colspan="${activeColumns.length + 1}" class="p-6 text-center text-[11px] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold">No participants found matching the criteria.</td></tr>`;
+ const colCount = rosterCols.filter(c => c.visible).length + 1;
+ tbody.innerHTML = html || `<tr><td colspan="${colCount}" class="p-6 text-center text-[11px] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold">No participants found matching the criteria.</td></tr>`;
 }
