@@ -208,7 +208,8 @@ function handleDndDrop(sourceNric, sourceRole, targetNric) {
      } else {
          globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts });
      }
-
+     
+     clearSearch('pairingSearchInput', 'renderPairings');
      renderPairings(); 
      triggerPairingSync();
  } else {
@@ -227,6 +228,7 @@ function unpairTrainee(traineeNric, volNric) {
      existing.ts = ts;
  }
 
+ clearSearch('pairingSearchInput', 'renderPairings');
  renderPairings(); 
  triggerPairingSync();
 }
@@ -311,10 +313,13 @@ function startPairingPolling() {
 
  pairingPollInterval = setInterval(async () => {
      const logTab = document.getElementById('tab-logistics');
-     if(!logTab || logTab.classList.contains('hidden-force') || isPairingSyncing || (dndState.type === 'pairing' && (dndState.el || dndState.isDragging))) return;
+     if(!logTab || logTab.classList.contains('hidden-force') || isPairingSyncing || pendingPairingsMap.size > 0 || (dndState.type === 'pairing' && (dndState.el || dndState.isDragging))) return;
 
+     const fetchStartTime = Date.now();
      try {
          const res = await apiCall('fetchPairingsOnly');
+         if (lastLocalChange > fetchStartTime) return; 
+
          if(res.pairings) {
              let hasChanges = false;
              res.pairings.forEach(sPair => {
@@ -644,6 +649,7 @@ function handleRoomDrop(nric, targetRoomId) {
      targetRoom.ts = Date.now();
      queueRoomUpdate(targetRoom.id);
  }
+ clearSearch('roomSearchInput', 'renderRooms');
  renderRooms();
 }
 
@@ -653,6 +659,7 @@ function unassignFromRoom(nric, roomId) {
      room.occupants = room.occupants.filter(n => n !== nric);
      room.ts = Date.now();
      queueRoomUpdate(roomId);
+     clearSearch('roomSearchInput', 'renderRooms');
      renderRooms();
  }
 }
@@ -712,10 +719,13 @@ function startRoomPolling() {
  setInterval(async () => {
      const logTab = document.getElementById('tab-logistics');
      const roomSec = document.getElementById('log-rooms');
-     if(!logTab || logTab.classList.contains('hidden-force') || !roomSec || roomSec.classList.contains('hidden-force') || isRoomSyncing || (dndState.type === 'rooming' && (dndState.el || dndState.isDragging))) return;
+     if(!logTab || logTab.classList.contains('hidden-force') || !roomSec || roomSec.classList.contains('hidden-force') || isRoomSyncing || pendingRoomUpdates.size > 0 || (dndState.type === 'rooming' && (dndState.el || dndState.isDragging))) return;
 
+     const fetchStartTime = Date.now();
      try {
          const res = await apiCall('fetchRoomsOnly');
+         if (lastLocalChange > fetchStartTime) return;
+
          if(res.rooms) {
              let hasChanges = false;
              res.rooms.forEach(sRoom => {
@@ -809,7 +819,13 @@ function buildLogisticsUI() {
                  <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
              </button>
          </div>
-         <p class="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 px-1 leading-tight">Slide between columns to pair. Tap 'X' to unpair.</p>
+         <div class="flex justify-between items-center px-1 gap-2 mt-1 mb-1">
+             <div class="relative w-full">
+                 <input type="text" id="pairingSearchInput" oninput="renderPairings()" placeholder="Search pairings..." class="w-full p-1.5 pl-7 pr-8 border border-gray-300 dark:border-gray-700 rounded text-[10px] font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+                 <svg class="w-3.5 h-3.5 absolute left-2 top-2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                 <button onclick="clearSearch('pairingSearchInput', 'renderPairings')" class="absolute right-1.5 top-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+             </div>
+         </div>
      </div>
      <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 border-x border-b border-gray-200 dark:border-gray-800 rounded-b-xl md:rounded-none">
          <div id="dnd-source-col" class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800">
@@ -847,8 +863,9 @@ function buildLogisticsUI() {
          </div>
          <div class="flex justify-between items-center px-1 gap-2 mt-1">
              <div class="relative w-full max-w-sm">
-                 <input type="text" id="roomSearchInput" oninput="renderRooms()" placeholder="Fuzzy search participants/rooms..." class="w-full p-1.5 pl-7 border border-gray-300 dark:border-gray-700 rounded text-[10px] font-bold bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
-                 <svg class="w-3.5 h-3.5 absolute left-2 top-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                 <input type="text" id="roomSearchInput" oninput="renderRooms()" placeholder="Search participants/rooms..." class="w-full p-1.5 pl-7 pr-8 border border-gray-300 dark:border-gray-700 rounded text-[10px] font-bold bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+                 <svg class="w-3.5 h-3.5 absolute left-2 top-2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                 <button onclick="clearSearch('roomSearchInput', 'renderRooms')" class="absolute right-1.5 top-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
              </div>
              <select id="roomFilterSelect" onchange="renderRooms()" class="text-[10px] font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1.5 outline-none shrink-0">
                  <option value="ALL">All Roles</option>
@@ -981,8 +998,18 @@ function renderPairings() {
  });
 
  const isSourceVol = !altSwapMode;
- const sourceArr = isSourceVol ? vols : trainees;
- const targetArr = isSourceVol ? trainees : vols;
+ let sourceArr = isSourceVol ? vols : trainees;
+ let targetArr = isSourceVol ? trainees : vols;
+
+ const query = document.getElementById('pairingSearchInput') ? document.getElementById('pairingSearchInput').value.toLowerCase().trim() : '';
+ if (query) {
+     const matchFn = (p) => {
+         const dName = (p.displayName || p.name).toLowerCase();
+         return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+     };
+     sourceArr = sourceArr.filter(matchFn);
+     targetArr = targetArr.filter(matchFn);
+ }
 
  const volColClass = "bg-green-50/30 dark:bg-green-900/10";
  const traineeColClass = "bg-blue-50/30 dark:bg-blue-900/10";
@@ -1251,6 +1278,7 @@ function confirmPairing(targetNric) {
      if(existing) { existing.status = 'ACTIVE'; existing.ts = ts; } 
      else { globalLogistics.pairings.push({ traineeNric, volNric, status: 'ACTIVE', ts }); }
 
+     clearSearch('pairingSearchInput', 'renderPairings');
      renderPairings(); 
      triggerPairingSync();
  }
@@ -1264,6 +1292,7 @@ function confirmRoomAdd(nric) {
  if(room && room.occupants.length >= room.capacity) {
      closeSelectionSheet();
  } else {
+     clearSearch('sheetSearchInput', 'filterBottomSheet');
      openRoomAddSheet(activeRoomTargetId); 
  }
 }

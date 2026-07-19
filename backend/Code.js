@@ -184,6 +184,7 @@ switch(data.action) {
   case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
   case 'saveTripSettings': result = saveTripSettings(data.title, data.year, data.start, data.end); break;
   case 'fetchAdminRoster': result = fetchAdminRoster(); break;
+  case 'getParticipantSummary': result = getParticipantSummary(data.nric); break;
   case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
   case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
   case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
@@ -325,6 +326,60 @@ if (isFamilyMember) {
 }
 }
 return { status: 'success', family: family };
+}
+
+function getParticipantSummary(nric) {
+  const logRes = fetchLogistics();
+  const finRes = fetchFinance();
+  
+  if (!logRes.participants) return { status: 'error', message: 'Participant not found' };
+  
+  const p = logRes.participants.find(x => x.nric === nric);
+  if (!p) return { status: 'error', message: 'Participant not found' };
+
+  const rooms = logRes.rooms || [];
+  const pairings = logRes.pairings || [];
+  
+  let myRoom = rooms.find(r => !r.isDeleted && r.occupants.includes(nric));
+  
+  let myPairings = [];
+  if (p.role === 'TRAINEE') {
+      myPairings = pairings.filter(x => x.traineeNric === nric && x.status === 'ACTIVE').map(x => x.volNric);
+  } else if (p.role === 'VOLUNTEER') {
+      myPairings = pairings.filter(x => x.volNric === nric && x.status === 'ACTIVE').map(x => x.traineeNric);
+  }
+  
+  const pairingNames = myPairings.map(n => {
+      const per = logRes.participants.find(x => x.nric === n);
+      return per ? (per.shortName || per.name) : n;
+  });
+
+  const finConfig = finRes.data?.config || {};
+  let paymentStatus = "No Fees";
+  let expectedFee = 0;
+  
+  if (finConfig.perPersonFee) {
+      const familySize = logRes.participants.filter(x => x.pocNric === p.pocNric).length;
+      const base = finConfig.perPersonFee * familySize;
+      const dev = finConfig.feeDeviations?.[p.pocNric]?.amount || 0;
+      expectedFee = base + dev;
+      const isPaid = finConfig.feesReceived?.[p.pocNric] === true;
+      paymentStatus = isPaid ? "Paid" : `Pending (SGD ${expectedFee})`;
+  }
+
+  return {
+      status: 'success',
+      summary: {
+          fullName: p.name,
+          shortName: p.shortName,
+          role: p.role,
+          group: p.group,
+          gender: p.gender,
+          roomName: myRoom ? myRoom.name : "Unassigned",
+          pairings: pairingNames.length > 0 ? pairingNames.join(', ') : "None",
+          paymentStatus: paymentStatus
+      }
+  };
 }
 
 function updateProfile(member) {
