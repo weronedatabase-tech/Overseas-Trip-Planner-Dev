@@ -63,14 +63,15 @@ return globalFinanceRates[currency] || 1;
 
 async function buildFinanceUI() {
 document.getElementById('tab-finance').innerHTML = `
-<div class="sticky top-0 z-40 flex overflow-x-auto bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 scrollbar-hide shrink-0 rounded-t-xl md:rounded-none px-2 pt-1">
-    <button onclick="switchFinanceSubTab('finalized')" id="subTab-fin-finalized" class="px-3 py-2 font-semibold border-b-2 border-primary text-primary whitespace-nowrap text-xs md:text-sm transition focus:outline-none">1. Finalized Finances</button>
-    <button onclick="switchFinanceSubTab('options')" id="subTab-fin-options" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">2. Trip Options</button>
-    <button onclick="switchFinanceSubTab('receipts')" id="subTab-fin-receipts" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">3. Receipts</button>
-    <button onclick="switchFinanceSubTab('fees')" id="subTab-fin-fees" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">4. Fee Tracker</button>
-    
-    <div class="ml-auto flex items-center pr-2">
-        <button id="btn-sync-finance" onclick="manualFinanceSync(this)" class="bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-md hover:bg-green-100 transition flex items-center shadow-sm focus:outline-none shrink-0 border">
+<div class="sticky top-0 z-40 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0 rounded-t-xl md:rounded-none pr-2">
+    <div class="flex overflow-x-auto scrollbar-hide flex-1 px-2 pt-1">
+        <button onclick="switchFinanceSubTab('finalized')" id="subTab-fin-finalized" class="px-3 py-2 font-semibold border-b-2 border-primary text-primary whitespace-nowrap text-xs md:text-sm transition focus:outline-none">1. Finalized Finances</button>
+        <button onclick="switchFinanceSubTab('options')" id="subTab-fin-options" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">2. Trip Options</button>
+        <button onclick="switchFinanceSubTab('receipts')" id="subTab-fin-receipts" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">3. Receipts</button>
+        <button onclick="switchFinanceSubTab('fees')" id="subTab-fin-fees" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">4. Fee Tracker</button>
+    </div>
+    <div class="flex items-center shrink-0 pl-2 border-l border-gray-200 dark:border-gray-800 ml-1">
+        <button id="btn-sync-finance" onclick="manualFinanceSync(this)" class="bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-md hover:bg-green-100 transition flex items-center shadow-sm focus:outline-none shrink-0">
             <span class="btn-text">Saved</span>
             <div class="btn-spinner spinner-white ml-1.5 !w-3 !h-3 hidden-force border-2"></div>
         </button>
@@ -398,9 +399,14 @@ if(!financeConfig.finalOptionId) {
     return;
 }
 
-const opt = financeOptions.find(o => o.id === financeConfig.finalOptionId);
+const opt = financeOptions.find(o => o.id === financeConfig.finalOptionId && !o.isDeleted);
 if(!opt) {
-    cont.innerHTML = '<p class="p-4 font-bold text-red-500">Error: Finalized option not found.</p>';
+    cont.innerHTML = `
+    <div class="flex flex-col items-center justify-center p-12 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <svg class="w-16 h-16 mb-4 opacity-50 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <p class="font-bold text-base text-gray-700 dark:text-gray-300">No Finalized Option Selected</p>
+        <p class="text-xs mt-2 text-center max-w-sm">Navigate to the <b>Trip Options</b> tab and click "Mark as Finalized" on the budget option you want to proceed with.</p>
+    </div>`;
     return;
 }
 
@@ -528,10 +534,12 @@ let globalSettingsHtml = `
 
 let html = '<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 w-full items-start pb-4 max-w-full mx-auto">';
 
-if (financeOptions.length === 0) {
+const activeOptions = financeOptions.filter(o => !o.isDeleted);
+
+if (activeOptions.length === 0) {
     html += `<div class="w-full col-span-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 pt-10"><p class="font-bold text-sm">No options created yet.</p></div>`;
 } else {
-    financeOptions.forEach(opt => {
+    activeOptions.forEach(opt => {
         const pax = getActivePax(opt);
         let totalSgd = 0;
         opt.fields.forEach(f => {
@@ -735,7 +743,7 @@ if (cppEl) cppEl.textContent = `${opt.displayCurrency} ${cppDisp.toLocaleString(
 
 function addFinanceOption(title = "New Option", reRender = true) {
 const newOpt = {
-    id: generateFinanceUUID(), title: title, pax: 0, displayCurrency: 'SGD', widthSpan: 2, ts: Date.now(), _isCollapsed: false, fields: []
+    id: generateFinanceUUID(), title: title, pax: 0, displayCurrency: 'SGD', widthSpan: 2, ts: Date.now(), _isCollapsed: false, isDeleted: false, fields: []
 };
 defaultFinanceFields.forEach(f => {
     newOpt.fields.push({ id: generateFinanceUUID(), name: f, costType: 'total', tax: 0, cost: 0, currency: 'MYR', remarks: '' });
@@ -753,6 +761,7 @@ copy.id = generateFinanceUUID();
 copy.title = opt.title + " (Copy)";
 copy.ts = Date.now();
 copy._isCollapsed = false;
+copy.isDeleted = false;
 copy.fields.forEach(f => f.id = generateFinanceUUID()); 
 financeOptions.unshift(copy);
 queueFinanceUpdate(copy.id);
@@ -761,21 +770,14 @@ renderFinanceOptions();
 
 function removeFinanceOption(id) {
 if (!confirm("Are you sure you want to remove this option?")) return;
-financeOptions = financeOptions.filter(o => o.id !== id);
-if(financeConfig.finalOptionId === id) financeConfig.finalOptionId = null;
-financeConfig.ts = Date.now();
-pendingFinanceUpdates.delete(id);
-setFinanceSyncButtonState('saving');
-if (financeSyncTimeout) clearTimeout(financeSyncTimeout);
-financeSyncTimeout = setTimeout(async () => {
-    isFinanceSyncing = true;
-    try {
-        await apiCall('saveFinance', { payload: { options: financeOptions, config: financeConfig } });
-        setFinanceSyncButtonState('saved');
-    } catch(e) { setFinanceSyncButtonState('error'); } 
-    finally { isFinanceSyncing = false; }
-}, 500);
-renderFinanceOptions();
+const opt = financeOptions.find(o => o.id === id);
+if (opt) {
+    opt.isDeleted = true;
+    opt.ts = Date.now();
+    if(financeConfig.finalOptionId === id) financeConfig.finalOptionId = null;
+    queueFinanceUpdate(id);
+    renderAllFinanceTabs();
+}
 }
 
 function addFinanceCategory(optId) {
@@ -1002,7 +1004,18 @@ let cardsData = [];
 
 Object.keys(groups).forEach(poc => {
     const members = groups[poc];
+    const hasCaregiver = members.some(m => m.role === 'CAREGIVER');
     
+    if (hasCaregiver || members.length === 1) {
+        processFeeCard(poc, members);
+    } else {
+        members.forEach(m => {
+            processFeeCard(m.nric, [m]);
+        });
+    }
+});
+
+function processFeeCard(poc, members) {
     const size = members.length;
     const dev = financeConfig.feeDeviations?.[poc]?.amount || 0;
     const rem = financeConfig.feeDeviations?.[poc]?.remarks || '';
@@ -1022,7 +1035,7 @@ Object.keys(groups).forEach(poc => {
     }
 
     if (match) cardsData.push({ poc, members, size, dev, rem, isPaid, finalExpected });
-});
+}
 
 cardsData.sort((a,b) => {
     if (a.isPaid !== b.isPaid) return a.isPaid ? 1 : -1; 
