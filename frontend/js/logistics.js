@@ -97,13 +97,34 @@ function moveDrag(e, clientX, clientY, isTouch) {
 
     if (!dndState.isDragging) {
         const threshold = 8;
-        if ((dndState.type === 'pairing' && deltaX > threshold && deltaX > deltaY) || (dndState.type === 'rooming' && (deltaX > threshold || deltaY > threshold))) {
-            if (dndState.type === 'pairing' && deltaY > 8 && deltaY > deltaX) {
-                dndState.el = null;
-                return;
+        let shouldStartDrag = false;
+        let shouldCancelDrag = false;
+
+        if (isTouch) {
+            // On touch devices, strictly require horizontal movement to initiate a drag.
+            // This prevents interfering with native vertical scrolling.
+            if (deltaX > threshold && deltaX > deltaY) {
+                shouldStartDrag = true;
+            } else if (deltaY > threshold && deltaY > deltaX) {
+                shouldCancelDrag = true;
             }
+        } else {
+            // On desktop/mouse, any movement direction is fine since there's no native scroll conflict
+            if (deltaX > threshold || deltaY > threshold) {
+                shouldStartDrag = true;
+            }
+        }
+
+        if (shouldCancelDrag) {
+            dndState.el = null;
+            return;
+        }
+
+        if (shouldStartDrag) {
             dndState.isDragging = true;
-            if(isTouch && navigator.vibrate) navigator.vibrate(20);
+            if(isTouch && navigator.vibrate) {
+                try { navigator.vibrate(20); } catch(err){}
+            }
             dndState.el.classList.add('locked-for-drag');
             
             dndState.clone = dndState.nameNode.cloneNode(true);
@@ -112,9 +133,6 @@ function moveDrag(e, clientX, clientY, isTouch) {
             dndState.clone.style.height = dndState.rectHeight + 'px';
             dndState.clone.style.margin = '0px';
             document.body.appendChild(dndState.clone);
-        } else if (dndState.type === 'pairing' && deltaY > 8) {
-            dndState.el = null;
-            return;
         }
     }
 
