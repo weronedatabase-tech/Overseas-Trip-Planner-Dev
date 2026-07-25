@@ -512,7 +512,7 @@ function getRoomState(roomId) {
             if (p.role === 'CAREGIVER') hasFamily = true;
             
             // Check if trainee is part of a family
-            const familyMembers = globalLogistics.participants.filter(x => x.pocNric === p.pocNric);
+            const targetPoc = p.pocNric || p.nric; const familyMembers = globalLogistics.participants.filter(x => (x.pocNric || x.nric) === targetPoc);
             if (familyMembers.some(x => x.role === 'CAREGIVER')) hasFamily = true;
 
             if (p.gender) genderSet.add(p.gender.toLowerCase());
@@ -535,8 +535,8 @@ if(unassigned.length === 0) { showToast("Everyone is already assigned."); return
 
 const familyGroups = {};
 unassigned.forEach(p => {
-    if(!familyGroups[p.pocNric]) familyGroups[p.pocNric] = [];
-    familyGroups[p.pocNric].push(p);
+    if(!familyGroups[p.pocNric || p.nric]) familyGroups[p.pocNric || p.nric] = [];
+    familyGroups[p.pocNric || p.nric].push(p);
 });
 
 const families = [];

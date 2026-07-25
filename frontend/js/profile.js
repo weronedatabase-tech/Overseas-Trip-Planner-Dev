@@ -195,8 +195,10 @@ tabProfile.innerHTML = `<div class="flex justify-between items-center border-b b
 }
 
 function generatePaymentPortalHtml() {
-const targetNric = loadedFamily[0].pocNric;
 const targetMembers = loadedFamily;
+const hasCaregiver = targetMembers.some(m => m.role === 'CAREGIVER');
+let targetNric = loadedFamily[0].pocNric || loadedFamily[0].nric;
+if (!hasCaregiver) targetNric = loadedFamily[0].nric;
 
 const baseFee = finConfig.perPersonFee || 0;
 const size = targetMembers.length;

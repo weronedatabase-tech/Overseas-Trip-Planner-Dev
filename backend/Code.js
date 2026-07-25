@@ -359,11 +359,19 @@ function getParticipantSummary(nric) {
  let expectedFee = 0;
  
  if (finConfig.perPersonFee) {
-     const familySize = logRes.participants.filter(x => x.pocNric === p.pocNric).length;
+     const initialPoc = p.pocNric || p.nric;
+     const groupMembers = logRes.participants.filter(x => (x.pocNric || x.nric) === initialPoc);
+     const hasCaregiver = groupMembers.some(x => x.role === 'CAREGIVER');
+     let finalPoc = initialPoc;
+     let familySize = groupMembers.length;
+     if (!hasCaregiver && groupMembers.length > 1) {
+         finalPoc = p.nric;
+         familySize = 1;
+     }
      const base = finConfig.perPersonFee * familySize;
-     const dev = finConfig.feeDeviations?.[p.pocNric]?.amount || 0;
+     const dev = finConfig.feeDeviations?.[finalPoc]?.amount || 0;
      expectedFee = base + dev;
-     const isPaid = finConfig.feesReceived?.[p.pocNric] === true;
+     const isPaid = finConfig.feesReceived?.[finalPoc] === true;
      paymentStatus = isPaid ? "Paid" : `Pending (SGD ${expectedFee})`;
  }
 

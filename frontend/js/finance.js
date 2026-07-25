@@ -993,8 +993,9 @@ if(!globalLogistics || !globalLogistics.participants) return;
 
 const groups = {};
 globalLogistics.participants.forEach(p => {
-    if(!groups[p.pocNric]) groups[p.pocNric] = [];
-    groups[p.pocNric].push(p);
+    const targetPoc = p.pocNric || p.nric;
+    if(!groups[targetPoc]) groups[targetPoc] = [];
+    groups[targetPoc].push(p);
 });
 
 const baseFee = financeConfig.perPersonFee || 0;
