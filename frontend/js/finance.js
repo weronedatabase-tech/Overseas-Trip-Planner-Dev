@@ -1092,39 +1092,61 @@ cardsData.forEach(c => {
 });
 
 cont.innerHTML = `
-<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-3 mb-4">
-   <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-       <div class="flex items-center gap-2 w-full md:w-auto">
-           <div class="flex flex-col gap-2 w-full md:w-auto">
-               <div class="flex items-center gap-2">
-                   <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Per-Pax Fee (SGD):</label>
-                   <input type="number" step="0.01" value="${baseFee}" oninput="formatMoneyInput(this, false); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-24 text-sm font-black border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
-               </div>
-               <div class="flex items-center gap-2">
-                   <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">PayNow Number:</label>
-                   <input type="text" maxlength="8" value="${financeConfig.payNowNumber || ''}" onchange="updateFinanceConfig('payNowNumber', this.value.trim())" class="w-24 text-sm font-black border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-center">
-                   <label class="flex items-center gap-2 cursor-pointer ml-2">
-                       <input type="checkbox" ${financeConfig.showPaymentSection ? 'checked' : ''} onchange="updateFinanceConfig('showPaymentSection', this.checked)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
-                       <span class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Show Payment Section</span>
-                   </label>
-               </div>
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-3 md:p-4 mb-4 space-y-4">
+   <!-- Top Row: Search & Stats -->
+   <div class="flex flex-col-reverse md:flex-row justify-between items-center gap-4">
+       <!-- Search -->
+       <div class="relative w-full md:max-w-xs lg:max-w-md">
+           <input type="text" id="feeSearchInput" oninput="handleFeeSearch()" value="${finSearchQuery}" placeholder="Fuzzy search families..." class="w-full p-2.5 pl-9 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+           <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+           <button onclick="clearSearch('feeSearchInput', 'handleFeeSearch')" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+       </div>
+       
+       <!-- Stats -->
+       <div class="flex items-center justify-between w-full md:w-auto bg-gray-50 dark:bg-gray-950 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-inner">
+           <div class="text-left md:text-right">
+               <span class="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-0.5">Collected</span>
+               <span class="text-base md:text-lg font-black text-green-600 dark:text-green-400 leading-none">SGD ${totalCollected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
            </div>
-       <div class="flex items-center gap-3 w-full md:w-auto bg-gray-50 dark:bg-gray-950 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
+           <div class="w-px h-8 bg-gray-300 dark:bg-gray-700 mx-4"></div>
            <div class="text-right">
-               <span class="block text-[9px] uppercase font-bold text-gray-400 tracking-widest">Collected</span>
-               <span class="text-sm font-black text-green-600 dark:text-green-400">SGD ${totalCollected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
-           </div>
-           <div class="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
-           <div class="text-right">
-               <span class="block text-[9px] uppercase font-bold text-gray-400 tracking-widest">Expected Total</span>
-               <span class="text-sm font-black text-blue-700 dark:text-blue-400">SGD ${totalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+               <span class="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-0.5">Expected Total</span>
+               <span class="text-base md:text-lg font-black text-blue-700 dark:text-blue-400 leading-none">SGD ${totalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
            </div>
        </div>
    </div>
-   <div class="mt-3 relative">
-       <input type="text" id="feeSearchInput" oninput="handleFeeSearch()" value="${finSearchQuery}" placeholder="Fuzzy search families..." class="w-full p-2 pl-8 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm transition">
-       <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-       <button onclick="clearSearch('feeSearchInput', 'handleFeeSearch')" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+
+   <!-- Bottom Row: Payment Config Strip -->
+   <div class="flex flex-col md:flex-row items-center justify-between gap-3 bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800/50 w-full">
+       <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+           <!-- Base Fee -->
+           <div class="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-3">
+               <label class="text-[10px] uppercase font-bold text-blue-800 dark:text-blue-300 tracking-wider shrink-0">Global Per-Pax Fee</label>
+               <div class="relative w-28 sm:w-32">
+                   <span class="absolute left-2.5 top-[7px] text-xs font-bold text-gray-400 pointer-events-none">SGD</span>
+                   <input type="number" step="0.01" value="${baseFee}" oninput="formatMoneyInput(this, false); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-full text-sm font-black border border-blue-200 dark:border-blue-700 rounded-md py-1.5 pl-9 pr-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm text-right">
+               </div>
+           </div>
+           
+           <div class="hidden sm:block w-px h-6 bg-blue-200 dark:bg-blue-800/50 mx-1"></div>
+           
+           <!-- PayNow No -->
+           <div class="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-3 border-t sm:border-t-0 border-blue-200/50 pt-2 sm:pt-0">
+               <label class="text-[10px] uppercase font-bold text-blue-800 dark:text-blue-300 tracking-wider shrink-0">PayNow Number</label>
+               <input type="text" maxlength="8" value="${financeConfig.payNowNumber || ''}" onchange="updateFinanceConfig('payNowNumber', this.value.trim())" placeholder="8 digits" class="w-28 sm:w-24 text-sm font-black border border-blue-200 dark:border-blue-700 rounded-md px-2 py-1.5 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm text-center tracking-widest placeholder-gray-300 dark:placeholder-gray-600">
+           </div>
+       </div>
+
+       <!-- Toggle Switch -->
+       <div class="flex items-center justify-between w-full md:w-auto border-t md:border-t-0 border-blue-200/50 pt-2 md:pt-0 mt-1 md:mt-0">
+           <label class="flex items-center gap-2.5 cursor-pointer">
+               <span class="text-[10px] uppercase font-bold text-blue-800 dark:text-blue-300 tracking-wider">Show Payment UI to Users</span>
+               <div class="relative inline-flex items-center cursor-pointer">
+                   <input type="checkbox" class="sr-only peer" ${financeConfig.showPaymentSection ? 'checked' : ''} onchange="updateFinanceConfig('showPaymentSection', this.checked)">
+                   <div class="w-9 h-5 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 shadow-inner"></div>
+               </div>
+           </label>
+       </div>
    </div>
 </div>
 
