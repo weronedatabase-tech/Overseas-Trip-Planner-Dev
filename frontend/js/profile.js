@@ -166,21 +166,14 @@ html += `
   <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col h-full">
     <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">
         <h3 class="text-sm font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            Trip Fees & Payment
-        </h3>
-    </div>
-    ${generatePaymentPortalHtml()}
-  </div>
-  <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col h-full">
-    <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">
-        <h3 class="text-sm font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
             <svg class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-            Upload Receipt
+            Upload Fees Paid Confirmation Screenshot
         </h3>
     </div>
     ${generateReceiptFormHtml()}
   </div>
+</div>
+  ` : ''}
 </div>
 
 <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm mt-4">
@@ -240,95 +233,33 @@ return `
     </div>
     
     <div class="flex flex-col items-center justify-center p-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
-        <img src="${qrUrl}" alt="PayNow QR Code" class="w-48 h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-2">
+        ${qrUrl ? `<img src="${qrUrl}" alt="PayNow QR Code" class="w-48 h-48 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-2">
         <p class="text-xs font-bold text-gray-800 dark:text-gray-200 text-center">Scan with your banking app to PayNow</p>
-        <p class="text-[9px] font-medium text-gray-500 mt-1">Order Ref: <span class="font-mono font-bold">${orderNo}</span></p>
+        <p class="text-[9px] font-medium text-gray-500 mt-1">Order Ref: <span class="font-mono font-bold">${orderNo}</span></p>` : `<p class="text-xs font-bold text-red-500 p-4 text-center">Admin has not set up PayNow details.</p>`}
     </div>
 </div>
 `;
 }
 
 function generateReceiptFormHtml() {
-let finalOpt = finOptions.find(o => o.id === finConfig.finalOptionId);
-let catOptionsHtml = '<option value="">-- Select Category --</option>';
-if (finalOpt && finalOpt.fields) {
-    finalOpt.fields.forEach(f => {
-        catOptionsHtml += `<option value="${f.id}">${f.name}</option>`;
-    });
-} else {
-    catOptionsHtml = '<option value="">(Budget not finalized)</option>';
-}
-
-const currencies = ["SGD", "MYR", "USD", "EUR", "GBP", "AUD", "IDR", "THB", "JPY", "KRW", "TWD", "PHP", "VND"];
-let curOptionsHtml = '';
-currencies.forEach(c => { curOptionsHtml += `<option value="${c}">${c}</option>`; });
-
-const rateVal = globalFinanceRates['SGD'] || 1;
-
-let paidByOpts = `<option value="${currentUser.nric}">Myself</option>`;
-if (globalLogistics && globalLogistics.participants) {
-    const volunteers = globalLogistics.participants.filter(p => p.role === 'VOLUNTEER' && p.nric !== currentUser.nric);
-    volunteers.forEach(v => {
-        paidByOpts += `<option value="${v.nric}">${v.shortName || v.name}</option>`;
-    });
-}
-
 return `
-<form id="receiptForm" onsubmit="event.preventDefault(); submitReceipt(this.querySelector('button[type=submit]'));" class="flex flex-col gap-3 h-full">
-    <div>
-        <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Expense Category</label>
-        <select id="recCategory" required class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm" ${!finalOpt ? 'disabled' : ''}>
-            ${catOptionsHtml}
-        </select>
-    </div>
+<form id="uploadReceiptForm" onsubmit="submitReceipt(event)" class="flex flex-col gap-4 flex-1">
+    <div id="recError" class="bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 p-2 rounded-lg text-[10px] mb-2 font-bold hidden-force"></div>
+    <div id="recSuccess" class="bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400 p-2 rounded-lg text-[10px] mb-2 font-bold hidden-force"></div>
     
     <div>
-        <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Paid By</label>
-        <select id="recPaidBy" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm" ${!finalOpt ? 'disabled' : ''}>
-            ${paidByOpts}
-        </select>
-    </div>
-
-    <div class="grid grid-cols-2 gap-3">
-        <div>
-            <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Currency</label>
-            <select id="recCurrency" onchange="onReceiptCurChange()" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm">
-                ${curOptionsHtml}
-            </select>
-        </div>
-        <div>
-            <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</label>
-            <input type="number" id="recAmount" step="0.01" required oninput="calcReceiptSgd()" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm text-right" placeholder="0.00">
-        </div>
-    </div>
-
-    <div class="grid grid-cols-2 gap-3 p-2 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-800/50">
-        <div>
-            <label class="block text-[9px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Locked Rate</label>
-            <input type="number" id="recRate" value="${rateVal}" readonly class="w-full bg-transparent border-none p-0 text-xs font-black text-purple-800 dark:text-purple-300 focus:ring-0">
-        </div>
-        <div class="text-right">
-            <label class="block text-[9px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">SGD Equivalent</label>
-            <div class="flex items-center justify-end gap-1">
-                <span class="text-xs font-black text-purple-800 dark:text-purple-300">SGD</span>
-                <input type="text" id="recSgd" value="0.00" readonly class="w-16 bg-transparent border-none p-0 text-sm font-black text-purple-800 dark:text-purple-300 focus:ring-0 text-right text-ellipsis">
-            </div>
-        </div>
-    </div>
-
-    <div>
-        <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">File (Max 4MB)</label>
+        <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Screenshot File (Max 4MB)</label>
         <input type="file" id="recFile" required accept="image/*,.pdf" class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-gray-100 file:text-gray-700 dark:file:bg-gray-700 dark:file:text-gray-200 hover:file:bg-gray-200 dark:hover:file:bg-gray-600">
     </div>
 
     <div>
-        <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remarks</label>
-        <input type="text" id="recRemarks" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm" placeholder="Optional details...">
+        <label class="block text-[10px] font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remarks (Optional)</label>
+        <input type="text" id="recRemarks" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary shadow-sm" placeholder="Any details...">
     </div>
 
     <div class="mt-auto pt-2">
-        <button type="submit" class="w-full bg-purple-600 text-white text-xs font-bold py-2.5 rounded-lg shadow-sm hover:bg-purple-700 transition flex justify-center items-center focus:outline-none" ${!finalOpt ? 'disabled' : ''}>
-           <span class="btn-text">Upload Receipt</span><div class="btn-spinner spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
+        <button type="submit" class="w-full bg-purple-600 text-white text-xs font-bold py-2.5 rounded-lg shadow-sm hover:bg-purple-700 transition flex justify-center items-center focus:outline-none">
+           <span class="btn-text">Upload Confirmation</span><div class="btn-spinner spinner-white hidden-force ml-2 !w-3 !h-3 border-2"></div>
         </button>
     </div>
 </form>
@@ -336,6 +267,7 @@ return `
 }
 
 function onReceiptCurChange() {
+
 const cur = document.getElementById('recCurrency').value;
 const rate = globalFinanceRates[cur] || 1;
 document.getElementById('recRate').value = rate.toFixed(4);
@@ -348,50 +280,45 @@ const rate = parseFloat(document.getElementById('recRate').value) || 1;
 document.getElementById('recSgd').value = (amt * rate).toFixed(2);
 }
 
-async function submitReceipt(btn) {
-const cat = document.getElementById('recCategory').value;
-const cur = document.getElementById('recCurrency').value;
-const amt = parseFloat(document.getElementById('recAmount').value) || 0;
-const rate = parseFloat(document.getElementById('recRate').value) || 1;
-const sgd = parseFloat(document.getElementById('recSgd').value) || 0;
-const rem = document.getElementById('recRemarks').value;
-const fileInput = document.getElementById('recFile');
-const paidBy = document.getElementById('recPaidBy') ? document.getElementById('recPaidBy').value : currentUser.nric;
+async function submitReceipt(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const err = document.getElementById('recError');
+    const succ = document.getElementById('recSuccess');
+    err.classList.add('hidden-force');
+    succ.classList.add('hidden-force');
 
-if (!cat || amt <= 0 || !fileInput.files || fileInput.files.length === 0) {
-    showToast("Please fill all required fields and select a file.", true);
-    return;
-}
+    const remarks = document.getElementById('recRemarks').value.trim();
+    const fileInput = document.getElementById('recFile');
+    
+    if(!fileInput.files.length) { err.textContent = "Please select a file."; return err.classList.remove('hidden-force'); }
+    const file = fileInput.files[0];
+    if (file.size > 4 * 1024 * 1024) { err.textContent = "File exceeds 4MB limit."; return err.classList.remove('hidden-force'); }
 
-const file = fileInput.files[0];
-if (file.size > 4194304) {
-    showToast("File must be smaller than 4MB.", true);
-    return;
-}
+    setBtnLoading(btn, true);
+    try {
+        const base64 = await toBase64(file);
+        
+        let targetNric = loadedFamily[0].pocNric || loadedFamily[0].nric;
+        if (!loadedFamily.some(m => m.role === 'CAREGIVER')) targetNric = loadedFamily[0].nric;
+        const size = loadedFamily.length;
+        const baseFee = finConfig.perPersonFee || 0;
+        const dev = finConfig.feeDeviations?.[targetNric]?.amount || 0;
+        const finalExpected = (size * baseFee) + dev;
 
-setBtnLoading(btn, true);
-
-try {
-    const base64Data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-        reader.onerror = () => reject(new Error("File read error"));
-        reader.readAsDataURL(file);
-    });
-
-    const payload = {
-        uploaderNric: currentUser.nric,
-        paidByNric: paidBy,
-        categoryId: cat,
-        currency: cur,
-        amount: amt,
-        rate: rate,
-        sgdAmount: sgd,
-        remarks: rem,
-        fileName: file.name,
-        mimeType: file.type || 'application/octet-stream',
-        fileData: base64Data
-    };
+        const payload = {
+            uploaderNric: currentUser.nric,
+            currency: 'SGD',
+            amount: finalExpected,
+            rate: 1,
+            sgdAmount: finalExpected,
+            categoryId: "Fees Payment Screenshot",
+            paidByNric: currentUser.nric,
+            remarks: remarks,
+            fileName: file.name,
+            mimeType: file.type,
+            fileData: base64.split(',')[1]
+        };
 
     const res = await apiCall('uploadReceipt', { payload: payload });
     if (res.receipts) {

@@ -111,7 +111,7 @@ try {
     globalReceipts = recRes.receipts || [];
     
     const rawOptions = finRes.data?.options || (Array.isArray(finRes.data) ? finRes.data : []);
-    financeConfig = finRes.data?.config || { globalPaxMode: 'individual', globalPaxCount: 0, ts: Date.now(), customRates: {}, finalOptionId: null, perPersonFee: 0, feeDeviations: {}, feesReceived: {} };
+    financeConfig = finRes.data?.config || { globalPaxMode: 'individual', globalPaxCount: 0, ts: Date.now(), customRates: {}, finalOptionId: null, perPersonFee: 0, feeDeviations: {}, feesReceived: {}, payNowNumber: '', showPaymentSection: false };
     
     if(!financeConfig.customRates) financeConfig.customRates = {};
     if(!financeConfig.feeDeviations) financeConfig.feeDeviations = {};
@@ -1093,9 +1093,20 @@ cont.innerHTML = `
 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-3 mb-4">
     <div class="flex flex-col md:flex-row justify-between items-center gap-3">
         <div class="flex items-center gap-2 w-full md:w-auto">
-            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Per-Pax Fee (SGD):</label>
-            <input type="number" step="0.01" value="${baseFee}" oninput="formatMoneyInput(this, false); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-24 text-sm font-black border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
-        </div>
+            <div class="flex flex-col gap-2 w-full md:w-auto">
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Per-Pax Fee (SGD):</label>
+                    <input type="number" step="0.01" value="${baseFee}" oninput="formatMoneyInput(this, false); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-24 text-sm font-black border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">PayNow Number:</label>
+                    <input type="text" maxlength="8" value="${financeConfig.payNowNumber || ''}" onchange="updateFinanceConfig('payNowNumber', this.value.trim())" class="w-24 text-sm font-black border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-center">
+                    <label class="flex items-center gap-2 cursor-pointer ml-2">
+                        <input type="checkbox" ${financeConfig.showPaymentSection ? 'checked' : ''} onchange="updateFinanceConfig('showPaymentSection', this.checked)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        <span class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Show Payment Section</span>
+                    </label>
+                </div>
+            </div>
         <div class="flex items-center gap-3 w-full md:w-auto bg-gray-50 dark:bg-gray-950 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
             <div class="text-right">
                 <span class="block text-[9px] uppercase font-bold text-gray-400 tracking-widest">Collected</span>

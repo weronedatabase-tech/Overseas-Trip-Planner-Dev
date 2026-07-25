@@ -50,7 +50,7 @@ document.getElementById('tab-participants').innerHTML = `
             <button onclick="toggleSortSelector()" class="p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition focus:outline-none flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg> Sort
             </button>
-            <div id="sortSelector" class="hidden-force absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-40 p-3">
+            <div id="sortSelector" class="hidden-force fixed left-4 right-4 top-24 md:absolute md:left-auto md:right-0 md:top-auto md:mt-2 md:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-[60] p-4 max-h-[80vh] overflow-y-auto">
                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Advanced Sort</h4>
                <div id="sortRulesContainer" class="space-y-2 mb-3"></div>
                <button onclick="addSortRule()" class="w-full text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-700 rounded py-1 mb-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Level</button>
@@ -176,6 +176,7 @@ renderRosterTable();
 // ADVANCED SORTING
 // ==========================================
 const sortableFields = [
+{ id: 'specialSort', label: 'Special (Project>Family>Single>Vol)' },
 { id: 'fullName', label: 'Full Name' },
 { id: 'role', label: 'Role' },
 { id: 'group', label: 'Project' },
@@ -244,20 +245,28 @@ let startWidth = 0;
 function initResize(e, colId) {
 e.stopPropagation();
 resizingCol = colId;
-startX = e.clientX;
+if (e.touches) {
+    startX = e.touches[0].clientX;
+} else {
+    startX = e.clientX;
+}
 const colDef = colId === 'fullName' ? {width: 250} : rosterCols.find(c => c.id === colId);
 startWidth = colDef.width || 150;
 document.addEventListener('mousemove', onMouseMove);
 document.addEventListener('mouseup', onMouseUp);
+document.addEventListener('touchmove', onMouseMove, {passive: false});
+document.addEventListener('touchend', onMouseUp);
 }
 
 function onMouseMove(e) {
 if (!resizingCol) return;
-const diff = e.clientX - startX;
+if(e.touches) e.preventDefault();
+let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+const diff = clientX - startX;
 let newWidth = Math.max(50, startWidth + diff);
 
 if (resizingCol === 'fullName') {
-    const cells = document.querySelectorAll(`.roster-col-fullName`);
+    const cells = document.querySelectorAll('.roster-col-fullName');
     cells.forEach(c => { c.style.width = newWidth + 'px'; c.style.minWidth = newWidth + 'px'; c.style.maxWidth = newWidth + 'px'; });
 } else {
     const cDef = rosterCols.find(c => c.id === resizingCol);
@@ -276,6 +285,8 @@ if (resizingCol && resizingCol !== 'fullName') {
 resizingCol = null;
 document.removeEventListener('mousemove', onMouseMove);
 document.removeEventListener('mouseup', onMouseUp);
+document.removeEventListener('touchmove', onMouseMove);
+document.removeEventListener('touchend', onMouseUp);
 }
 
 let draggedColId = null;
@@ -333,7 +344,52 @@ if (rosterSearchQuery) {
 }
 
 data.sort((a, b) => {
+    // Precompute for special sort if needed
+    const getSpecialSortKey = (p) => {
+        const poc = p.pocNric || p.nric;
+        const famMembers = adminRosterData.filter(x => (x.pocNric || x.nric) === poc);
+        const isFamily = famMembers.length > 1 || famMembers.some(x => x.role === 'CAREGIVER');
+        
+        let catScore = 4;
+        if (isFamily) catScore = 1;
+        else if (p.role === 'TRAINEE') catScore = 2;
+        else if (p.role === 'VOLUNTEER') catScore = 3;
+        
+        let roleScore = p.role === 'TRAINEE' ? 1 : (p.role === 'CAREGIVER' ? 2 : 3);
+        
+        return {
+            group: (p.group || '').toLowerCase(),
+            catScore: catScore,
+            poc: poc.toLowerCase(),
+            roleScore: roleScore,
+            name: (p.fullName || '').toLowerCase()
+        };
+    };
+
     for (let rule of rosterSortRules) {
+        if (rule.col === 'specialSort') {
+            let keyA = getSpecialSortKey(a);
+            let keyB = getSpecialSortKey(b);
+            
+            if (keyA.group < keyB.group) return rule.asc ? -1 : 1;
+            if (keyA.group > keyB.group) return rule.asc ? 1 : -1;
+            
+            if (keyA.catScore < keyB.catScore) return rule.asc ? -1 : 1;
+            if (keyA.catScore > keyB.catScore) return rule.asc ? 1 : -1;
+            
+            if (keyA.catScore === 1) {
+                if (keyA.poc < keyB.poc) return rule.asc ? -1 : 1;
+                if (keyA.poc > keyB.poc) return rule.asc ? 1 : -1;
+            }
+            
+            if (keyA.roleScore < keyB.roleScore) return rule.asc ? -1 : 1;
+            if (keyA.roleScore > keyB.roleScore) return rule.asc ? 1 : -1;
+            
+            if (keyA.name < keyB.name) return rule.asc ? -1 : 1;
+            if (keyA.name > keyB.name) return rule.asc ? 1 : -1;
+            continue;
+        }
+
         let valA = a[rule.col] || '';
         let valB = b[rule.col] || '';
         
@@ -355,7 +411,7 @@ const thead = document.getElementById('rosterTableHead');
 let headHtml = `<tr>
     <th class="p-3 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top" style="width: 200px; min-width: 200px; max-width: 200px;" data-col-id="fullName">
         <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('fullName')">Full Name <span class="text-[8px]">↕</span></div>
-        <div class="resize-handle" onmousedown="initResize(event, 'fullName')"></div>
+        <div class="resize-handle" onmousedown="initResize(event, 'fullName')" ontouchstart="initResize(event, 'fullName')"></div>
     </th>`;
 
 rosterCols.forEach(c => {
@@ -367,7 +423,7 @@ rosterCols.forEach(c => {
             ondragstart="onColDragStart(event, '${c.id}')" ondragend="onColDragEnd(event)"
             ondragover="onColDragOver(event)" ondragleave="onColDragLeave(event)" ondrop="onColDrop(event, '${c.id}')">
             <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('${c.id}')">${c.label} <span class="text-[8px]">↕</span></div>
-            <div class="resize-handle" onmousedown="initResize(event, '${c.id}')"></div>
+            <div class="resize-handle" onmousedown="initResize(event, '${c.id}')" ontouchstart="initResize(event, '${c.id}')"></div>
         </th>`;
     }
 });
