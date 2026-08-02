@@ -72,7 +72,7 @@ return str;
 
 function renderProfileFullView() {
 const tabProfile = document.getElementById('tab-profile');
-let html = '';
+let topBannersHtml = '';
 
 let tripEnd = appSettings.tripEndDate ? new Date(appSettings.tripEndDate) : null;
 let minExpiry = null;
@@ -93,8 +93,8 @@ if (minExpiry) {
 }
 
 if (expiringNames.length > 0 && tripEnd) {
-   html += `
-   <div class="bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 text-red-800 dark:text-red-400 p-3 rounded-lg shadow-sm mb-4">
+   topBannersHtml += `
+   <div class="bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 text-red-800 dark:text-red-400 p-3 rounded-lg shadow-sm">
        <p class="font-bold mb-0.5 text-xs flex items-center gap-1.5"><svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Passport Validity Warning</p>
        <p class="text-[10px] leading-tight mt-1">The following members have passports expiring within 6 months of the trip end date (<span class="font-bold">${tripEnd.toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'})}</span>): <span class="font-bold">${expiringNames.join(', ')}</span>. Please renew them immediately.</p>
    </div>`;
@@ -108,8 +108,8 @@ if(!appSettings.allowEdits) {
      if(c.phone) cListHtml += `<a href="https://wa.me/65${c.phone}" target="_blank" class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-bold px-2 py-1 rounded shadow-sm text-[10px] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Chat with ${c.name}</a>`; 
    });
  }
- html += `
- <div class="bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/50 text-yellow-800 dark:text-yellow-400 p-3 rounded-lg shadow-sm mb-4">
+ topBannersHtml += `
+ <div class="bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/50 text-yellow-800 dark:text-yellow-400 p-3 rounded-lg shadow-sm">
      <p class="font-bold mb-0.5 text-xs">🔒 Editing is currently Locked.</p>
      <p class="text-[10px] mb-2">To request changes to your details, please contact a Committee Member:</p>
      <div class="flex flex-wrap gap-1.5">${cListHtml}</div>
@@ -195,8 +195,17 @@ loadedFamily.forEach((m, i) => {
  `;
 });
 
-html += `
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+let receiptsHtml = `
+<div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+   <h3 class="text-sm font-black text-gray-900 dark:text-white tracking-tight border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">My Receipts History</h3>
+   <div id="myReceiptsContainer" class="overflow-x-auto">
+       ${generateMyReceiptsHtml()}
+   </div>
+</div>
+`;
+
+let paymentHtml = `
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
  ${finConfig.showPaymentSection ? `
  <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col h-full">
    <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">
@@ -218,16 +227,11 @@ html += `
  </div>
  ` : ''}
 </div>
-
-<div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm mt-4">
-   <h3 class="text-sm font-black text-gray-900 dark:text-white tracking-tight border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">My Receipts History</h3>
-   <div id="myReceiptsContainer" class="overflow-x-auto">
-       ${generateMyReceiptsHtml()}
-   </div>
-</div>
 `;
 
-tabProfile.innerHTML = html + `<div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-3 mt-4"><h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Personal Details</h3></div>` + profilesHtml;
+let personalDetailsHeader = `<div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-3"><h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Personal Details</h3></div>`;
+
+tabProfile.innerHTML = topBannersHtml + personalDetailsHeader + profilesHtml + receiptsHtml + paymentHtml;
 }
 
 function generatePaymentPortalHtml() {
