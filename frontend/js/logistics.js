@@ -1011,7 +1011,7 @@ const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status |
 const traineesWithCaregivers = new Set();
 globalLogistics.participants.forEach(p => {
     if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-        traineesWithCaregivers.add(p.relatedTrainee.trim().toLowerCase());
+        traineesWithCaregivers.add(String(p.relatedTrainee || '').trim().toLowerCase());
     }
 });
 

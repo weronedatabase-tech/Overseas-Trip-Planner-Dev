@@ -169,7 +169,7 @@ const data = JSON.parse(e.postData.contents);
 let result = {};
 switch(data.action) {
  case 'getSettings': result = getAppConfig(); break;
- case 'login': result = handleLogin(data.nric, data.password); break;
+ case 'login': result = handleLogin(data.password, data.nric); break;
  case 'getProfile': result = getProfile(data.nric); break;
  case 'updateProfile': result = updateProfile(data.member); break;
  case 'submitRegistration': result = submitRegistration(data.payload); break;
@@ -253,30 +253,101 @@ tripStartDate: props.getProperty('TRIP_START_DATE') || '', tripEndDate: props.ge
 };
 }
 
-function handleLogin(nric, password) {
+function handleLogin(password, nric) {
 const props = PropertiesService.getScriptProperties();
-const genPass = props.getProperty('PASS_GENERAL'); 
-const adminPassPrefix = props.getProperty('PASS_ADMIN');
-nric = nric.trim().toUpperCase();
+const adminPassPrefix = props.getProperty('PASS_ADMIN') || '';
+const genPass = props.getProperty('PASS_GENERAL') || '';
+password = String(password || '').trim();
+nric = String(nric || '').trim().toUpperCase();
 
-if (nric === 'ADMIN' && password === adminPassPrefix) return { status: 'success', role: 'admin', name: 'MAIN ADMIN' };
+if (!password && !nric) {
+  return { status: 'error', message: 'Please enter a password.' };
+}
+
+if (password === adminPassPrefix || (nric === 'ADMIN' && password === adminPassPrefix)) {
+  return { status: 'success', role: 'admin', name: 'MAIN ADMIN', nric: 'ADMIN' };
+}
 
 const committeeList = props.getProperty('COMMITTEE_LIST') ? JSON.parse(props.getProperty('COMMITTEE_LIST')) : [];
-const commMember = committeeList.find(c => c.nric === nric);
-if (commMember) {
-if (password === (adminPassPrefix + nric)) return { status: 'success', role: 'admin', name: commMember.name.toUpperCase() };
-else return { status: 'error', message: 'Incorrect committee password.' };
+if (adminPassPrefix && password.startsWith(adminPassPrefix) && password.length > adminPassPrefix.length) {
+  const possibleNric = password.substring(adminPassPrefix.length).toUpperCase();
+  const commMember = committeeList.find(c => String(c.nric || '').trim().toUpperCase() === possibleNric);
+  if (commMember) {
+    return { status: 'success', role: 'admin', name: commMember.name.toUpperCase(), nric: possibleNric };
+  }
+}
+
+if (nric) {
+  const commMember = committeeList.find(c => String(c.nric || '').trim().toUpperCase() === nric);
+  if (commMember && (password === adminPassPrefix || password === (adminPassPrefix + nric))) {
+    return { status: 'success', role: 'admin', name: commMember.name.toUpperCase(), nric: nric };
+  }
 }
 
 const ss = getDatabase();
 const data = ss.getSheetByName("Raw Data").getDataRange().getValues();
-for (let i = 1; i < data.length; i++) {
-if (String(data[i][11]).trim().toUpperCase() === nric) {
- if (password === genPass) return { status: 'success', role: 'user', name: String(data[i][3]).toUpperCase() };
- else return { status: 'error', message: 'Incorrect password.' };
+
+if (password.length >= 5) {
+  const possibleYearStr = password.slice(-4);
+  const possibleNric = password.slice(0, -4).toUpperCase();
+  
+  if (!isNaN(parseInt(possibleYearStr))) {
+    for (let i = 1; i < data.length; i++) {
+      const rowNric = String(data[i][11] || '').trim().toUpperCase();
+      if (!rowNric) continue;
+      if (rowNric === possibleNric) {
+         let birthYear = '';
+         const dobRaw = data[i][14];
+         if (dobRaw instanceof Date) {
+           birthYear = dobRaw.getFullYear().toString();
+         } else if (typeof dobRaw === 'string' && dobRaw) {
+           const d = new Date(dobRaw);
+           if (!isNaN(d.getTime())) {
+             birthYear = d.getFullYear().toString();
+           } else {
+             const m = dobRaw.match(/\d{4}/);
+             if (m) birthYear = m[0];
+           }
+         }
+         
+         if (birthYear === possibleYearStr) {
+           return { status: 'success', role: 'user', name: String(data[i][3] || '').toUpperCase(), nric: possibleNric };
+         } else {
+           return { status: 'error', message: 'Incorrect password.' };
+         }
+      }
+    }
+  }
 }
+
+if (nric) {
+  for (let i = 1; i < data.length; i++) {
+    const rowNric = String(data[i][11] || '').trim().toUpperCase();
+    if (!rowNric) continue;
+    if (rowNric === nric) {
+       let birthYear = '';
+       const dobRaw = data[i][14];
+       if (dobRaw instanceof Date) {
+         birthYear = dobRaw.getFullYear().toString();
+       } else if (typeof dobRaw === 'string' && dobRaw) {
+         const d = new Date(dobRaw);
+         if (!isNaN(d.getTime())) {
+           birthYear = d.getFullYear().toString();
+         } else {
+           const m = dobRaw.match(/\d{4}/);
+           if (m) birthYear = m[0];
+         }
+       }
+       if (password === genPass || (birthYear && password === birthYear) || password === (rowNric + birthYear)) {
+         return { status: 'success', role: 'user', name: String(data[i][3] || '').toUpperCase(), nric: rowNric };
+       } else {
+         return { status: 'error', message: 'Incorrect password.' };
+       }
+    }
+  }
 }
-return { status: 'error', message: 'NRIC not found. Please register first.' };
+
+return { status: 'error', message: 'Invalid password or user not found.' };
 }
 
 function getProfile(nric) {
@@ -402,7 +473,7 @@ const sheet = ss.getSheetByName("Raw Data");
 const data = sheet.getDataRange().getValues();
 
 for (let i = 1; i < data.length; i++) {
- if (String(data[i][11]).trim().toUpperCase() === member.nric.trim().toUpperCase()) {
+ if (String(data[i][11]).trim().toUpperCase() === String(member.nric || '').trim().toUpperCase()) {
    sheet.getRange(i+1, 2).setValue(member.email); sheet.getRange(i+1, 3).setValue(member.role); sheet.getRange(i+1, 4).setValue(member.fullName);
    sheet.getRange(i+1, 5).setValue(member.relatedTrainee || ''); sheet.getRange(i+1, 6).setValue(member.relationship || '');
    sheet.getRange(i+1, 7).setValue(member.group || ''); sheet.getRange(i+1, 8).setValue(member.gender);
@@ -1081,16 +1152,16 @@ function toggleEdits(status) { PropertiesService.getScriptProperties().setProper
 function getCommitteeList() { return { status: 'success', list: JSON.parse(PropertiesService.getScriptProperties().getProperty('COMMITTEE_LIST') || '[]') }; }
 
 function modifyCommitteeList(nric, isAdding, name = "", phone = "") {
-const props = PropertiesService.getScriptProperties(); nric = nric.trim().toUpperCase();
+const props = PropertiesService.getScriptProperties(); nric = String(nric || '').trim().toUpperCase();
 let list = JSON.parse(props.getProperty('COMMITTEE_LIST') || '[]');
-if (isAdding) { if (!list.find(c => c.nric === nric)) list.push({ nric, name: name.trim().toUpperCase(), phone: phone.trim() }); }
+if (isAdding) { if (!list.find(c => c.nric === nric)) list.push({ nric, name: String(name || '').trim().toUpperCase(), phone: String(phone || '').trim() }); }
 else { list = list.filter(c => c.nric !== nric); }
 props.setProperty('COMMITTEE_LIST', JSON.stringify(list)); return getCommitteeList();
 }
 
 function modifyProjectGroups(groupName, isAdding, callerNric, colorClass) {
 if (callerNric !== 'ADMIN') return { status: 'error', message: 'Unauthorized' };
-const props = PropertiesService.getScriptProperties(); groupName = groupName.trim();
+const props = PropertiesService.getScriptProperties(); groupName = String(groupName || '').trim();
 let list = JSON.parse(props.getProperty('PROJECT_GROUPS') || '[]');
 let colors = JSON.parse(props.getProperty('PROJECT_COLORS') || '{}');
 if (isAdding) { if (groupName && !list.includes(groupName)) list.push(groupName); if (colorClass) colors[groupName] = colorClass; } 
@@ -1141,7 +1212,7 @@ return { status: 'success', currentFolderId: folder.getId(), currentFolderName: 
 function uploadDriveFile(fId, fName, mime, data) { try { let folder = fId === 'root' ? getTripFolder() : DriveApp.getFolderById(fId); let blob = Utilities.newBlob(Utilities.base64Decode(data), mime, fName); folder.createFile(blob); Utilities.sleep(1500); return getDriveContents(fId); } catch (e) { return { status: 'error', message: e.message }; } }
 function createDriveFolder(pId, fName) { try { let parent = pId === 'root' ? getTripFolder() : DriveApp.getFolderById(pId); parent.createFolder(fName); Utilities.sleep(1500); return getDriveContents(pId); } catch (e) { return { status: 'error', message: e.message }; } }
 function createGoogleDoc(fId, fName, type) { try { let folder = fId === 'root' ? getTripFolder() : DriveApp.getFolderById(fId); let fileId; if (type === 'doc') fileId = DocumentApp.create(fName).getId(); else if (type === 'sheet') fileId = SpreadsheetApp.create(fName).getId(); else fileId = SlidesApp.create(fName).getId(); DriveApp.getFileById(fileId).moveTo(folder); Utilities.sleep(1500); return getDriveContents(fId); } catch (e) { return { status: 'error', message: e.message }; } }
-function renameDriveItem(id, isFolder, newName, currFid) { try { if(isFolder) DriveApp.getFolderById(id).setName(newName.trim()); else DriveApp.getFileById(id).setName(newName.trim()); Utilities.sleep(1000); return getDriveContents(currFid); } catch (e) { return { status: 'error', message: e.message }; } }
+function renameDriveItem(id, isFolder, newName, currFid) { try { newName = String(newName || '').trim(); if(isFolder) DriveApp.getFolderById(id).setName(newName); else DriveApp.getFileById(id).setName(newName); Utilities.sleep(1000); return getDriveContents(currFid); } catch (e) { return { status: 'error', message: e.message }; } }
 function deleteDriveItem(id, isFolder, currFid) { try { if(isFolder) DriveApp.getFolderById(id).setTrashed(true); else DriveApp.getFileById(id).setTrashed(true); Utilities.sleep(1000); return getDriveContents(currFid); } catch (e) { return { status: 'error', message: e.message }; } }
 function bulkDriveOperation(action, items, targetFid, singleNewName) {
 try {
@@ -1157,11 +1228,11 @@ Utilities.sleep(1500); return getDriveContents(targetFid);
 }
 function copyFolderRecursive(src, dest) { let files = src.getFiles(); while (files.hasNext()) { let file = files.next(); file.makeCopy(file.getName(), dest); } let folders = src.getFolders(); while (folders.hasNext()) { let subFolder = folders.next(); let newSubFolder = dest.createFolder(subFolder.getName()); copyFolderRecursive(subFolder, newSubFolder); } }
 
-function addDriveAccess(email, role) { try { email = email.trim().toLowerCase(); const folder = getTripFolder(); if (role === 'editor') folder.addEditor(email); else folder.addViewer(email); const props = PropertiesService.getScriptProperties(); const access = JSON.parse(props.getProperty('APP_GRANTED_ACCESS') || '{}'); access[email] = role; props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access)); return { status: 'success', driveAccessList: access }; } catch (e) { return { status: 'error', message: e.message }; } }
-function removeDriveAccess(email) { try { email = email.trim().toLowerCase(); const props = PropertiesService.getScriptProperties(); const access = JSON.parse(props.getProperty('APP_GRANTED_ACCESS') || '{}'); if (!access[email]) return { status: 'error', message: 'Not granted via app' }; const folder = getTripFolder(); if (access[email] === 'editor') folder.removeEditor(email); else folder.removeViewer(email); delete access[email]; props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access)); return { status: 'success', driveAccessList: access }; } catch (e) { return { status: 'error', message: e.message }; } }
+function addDriveAccess(email, role) { try { email = String(email || '').trim().toLowerCase(); const folder = getTripFolder(); if (role === 'editor') folder.addEditor(email); else folder.addViewer(email); const props = PropertiesService.getScriptProperties(); const access = JSON.parse(props.getProperty('APP_GRANTED_ACCESS') || '{}'); access[email] = role; props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access)); return { status: 'success', driveAccessList: access }; } catch (e) { return { status: 'error', message: e.message }; } }
+function removeDriveAccess(email) { try { email = String(email || '').trim().toLowerCase(); const props = PropertiesService.getScriptProperties(); const access = JSON.parse(props.getProperty('APP_GRANTED_ACCESS') || '{}'); if (!access[email]) return { status: 'error', message: 'Not granted via app' }; const folder = getTripFolder(); if (access[email] === 'editor') folder.removeEditor(email); else folder.removeViewer(email); delete access[email]; props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access)); return { status: 'success', driveAccessList: access }; } catch (e) { return { status: 'error', message: e.message }; } }
 function massDriveAccess(actionType, emails, role) {
 const folder = getTripFolder(); const props = PropertiesService.getScriptProperties(); const access = JSON.parse(props.getProperty('APP_GRANTED_ACCESS') || '{}'); const results = { success: [], failed: [] };
-emails.forEach(email => { email = email.trim().toLowerCase(); if (!email) return; try { if (actionType === 'add') { if (role === 'editor') folder.addEditor(email); else folder.addViewer(email); access[email] = role; results.success.push(email); } else if (actionType === 'remove') { if (access[email]) { if (access[email] === 'editor') folder.removeEditor(email); else folder.removeViewer(email); delete access[email]; results.success.push(email); } else { results.failed.push({ email: email, reason: 'Not granted via app' }); } } } catch (error) { results.failed.push({ email: email, reason: error.message }); } });
+emails.forEach(email => { email = String(email || '').trim().toLowerCase(); if (!email) return; try { if (actionType === 'add') { if (role === 'editor') folder.addEditor(email); else folder.addViewer(email); access[email] = role; results.success.push(email); } else if (actionType === 'remove') { if (access[email]) { if (access[email] === 'editor') folder.removeEditor(email); else folder.removeViewer(email); delete access[email]; results.success.push(email); } else { results.failed.push({ email: email, reason: 'Not granted via app' }); } } } catch (error) { results.failed.push({ email: email, reason: error.message }); } });
 props.setProperty('APP_GRANTED_ACCESS', JSON.stringify(access)); return { status: 'success', driveAccessList: access, results: results };
 }
 

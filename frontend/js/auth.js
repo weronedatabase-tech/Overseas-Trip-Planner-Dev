@@ -1,10 +1,9 @@
 async function attemptLogin(btn) {
- const nric = document.getElementById('loginNric').value.trim().toUpperCase();
- const pass = document.getElementById('loginPass').value;
+ const pass = document.getElementById('loginPass').value.trim();
  const err = document.getElementById('loginError');
  
- if(!nric || !pass) { 
-     err.textContent = "Please enter NRIC and Password"; 
+ if(!pass) { 
+     err.textContent = "Please enter Password"; 
      return err.classList.remove('hidden-force'); 
  }
  
@@ -12,8 +11,8 @@ async function attemptLogin(btn) {
  setBtnLoading(btn, true);
  
  try {
-   const res = await apiCall('login', { nric, password: pass });
-   currentUser = { nric: nric, role: res.role, name: res.name };
+   const res = await apiCall('login', { password: pass });
+   currentUser = { nric: res.nric, role: res.role, name: res.name };
    localStorage.setItem('userSession', JSON.stringify(currentUser));
    if (currentUser.role === 'admin') {
        window.location.href = 'roster.html';

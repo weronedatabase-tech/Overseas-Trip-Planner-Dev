@@ -1,7 +1,7 @@
 {
   "name": "overseas-trip-planner",
   "version": "1.0.0",
-  "description": "Overseas Trip Planner",
+  "description": "Overseas Trip",
   "type": "module",
   "scripts": {
     "dev": "node server.js",

@@ -60,7 +60,7 @@ try {
     traineeShortNames = {};
     medicalRosterData.forEach(p => {
         if(p.role === 'TRAINEE' && p.fullName) {
-            traineeShortNames[p.fullName.trim().toUpperCase()] = (p.shortName || p.fullName).trim().toUpperCase();
+            traineeShortNames[String(p.fullName || '').trim().toUpperCase()] = String(p.shortName || p.fullName || '').trim().toUpperCase();
         }
     });
 
@@ -209,8 +209,8 @@ data.forEach(p => {
     
     let famTag = '';
     if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-        const tShort = (traineeShortNames[p.relatedTrainee.trim().toUpperCase()] || p.relatedTrainee).trim().toUpperCase();
-        famTag = `<div class="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 leading-tight whitespace-normal break-words">[${tShort}]</div>`;
+        const tShort = (traineeShortNames[String(p.relatedTrainee || '').trim().toUpperCase()] || p.relatedTrainee);
+        famTag = `<div class="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 leading-tight whitespace-normal break-words">[${String(tShort || '').trim().toUpperCase()}]</div>`;
     }
 
     const fullNameUpper = (p.fullName || '').toUpperCase();

@@ -1,6 +1,6 @@
 {
- "name": "Overseas Trip Planner",
- "short_name": "Trip Planner",
+ "name": "Overseas Trip",
+ "short_name": "Overseas Trip",
  "start_url": "./index.html",
  "display": "standalone",
  "background_color": "#f3f4f6",
