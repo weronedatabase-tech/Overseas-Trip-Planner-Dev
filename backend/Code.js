@@ -135,7 +135,7 @@ requiredSheets.forEach(name => {
 if (!ss.getSheetByName(name)) {
  let sheet = ss.insertSheet(name);
  if (name === "Raw Data") {
-   sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC", "Short Name / Nickname"]);
+   sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC", "Short Name / Nickname", "Medical Conditions"]);
    sheet.setFrozenRows(1);
  } else if (name === "Finance Options") {
    sheet.appendRow(["JSON Data - Do Not Edit"]);
@@ -321,7 +321,7 @@ if (isFamilyMember) {
    group: String(data[i][6]||'').trim(), gender: String(data[i][7]||'').trim(), contact: String(data[i][8]||'').trim(), address: String(data[i][9]||'').trim(), nationality: String(data[i][10]||'').trim(),
    nric: String(data[i][11]).trim().toUpperCase(), passportNo: String(data[i][12]||'').trim().toUpperCase(), passportExpiry: expRaw, dob: dobRaw, diet: String(data[i][15]||'').trim(),
    emergencyName: String(data[i][16]||'').trim().toUpperCase(), emergencyContact: String(data[i][17]||'').trim(), emergencyRelation: String(data[i][18]||'').trim(), sleeping: String(data[i][19]||'').trim(), otherPoints: String(data[i][20]||'').trim(),
-   pocNric: String(data[i][21]).trim().toUpperCase(), shortName: String(data[i][22]||'').trim().toUpperCase()
+   pocNric: String(data[i][21]).trim().toUpperCase(), shortName: String(data[i][22]||'').trim().toUpperCase(), medical: String(data[i][23]||'').trim()
  });
 }
 }
@@ -414,6 +414,7 @@ for (let i = 1; i < data.length; i++) {
    sheet.getRange(i+1, 18).setValue(member.emergencyContact || ''); sheet.getRange(i+1, 19).setValue(member.emergencyRelation || '');
    sheet.getRange(i+1, 20).setValue(member.sleeping || ''); sheet.getRange(i+1, 21).setValue(member.otherPoints || '');
    sheet.getRange(i+1, 23).setValue(member.shortName || '');
+   sheet.getRange(i+1, 24).setValue(member.medical || '');
    
    // Write-Through: Invalidate dependent caches
    CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
@@ -438,7 +439,7 @@ payloadArray.forEach(p => {
  sheet.appendRow([
    new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
    p.nric.toUpperCase(), p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
-   p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric, p.shortName||''
+   p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric, p.shortName||'', p.medical||''
  ]);
 });
 CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
@@ -486,7 +487,8 @@ if(data[i][11]) {
    sleeping: String(data[i][19]||'').trim(), 
    otherPoints: String(data[i][20]||'').trim(), 
    pocNric: String(data[i][21]||'').trim().toUpperCase(), 
-   shortName: String(data[i][22]||'').trim().toUpperCase()
+   shortName: String(data[i][22]||'').trim().toUpperCase(),
+   medical: String(data[i][23]||'').trim()
  });
 }
 }
