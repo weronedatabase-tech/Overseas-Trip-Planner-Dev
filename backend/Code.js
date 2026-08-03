@@ -67,18 +67,18 @@ function putLargeCache(cacheKey, jsonStr) {
 const cache = CacheService.getScriptCache();
 try {
 if (jsonStr.length < 90000) {
- cache.put(cacheKey, jsonStr, 21600); // 6 hours
+cache.put(cacheKey, jsonStr, 21600); // 6 hours
 } else {
- const chunks = [];
- let i = 0;
- while (i < jsonStr.length) {
-   chunks.push(jsonStr.substring(i, i + 90000));
-   i += 90000;
- }
- cache.put(cacheKey + "_count", chunks.length.toString(), 21600);
- const dict = {};
- for (let j = 0; j < chunks.length; j++) dict[cacheKey + "_" + j] = chunks[j];
- cache.putAll(dict, 21600);
+const chunks = [];
+let i = 0;
+while (i < jsonStr.length) {
+  chunks.push(jsonStr.substring(i, i + 90000));
+  i += 90000;
+}
+cache.put(cacheKey + "_count", chunks.length.toString(), 21600);
+const dict = {};
+for (let j = 0; j < chunks.length; j++) dict[cacheKey + "_" + j] = chunks[j];
+cache.putAll(dict, 21600);
 }
 } catch(e) { console.error("Cache Put Error:", e); }
 }
@@ -91,16 +91,16 @@ if (single) return single;
 
 const countStr = cache.get(cacheKey + "_count");
 if (countStr) {
- const count = parseInt(countStr);
- const keys = [];
- for (let i = 0; i < count; i++) keys.push(cacheKey + "_" + i);
- const dict = cache.getAll(keys);
- let fullStr = "";
- for (let i = 0; i < count; i++) {
-   if (!dict[keys[i]]) return null;
-   fullStr += dict[keys[i]];
- }
- return fullStr;
+const count = parseInt(countStr);
+const keys = [];
+for (let i = 0; i < count; i++) keys.push(cacheKey + "_" + i);
+const dict = cache.getAll(keys);
+let fullStr = "";
+for (let i = 0; i < count; i++) {
+  if (!dict[keys[i]]) return null;
+  fullStr += dict[keys[i]];
+}
+return fullStr;
 }
 } catch(e) { console.error("Cache Get Error:", e); }
 return null;
@@ -114,12 +114,12 @@ try {
 const data = JSON.parse(str);
 if(!data[listKey]) data[listKey] = [];
 updates.forEach(u => {
- const existing = data[listKey].find(x => matchFn(x, u));
- if(existing) {
-   if(u.ts > (existing.ts||0)) Object.assign(existing, u);
- } else {
-   data[listKey].push(u);
- }
+const existing = data[listKey].find(x => matchFn(x, u));
+if(existing) {
+  if(u.ts > (existing.ts||0)) Object.assign(existing, u);
+} else {
+  data[listKey].push(u);
+}
 });
 putLargeCache(cacheKey, JSON.stringify(data));
 return true;
@@ -133,30 +133,30 @@ function setupSheets(ss) {
 const requiredSheets =["Raw Data", "Finance Options", "Receipts", "Rooms", "Buses", "Groups", "Pairings", "Attendance", "Minutes"];
 requiredSheets.forEach(name => {
 if (!ss.getSheetByName(name)) {
- let sheet = ss.insertSheet(name);
- if (name === "Raw Data") {
-   sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC", "Short Name / Nickname", "Medical Conditions"]);
-   sheet.setFrozenRows(1);
- } else if (name === "Finance Options") {
-   sheet.appendRow(["JSON Data - Do Not Edit"]);
-   sheet.appendRow([""]);
-   sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
- } else if (name === "Receipts") {
-   sheet.appendRow(["Receipt ID", "Timestamp", "Uploader NRIC", "Currency", "Amount", "Rate", "SGD Amount", "Category ID", "File URL", "Remarks", "Is Deleted", "Paid By NRIC", "Is Reimbursed"]);
-   sheet.setFrozenRows(1);
- } else if (name === "Rooms") {
-   sheet.appendRow(["Room ID", "Room Name", "Capacity", "Occupants", "Last Updated", "Updated By", "Is Deleted"]);
-   sheet.setFrozenRows(1);
- } else if (name === "Attendance") {
-   sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
-   sheet.setFrozenRows(1);
- } else if (name === "Pairings") {
-   sheet.appendRow(["Trainee NRIC", "Volunteer NRIC", "Status", "Last Updated", "Updated By"]);
-   sheet.setFrozenRows(1);
- } else if (name === "Minutes") {
-   sheet.appendRow(["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]);
-   sheet.setFrozenRows(1);
- }
+let sheet = ss.insertSheet(name);
+if (name === "Raw Data") {
+  sheet.appendRow(["Timestamp", "Email address", "Trainee / Volunteer / Caregiver", "Full Name (As stated in your Passport)", "Related Trainee's Name", "Relationship with Trainee", "Which project do you belong to?", "Gender", "Contact Number", "Home Address", "Nationality", "FULL NRIC / FIN", "Passport No.", "Passport Expiry Date", "Date of Birth", "Any dietary restrictions?", "Emergency Contact Name", "Emergency Contact Number", "Relationship with Emergency Contact", "Any sleeping arrangement request?", "Other Points to Note", "Family POC NRIC", "Short Name / Nickname", "Medical Conditions"]);
+  sheet.setFrozenRows(1);
+} else if (name === "Finance Options") {
+  sheet.appendRow(["JSON Data - Do Not Edit"]);
+  sheet.appendRow([""]);
+  sheet.appendRow(["Currency Setup", "SGD to MYR Rate:", '=GOOGLEFINANCE("CURRENCY:SGDMYR")']);
+} else if (name === "Receipts") {
+  sheet.appendRow(["Receipt ID", "Timestamp", "Uploader NRIC", "Currency", "Amount", "Rate", "SGD Amount", "Category ID", "File URL", "Remarks", "Is Deleted", "Paid By NRIC", "Is Reimbursed"]);
+  sheet.setFrozenRows(1);
+} else if (name === "Rooms") {
+  sheet.appendRow(["Room ID", "Room Name", "Capacity", "Occupants", "Last Updated", "Updated By", "Is Deleted"]);
+  sheet.setFrozenRows(1);
+} else if (name === "Attendance") {
+  sheet.appendRow(["Juncture", "NRIC", "Status", "Last Updated", "Updated By"]);
+  sheet.setFrozenRows(1);
+} else if (name === "Pairings") {
+  sheet.appendRow(["Trainee NRIC", "Volunteer NRIC", "Status", "Last Updated", "Updated By"]);
+  sheet.setFrozenRows(1);
+} else if (name === "Minutes") {
+  sheet.appendRow(["Note ID", "Meeting Date", "Content", "Assigned To", "Last Updated", "Updated By", "Is Deleted"]);
+  sheet.setFrozenRows(1);
+}
 }
 });
 const defaultSheet = ss.getSheetByName("Sheet1");
@@ -168,49 +168,50 @@ try {
 const data = JSON.parse(e.postData.contents);
 let result = {};
 switch(data.action) {
- case 'getSettings': result = getAppConfig(); break;
- case 'login': result = handleLogin(data.password, data.nric); break;
- case 'getProfile': result = getProfile(data.nric); break;
- case 'updateProfile': result = updateProfile(data.member); break;
- case 'submitRegistration': result = submitRegistration(data.payload); break;
- case 'toggleRegistration': result = toggleRegistration(data.status, data.tripTitle, data.tripYear, data.tripStart, data.tripEnd); break;
- case 'toggleEdits': result = toggleEdits(data.status); break;
- case 'getCommittee': result = getCommitteeList(); break;
- case 'addCommittee': result = modifyCommitteeList(data.nric, true, data.name, data.phone); break;
- case 'removeCommittee': result = modifyCommitteeList(data.nric, false); break;
- case 'addProjectGroup': result = modifyProjectGroups(data.groupName, true, data.callerNric, data.colorClass); break;
- case 'removeProjectGroup': result = modifyProjectGroups(data.groupName, false, data.callerNric); break;
- case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, data.newName); break;
- case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
- case 'saveTripSettings': result = saveTripSettings(data.title, data.year, data.start, data.end); break;
- case 'fetchAdminRoster': result = fetchAdminRoster(); break;
- case 'getParticipantSummary': result = getParticipantSummary(data.nric); break;
- case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
- case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
- case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
- case 'getDriveContents': result = getDriveContents(data.folderId); break;
- case 'uploadDriveFile': result = uploadDriveFile(data.folderId, data.fileName, data.mimeType, data.fileData); break;
- case 'createDriveFolder': result = createDriveFolder(data.parentFolderId, data.folderName); break;
- case 'createGoogleDoc': result = createGoogleDoc(data.folderId, data.fileName, data.docType); break;
- case 'renameDriveItem': result = renameDriveItem(data.itemId, data.isFolder, data.newName, data.currentFolderId); break;
- case 'deleteDriveItem': result = deleteDriveItem(data.itemId, data.isFolder, data.currentFolderId); break;
- case 'bulkDriveOperation': result = bulkDriveOperation(data.actionType, data.items, data.targetFolderId, data.singleNewName); break;
- case 'fetchLogistics': result = fetchLogistics(); break;
- case 'syncPairingUpdates': result = syncPairingUpdates(data.updates, data.takenBy || 'Admin'); break;
- case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
- case 'syncRoomUpdates': result = syncRoomUpdates(data.updates, data.takenBy || 'Admin'); break;
- case 'fetchRoomsOnly': result = fetchRoomsOnly(); break;
- case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
- case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
- case 'fetchFinance': result = fetchFinance(); break;
- case 'saveFinance': result = saveFinance(data.payload); break;
- case 'fetchReceipts': result = fetchReceipts(); break;
- case 'uploadReceipt': result = uploadReceipt(data.payload); break;
- case 'syncReceipts': result = syncReceipts(data.updates); break;
- case 'fetchMinutes': result = fetchMinutes(); break;
- case 'syncMinutes': result = syncMinutes(data.updates, data.takenBy); break;
- case 'archiveAndReset': result = archiveAndReset(); break;
- default: throw new Error("Unknown action.");
+case 'getSettings': result = getAppConfig(); break;
+case 'login': result = handleLogin(data.password, data.nric); break;
+case 'getProfile': result = getProfile(data.nric); break;
+case 'updateProfile': result = updateProfile(data.member); break;
+case 'submitRegistration': result = submitRegistration(data.payload); break;
+case 'getPublicTrainees': result = getPublicTrainees(); break;
+case 'toggleRegistration': result = toggleRegistration(data.status, data.tripTitle, data.tripYear, data.tripStart, data.tripEnd); break;
+case 'toggleEdits': result = toggleEdits(data.status); break;
+case 'getCommittee': result = getCommitteeList(); break;
+case 'addCommittee': result = modifyCommitteeList(data.nric, true, data.name, data.phone); break;
+case 'removeCommittee': result = modifyCommitteeList(data.nric, false); break;
+case 'addProjectGroup': result = modifyProjectGroups(data.groupName, true, data.callerNric, data.colorClass); break;
+case 'removeProjectGroup': result = modifyProjectGroups(data.groupName, false, data.callerNric); break;
+case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, data.newName); break;
+case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
+case 'saveTripSettings': result = saveTripSettings(data.title, data.year, data.start, data.end); break;
+case 'fetchAdminRoster': result = fetchAdminRoster(); break;
+case 'getParticipantSummary': result = getParticipantSummary(data.nric); break;
+case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
+case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
+case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
+case 'getDriveContents': result = getDriveContents(data.folderId); break;
+case 'uploadDriveFile': result = uploadDriveFile(data.folderId, data.fileName, data.mimeType, data.fileData); break;
+case 'createDriveFolder': result = createDriveFolder(data.parentFolderId, data.folderName); break;
+case 'createGoogleDoc': result = createGoogleDoc(data.folderId, data.fileName, data.docType); break;
+case 'renameDriveItem': result = renameDriveItem(data.itemId, data.isFolder, data.newName, data.currentFolderId); break;
+case 'deleteDriveItem': result = deleteDriveItem(data.itemId, data.isFolder, data.currentFolderId); break;
+case 'bulkDriveOperation': result = bulkDriveOperation(data.actionType, data.items, data.targetFolderId, data.singleNewName); break;
+case 'fetchLogistics': result = fetchLogistics(); break;
+case 'syncPairingUpdates': result = syncPairingUpdates(data.updates, data.takenBy || 'Admin'); break;
+case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
+case 'syncRoomUpdates': result = syncRoomUpdates(data.updates, data.takenBy || 'Admin'); break;
+case 'fetchRoomsOnly': result = fetchRoomsOnly(); break;
+case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
+case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
+case 'fetchFinance': result = fetchFinance(); break;
+case 'saveFinance': result = saveFinance(data.payload); break;
+case 'fetchReceipts': result = fetchReceipts(); break;
+case 'uploadReceipt': result = uploadReceipt(data.payload); break;
+case 'syncReceipts': result = syncReceipts(data.updates); break;
+case 'fetchMinutes': result = fetchMinutes(); break;
+case 'syncMinutes': result = syncMinutes(data.updates, data.takenBy); break;
+case 'archiveAndReset': result = archiveAndReset(); break;
+default: throw new Error("Unknown action.");
 }
 return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 } catch (error) {
@@ -227,13 +228,13 @@ let activeProjects = [];
 try {
 const dbId = getDbId();
 if (dbId) {
- const data = SpreadsheetApp.openById(dbId).getSheetByName("Raw Data").getDataRange().getValues();
- const projSet = new Set();
- for (let i = 1; i < data.length; i++) {
-   let pName = String(data[i][6]).trim();
-   if (pName) projSet.add(pName);
- }
- activeProjects = Array.from(projSet);
+const data = SpreadsheetApp.openById(dbId).getSheetByName("Raw Data").getDataRange().getValues();
+const projSet = new Set();
+for (let i = 1; i < data.length; i++) {
+  let pName = String(data[i][6]).trim();
+  if (pName) projSet.add(pName);
+}
+activeProjects = Array.from(projSet);
 }
 } catch(e) {}
 
@@ -260,205 +261,132 @@ const genPass = props.getProperty('PASS_GENERAL') || '';
 password = String(password || '').trim();
 nric = String(nric || '').trim().toUpperCase();
 
-if (!password && !nric) {
-  return { status: 'error', message: 'Please enter a password.' };
-}
+if (!password && !nric) return { status: 'error', message: 'Please enter a password.' };
 
 if (password === adminPassPrefix || (nric === 'ADMIN' && password === adminPassPrefix)) {
-  return { status: 'success', role: 'admin', name: 'MAIN ADMIN', nric: 'ADMIN' };
+ return { status: 'success', role: 'admin', name: 'MAIN ADMIN', nric: 'ADMIN' };
 }
 
 const committeeList = props.getProperty('COMMITTEE_LIST') ? JSON.parse(props.getProperty('COMMITTEE_LIST')) : [];
 if (adminPassPrefix && password.startsWith(adminPassPrefix) && password.length > adminPassPrefix.length) {
-  const possibleNric = password.substring(adminPassPrefix.length).toUpperCase();
-  const commMember = committeeList.find(c => String(c.nric || '').trim().toUpperCase() === possibleNric);
-  if (commMember) {
-    return { status: 'success', role: 'admin', name: commMember.name.toUpperCase(), nric: possibleNric };
-  }
+ const possibleNric = password.substring(adminPassPrefix.length).toUpperCase();
+ const commMember = committeeList.find(c => String(c.nric || '').trim().toUpperCase() === possibleNric);
+ if (commMember) return { status: 'success', role: 'admin', name: commMember.name.toUpperCase(), nric: possibleNric };
 }
 
 if (nric) {
-  const commMember = committeeList.find(c => String(c.nric || '').trim().toUpperCase() === nric);
-  if (commMember && (password === adminPassPrefix || password === (adminPassPrefix + nric))) {
-    return { status: 'success', role: 'admin', name: commMember.name.toUpperCase(), nric: nric };
-  }
+ const commMember = committeeList.find(c => String(c.nric || '').trim().toUpperCase() === nric);
+ if (commMember && (password === adminPassPrefix || password === (adminPassPrefix + nric))) {
+   return { status: 'success', role: 'admin', name: commMember.name.toUpperCase(), nric: nric };
+ }
 }
 
-const ss = getDatabase();
-const data = ss.getSheetByName("Raw Data").getDataRange().getValues();
+const rosterRes = fetchAdminRoster();
+const data = rosterRes.roster;
 
 if (password.length >= 5) {
-  const possibleYearStr = password.slice(-4);
-  const possibleNric = password.slice(0, -4).toUpperCase();
-  
-  if (!isNaN(parseInt(possibleYearStr))) {
-    for (let i = 1; i < data.length; i++) {
-      const rowNric = String(data[i][11] || '').trim().toUpperCase();
-      if (!rowNric) continue;
-      if (rowNric === possibleNric) {
-         let birthYear = '';
-         const dobRaw = data[i][14];
-         if (dobRaw instanceof Date) {
-           birthYear = dobRaw.getFullYear().toString();
-         } else if (typeof dobRaw === 'string' && dobRaw) {
-           const d = new Date(dobRaw);
-           if (!isNaN(d.getTime())) {
-             birthYear = d.getFullYear().toString();
-           } else {
-             const m = dobRaw.match(/\d{4}/);
-             if (m) birthYear = m[0];
-           }
-         }
-         
-         if (birthYear === possibleYearStr) {
-           return { status: 'success', role: 'user', name: String(data[i][3] || '').toUpperCase(), nric: possibleNric };
-         } else {
-           return { status: 'error', message: 'Incorrect password.' };
-         }
-      }
-    }
-  }
+ const possibleYearStr = password.slice(-4);
+ const possibleNric = password.slice(0, -4).toUpperCase();
+ 
+ if (!isNaN(parseInt(possibleYearStr))) {
+   const user = data.find(r => r.nric === possibleNric);
+   if (user) {
+     let birthYear = '';
+     if (user.dob) {
+       const d = new Date(user.dob);
+       if (!isNaN(d.getTime())) birthYear = d.getFullYear().toString();
+       else {
+          const m = String(user.dob).match(/\d{4}/);
+          if (m) birthYear = m[0];
+       }
+     }
+     if (birthYear === possibleYearStr) return { status: 'success', role: 'user', name: user.fullName, nric: possibleNric };
+     else return { status: 'error', message: 'Incorrect password.' };
+   }
+ }
 }
 
 if (nric) {
-  for (let i = 1; i < data.length; i++) {
-    const rowNric = String(data[i][11] || '').trim().toUpperCase();
-    if (!rowNric) continue;
-    if (rowNric === nric) {
-       let birthYear = '';
-       const dobRaw = data[i][14];
-       if (dobRaw instanceof Date) {
-         birthYear = dobRaw.getFullYear().toString();
-       } else if (typeof dobRaw === 'string' && dobRaw) {
-         const d = new Date(dobRaw);
-         if (!isNaN(d.getTime())) {
-           birthYear = d.getFullYear().toString();
-         } else {
-           const m = dobRaw.match(/\d{4}/);
-           if (m) birthYear = m[0];
-         }
-       }
-       if (password === genPass || (birthYear && password === birthYear) || password === (rowNric + birthYear)) {
-         return { status: 'success', role: 'user', name: String(data[i][3] || '').toUpperCase(), nric: rowNric };
-       } else {
-         return { status: 'error', message: 'Incorrect password.' };
-       }
-    }
-  }
+ const user = data.find(r => r.nric === nric);
+ if (user) {
+   let birthYear = '';
+   if (user.dob) {
+     const d = new Date(user.dob);
+     if (!isNaN(d.getTime())) birthYear = d.getFullYear().toString();
+     else {
+        const m = String(user.dob).match(/\d{4}/);
+        if (m) birthYear = m[0];
+     }
+   }
+   if (password === genPass || (birthYear && password === birthYear) || password === (nric + birthYear)) {
+     return { status: 'success', role: 'user', name: user.fullName, nric: nric };
+   } else {
+     return { status: 'error', message: 'Incorrect password.' };
+   }
+ }
 }
 
 return { status: 'error', message: 'Invalid password or user not found.' };
 }
 
 function getProfile(nric) {
-const ss = getDatabase(); 
-const data = ss.getSheetByName("Raw Data").getDataRange().getValues();
+const rosterRes = fetchAdminRoster();
+const data = rosterRes.roster;
 
-let currentUserRecord = null;
-for (let i = 1; i < data.length; i++) { 
-if (String(data[i][11]).trim().toUpperCase() === nric) { 
- currentUserRecord = data[i]; break; 
-} 
-}
+const currentUserRecord = data.find(r => r.nric === nric);
 if (!currentUserRecord) return {status: 'error', message: 'Profile not found.'};
 
 let family = [];
-const userRole = String(currentUserRecord[2]).trim().toUpperCase();
-const userName = String(currentUserRecord[3]).trim().toLowerCase();
-const userRelatedTrainee = String(currentUserRecord[4]).trim().toLowerCase();
+const userRole = currentUserRecord.role;
+const userName = currentUserRecord.fullName.toLowerCase();
+const userRelatedTrainee = (currentUserRecord.relatedTrainee || '').toLowerCase();
 
 let targetTraineeName = null;
 if (userRole === 'TRAINEE') targetTraineeName = userName;
 else if (userRole === 'CAREGIVER' && userRelatedTrainee) targetTraineeName = userRelatedTrainee;
 
-for (let i = 1; i < data.length; i++) {
-const rowRole = String(data[i][2]).trim().toUpperCase();
-const rowName = String(data[i][3]).trim().toLowerCase();
-const rowRelatedTrainee = String(data[i][4]).trim().toLowerCase();
-const rowNric = String(data[i][11]).trim().toUpperCase();
+data.forEach(row => {
+ let isFamilyMember = false;
+ const rowRole = row.role;
+ const rowName = row.fullName.toLowerCase();
+ const rowRelated = (row.relatedTrainee || '').toLowerCase();
 
-let isFamilyMember = false;
-if (targetTraineeName) {
- if (rowRole === 'TRAINEE' && rowName === targetTraineeName) isFamilyMember = true;
- if (rowRole === 'CAREGIVER' && rowRelatedTrainee === targetTraineeName) isFamilyMember = true;
-}
-if (rowNric === nric) isFamilyMember = true;
+ if (targetTraineeName) {
+     if (rowRole === 'TRAINEE' && rowName === targetTraineeName) isFamilyMember = true;
+     if (rowRole === 'CAREGIVER' && rowRelated === targetTraineeName) isFamilyMember = true;
+ }
+ if (row.nric === nric) isFamilyMember = true;
 
-if (isFamilyMember) {
- let expRaw = data[i][13]; if (expRaw instanceof Date) expRaw = Utilities.formatDate(expRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
- let dobRaw = data[i][14]; if (dobRaw instanceof Date) dobRaw = Utilities.formatDate(dobRaw, Session.getScriptTimeZone(), "dd MMM yyyy");
- family.push({
-   email: String(data[i][1]||'').trim(), role: String(data[i][2]||'').trim().toUpperCase(), fullName: String(data[i][3]).trim().toUpperCase(), relatedTrainee: String(data[i][4]||'').trim().toUpperCase(), relationship: String(data[i][5]||'').trim(),
-   group: String(data[i][6]||'').trim(), gender: String(data[i][7]||'').trim(), contact: String(data[i][8]||'').trim(), address: String(data[i][9]||'').trim(), nationality: String(data[i][10]||'').trim(),
-   nric: String(data[i][11]).trim().toUpperCase(), passportNo: String(data[i][12]||'').trim().toUpperCase(), passportExpiry: expRaw, dob: dobRaw, diet: String(data[i][15]||'').trim(),
-   emergencyName: String(data[i][16]||'').trim().toUpperCase(), emergencyContact: String(data[i][17]||'').trim(), emergencyRelation: String(data[i][18]||'').trim(), sleeping: String(data[i][19]||'').trim(), otherPoints: String(data[i][20]||'').trim(),
-   pocNric: String(data[i][21]).trim().toUpperCase(), shortName: String(data[i][22]||'').trim().toUpperCase(), medical: String(data[i][23]||'').trim()
- });
-}
-}
+ if (isFamilyMember) {
+     let expRaw = row.passportExpiry;
+     let dobRaw = row.dob;
+     
+     if (expRaw && typeof expRaw === 'string' && expRaw.includes('T')) {
+         const d = new Date(expRaw);
+         if(!isNaN(d.getTime())) expRaw = Utilities.formatDate(d, Session.getScriptTimeZone(), "dd MMM yyyy");
+     }
+     if (dobRaw && typeof dobRaw === 'string' && dobRaw.includes('T')) {
+         const d = new Date(dobRaw);
+         if(!isNaN(d.getTime())) dobRaw = Utilities.formatDate(d, Session.getScriptTimeZone(), "dd MMM yyyy");
+     }
+     
+     family.push({
+         email: row.email, role: row.role, fullName: row.fullName, relatedTrainee: row.relatedTrainee, relationship: row.relationship,
+         group: row.group, gender: row.gender, contact: row.contact, address: row.address, nationality: row.nationality,
+         nric: row.nric, passportNo: row.passportNo, passportExpiry: expRaw || row.passportExpiry, dob: dobRaw || row.dob, diet: row.diet,
+         emergencyName: row.emergencyName, emergencyContact: row.emergencyContact, emergencyRelation: row.emergencyRelation, sleeping: row.sleeping, otherPoints: row.otherPoints,
+         pocNric: row.pocNric, shortName: row.shortName, medical: row.medical
+     });
+ }
+});
+
+family.sort((a, b) => {
+ if (a.nric === nric) return -1;
+ if (b.nric === nric) return 1;
+ return 0;
+});
+
 return { status: 'success', family: family };
-}
-
-function getParticipantSummary(nric) {
- const logRes = fetchLogistics();
- const finRes = fetchFinance();
- 
- if (!logRes.participants) return { status: 'error', message: 'Participant not found' };
- 
- const p = logRes.participants.find(x => x.nric === nric);
- if (!p) return { status: 'error', message: 'Participant not found' };
-
- const rooms = logRes.rooms || [];
- const pairings = logRes.pairings || [];
- 
- let myRoom = rooms.find(r => !r.isDeleted && r.occupants.includes(nric));
- 
- let myPairings = [];
- if (p.role === 'TRAINEE') {
-     myPairings = pairings.filter(x => x.traineeNric === nric && x.status === 'ACTIVE').map(x => x.volNric);
- } else if (p.role === 'VOLUNTEER') {
-     myPairings = pairings.filter(x => x.volNric === nric && x.status === 'ACTIVE').map(x => x.traineeNric);
- }
- 
- const pairingNames = myPairings.map(n => {
-     const per = logRes.participants.find(x => x.nric === n);
-     return per ? (per.shortName || per.name).toUpperCase() : n;
- });
-
- const finConfig = finRes.data?.config || {};
- let paymentStatus = "No Fees";
- let expectedFee = 0;
- 
- if (finConfig.perPersonFee) {
-     const initialPoc = p.pocNric || p.nric;
-     const groupMembers = logRes.participants.filter(x => (x.pocNric || x.nric) === initialPoc);
-     const hasCaregiver = groupMembers.some(x => x.role === 'CAREGIVER');
-     let finalPoc = initialPoc;
-     let familySize = groupMembers.length;
-     if (!hasCaregiver && groupMembers.length > 1) {
-         finalPoc = p.nric;
-         familySize = 1;
-     }
-     const base = finConfig.perPersonFee * familySize;
-     const dev = finConfig.feeDeviations?.[finalPoc]?.amount || 0;
-     expectedFee = base + dev;
-     const isPaid = finConfig.feesReceived?.[finalPoc] === true;
-     paymentStatus = isPaid ? "Paid" : `Pending (SGD ${expectedFee})`;
- }
-
- return {
-     status: 'success',
-     summary: {
-         fullName: p.name.toUpperCase(),
-         shortName: p.shortName.toUpperCase(),
-         role: p.role,
-         group: p.group,
-         gender: p.gender,
-         roomName: myRoom ? myRoom.name : "Unassigned",
-         pairings: pairingNames.length > 0 ? pairingNames.join(', ') : "None",
-         paymentStatus: paymentStatus
-     }
- };
 }
 
 function updateProfile(member) {
@@ -473,30 +401,51 @@ const sheet = ss.getSheetByName("Raw Data");
 const data = sheet.getDataRange().getValues();
 
 for (let i = 1; i < data.length; i++) {
- if (String(data[i][11]).trim().toUpperCase() === String(member.nric || '').trim().toUpperCase()) {
-   sheet.getRange(i+1, 2).setValue(member.email); sheet.getRange(i+1, 3).setValue(member.role); sheet.getRange(i+1, 4).setValue(member.fullName);
-   sheet.getRange(i+1, 5).setValue(member.relatedTrainee || ''); sheet.getRange(i+1, 6).setValue(member.relationship || '');
-   sheet.getRange(i+1, 7).setValue(member.group || ''); sheet.getRange(i+1, 8).setValue(member.gender);
-   sheet.getRange(i+1, 9).setValue(member.contact); sheet.getRange(i+1, 10).setValue(member.address || '');
-   sheet.getRange(i+1, 11).setValue(member.nationality); sheet.getRange(i+1, 13).setValue(member.passportNo);
-   sheet.getRange(i+1, 14).setValue(member.passportExpiry ? "'" + member.passportExpiry : '');
-   sheet.getRange(i+1, 15).setValue(member.dob ? "'" + member.dob : '');                      
-   sheet.getRange(i+1, 16).setValue(member.diet || ''); sheet.getRange(i+1, 17).setValue(member.emergencyName || '');
-   sheet.getRange(i+1, 18).setValue(member.emergencyContact || ''); sheet.getRange(i+1, 19).setValue(member.emergencyRelation || '');
-   sheet.getRange(i+1, 20).setValue(member.sleeping || ''); sheet.getRange(i+1, 21).setValue(member.otherPoints || '');
-   sheet.getRange(i+1, 23).setValue(member.shortName || '');
-   sheet.getRange(i+1, 24).setValue(member.medical || '');
-   
-   // Write-Through: Invalidate dependent caches
-   CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
-   CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
-   precomputeAppCache(); 
-   return { status: 'success' };
- }
+if (String(data[i][11]).trim().toUpperCase() === String(member.nric || '').trim().toUpperCase()) {
+  const rData = data[i];
+  rData[1] = member.email || '';
+  rData[2] = member.role || '';
+  rData[3] = member.fullName || '';
+  rData[4] = member.relatedTrainee || '';
+  rData[5] = member.relationship || '';
+  rData[6] = member.group || '';
+  rData[7] = member.gender || '';
+  rData[8] = member.contact || '';
+  rData[9] = member.address || '';
+  rData[10] = member.nationality || '';
+  rData[12] = member.passportNo || '';
+  rData[13] = member.passportExpiry ? "'" + member.passportExpiry : '';
+  rData[14] = member.dob ? "'" + member.dob : '';                      
+  rData[15] = member.diet || '';
+  rData[16] = member.emergencyName || '';
+  rData[17] = member.emergencyContact || '';
+  rData[18] = member.emergencyRelation || '';
+  rData[19] = member.sleeping || '';
+  rData[20] = member.otherPoints || '';
+  rData[22] = member.shortName || '';
+  
+  if (member.medical !== undefined) rData[23] = member.medical || '';
+
+  sheet.getRange(i+1, 1, 1, rData.length).setValues([rData]);
+  
+  // Write-Through: Invalidate dependent caches
+  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
+  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+  precomputeAppCache(); 
+  return { status: 'success' };
+}
 }
 return { status: 'error', message: 'Record not found.' };
 } catch(e) { return { status: 'error', message: e.message }; }
 finally { lock.releaseLock(); }
+}
+
+function getPublicTrainees() {
+const rosterRes = fetchAdminRoster();
+const trainees = rosterRes.roster
+   .filter(p => p.role === 'TRAINEE')
+   .map(p => ({ name: p.fullName, shortName: p.shortName }));
+return { status: 'success', trainees };
 }
 
 function submitRegistration(payloadArray) {
@@ -507,11 +456,11 @@ if (PropertiesService.getScriptProperties().getProperty('REGISTRATION_OPEN') !==
 const sheet = getDatabase().getSheetByName("Raw Data"); 
 const pocNric = payloadArray[0].nric.toUpperCase();
 payloadArray.forEach(p => {
- sheet.appendRow([
-   new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
-   p.nric.toUpperCase(), p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
-   p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric, p.shortName||'', p.medical||''
- ]);
+sheet.appendRow([
+  new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
+  p.nric.toUpperCase(), p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
+  p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric, p.shortName||'', p.medical||''
+]);
 });
 CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
 CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
@@ -535,32 +484,32 @@ const data = sheet.getDataRange().getValues();
 const results = [];
 for(let i = 1; i < data.length; i++) {
 if(data[i][11]) { 
- results.push({
-   timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
-   email: String(data[i][1]||'').trim(), 
-   role: String(data[i][2]||'').trim().toUpperCase(), 
-   fullName: String(data[i][3]||'').trim().toUpperCase(), 
-   relatedTrainee: String(data[i][4]||'').trim().toUpperCase(), 
-   relationship: String(data[i][5]||'').trim(),
-   group: String(data[i][6]||'').trim(), 
-   gender: String(data[i][7]||'').trim(), 
-   contact: String(data[i][8]||'').trim(), 
-   address: String(data[i][9]||'').trim(), 
-   nationality: String(data[i][10]||'').trim(),
-   nric: String(data[i][11]||'').trim().toUpperCase(), 
-   passportNo: String(data[i][12]||'').trim().toUpperCase(), 
-   passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
-   dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
-   diet: String(data[i][15]||'').trim(), 
-   emergencyName: String(data[i][16]||'').trim().toUpperCase(), 
-   emergencyContact: String(data[i][17]||'').trim(), 
-   emergencyRelation: String(data[i][18]||'').trim(),
-   sleeping: String(data[i][19]||'').trim(), 
-   otherPoints: String(data[i][20]||'').trim(), 
-   pocNric: String(data[i][21]||'').trim().toUpperCase(), 
-   shortName: String(data[i][22]||'').trim().toUpperCase(),
-   medical: String(data[i][23]||'').trim()
- });
+results.push({
+  timestamp: data[i][0] instanceof Date ? data[i][0].getTime() : data[i][0],
+  email: String(data[i][1]||'').trim(), 
+  role: String(data[i][2]||'').trim().toUpperCase(), 
+  fullName: String(data[i][3]||'').trim().toUpperCase(), 
+  relatedTrainee: String(data[i][4]||'').trim().toUpperCase(), 
+  relationship: String(data[i][5]||'').trim(),
+  group: String(data[i][6]||'').trim(), 
+  gender: String(data[i][7]||'').trim(), 
+  contact: String(data[i][8]||'').trim(), 
+  address: String(data[i][9]||'').trim(), 
+  nationality: String(data[i][10]||'').trim(),
+  nric: String(data[i][11]||'').trim().toUpperCase(), 
+  passportNo: String(data[i][12]||'').trim().toUpperCase(), 
+  passportExpiry: data[i][13] instanceof Date ? data[i][13].toISOString() : String(data[i][13] || '').replace(/^'/, ''),
+  dob: data[i][14] instanceof Date ? data[i][14].toISOString() : String(data[i][14] || '').replace(/^'/, ''),
+  diet: String(data[i][15]||'').trim(), 
+  emergencyName: String(data[i][16]||'').trim().toUpperCase(), 
+  emergencyContact: String(data[i][17]||'').trim(), 
+  emergencyRelation: String(data[i][18]||'').trim(),
+  sleeping: String(data[i][19]||'').trim(), 
+  otherPoints: String(data[i][20]||'').trim(), 
+  pocNric: String(data[i][21]||'').trim().toUpperCase(), 
+  shortName: String(data[i][22]||'').trim().toUpperCase(),
+  medical: String(data[i][23]||'').trim()
+});
 }
 }
 const res = { status: 'success', roster: results };
@@ -583,17 +532,17 @@ const pData = ss.getSheetByName("Raw Data").getDataRange().getValues();
 const participants = [];
 for(let i=1; i<pData.length; i++) {
 if(pData[i][11]) {
- participants.push({ 
-   role: String(pData[i][2]).trim().toUpperCase(), 
-   name: String(pData[i][3]).trim().toUpperCase(), 
-   relatedTrainee: pData[i][4] ? String(pData[i][4]).trim().toUpperCase() : '',
-   shortName: pData[i][22] ? String(pData[i][22]).trim().toUpperCase() : '',
-   group: String(pData[i][6]).trim(), 
-   gender: String(pData[i][7]).trim(),
-   nric: String(pData[i][11]).trim().toUpperCase(),
-   pocNric: String(pData[i][21]).trim().toUpperCase(),
-   sleeping: pData[i][19] ? String(pData[i][19]).trim() : ''
- });
+participants.push({ 
+  role: String(pData[i][2]).trim().toUpperCase(), 
+  name: String(pData[i][3]).trim().toUpperCase(), 
+  relatedTrainee: pData[i][4] ? String(pData[i][4]).trim().toUpperCase() : '',
+  shortName: pData[i][22] ? String(pData[i][22]).trim().toUpperCase() : '',
+  group: String(pData[i][6]).trim(), 
+  gender: String(pData[i][7]).trim(),
+  nric: String(pData[i][11]).trim().toUpperCase(),
+  pocNric: String(pData[i][21]).trim().toUpperCase(),
+  sleeping: pData[i][19] ? String(pData[i][19]).trim() : ''
+});
 }
 }
 
@@ -618,14 +567,14 @@ let pairings = [];
 if(pairSheet) {
 const pairData = pairSheet.getDataRange().getValues();
 for(let i=1; i<pairData.length; i++) {
- const t = String(pairData[i][0]).trim().toUpperCase();
- const v = String(pairData[i][1]).trim().toUpperCase();
- if(t && v) {
-   const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
-   const tsVal = new Date(pairData[i][3]).getTime();
-   const ts = isNaN(tsVal) ? 0 : tsVal;
-   pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
- }
+const t = String(pairData[i][0]).trim().toUpperCase();
+const v = String(pairData[i][1]).trim().toUpperCase();
+if(t && v) {
+  const status = pairData[i][2] ? String(pairData[i][2]).trim().toUpperCase() : 'ACTIVE';
+  const tsVal = new Date(pairData[i][3]).getTime();
+  const ts = isNaN(tsVal) ? 0 : tsVal;
+  pairings.push({ traineeNric: t, volNric: v, status: status, ts: ts });
+}
 }
 }
 const res = { status: 'success', pairings };
@@ -644,31 +593,31 @@ if(!sheet) return { status: 'error', message: 'Sheet not found.' };
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for(let i=1; i<data.length; i++) {
- const t = String(data[i][0]).trim().toUpperCase();
- const v = String(data[i][1]).trim().toUpperCase();
- if(t && v) existingMap[`${t}_${v}`] = i + 1;
+const t = String(data[i][0]).trim().toUpperCase();
+const v = String(data[i][1]).trim().toUpperCase();
+if(t && v) existingMap[`${t}_${v}`] = i + 1;
 }
 
 updates.forEach(u => {
- const t = String(u.traineeNric).trim().toUpperCase();
- const v = String(u.volNric).trim().toUpperCase();
- const status = u.action === 'ADD' ? 'ACTIVE' : 'UNPAIRED';
- const ts = u.ts || Date.now();
- const tsDate = new Date(ts);
- const key = `${t}_${v}`;
+const t = String(u.traineeNric).trim().toUpperCase();
+const v = String(u.volNric).trim().toUpperCase();
+const status = u.action === 'ADD' ? 'ACTIVE' : 'UNPAIRED';
+const ts = u.ts || Date.now();
+const tsDate = new Date(ts);
+const key = `${t}_${v}`;
 
- if(existingMap[key]) {
-   const rowIndex = existingMap[key];
-   const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+if(existingMap[key]) {
+  const rowIndex = existingMap[key];
+  const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
-   if (ts > existingTs) {
-     sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
-   }
- } else {
-   sheet.appendRow([t, v, status, tsDate, takenBy]);
-   existingMap[key] = sheet.getLastRow();
- }
+  if (ts > existingTs) {
+    sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
+  }
+} else {
+  sheet.appendRow([t, v, status, tsDate, takenBy]);
+  existingMap[key] = sheet.getLastRow();
+}
 });
 
 // Atomic Write-Through Cache
@@ -694,12 +643,12 @@ let rooms = [];
 if(roomSheet) {
 const rData = roomSheet.getDataRange().getValues();
 for(let i=1; i<rData.length; i++) {
- const id = String(rData[i][0]).trim();
- if(id && id !== "Room ID") {
-   let occ = [];
-   try { occ = JSON.parse(rData[i][3] || '[]'); } catch(e){}
-   rooms.push({ id: id, name: String(rData[i][1]), capacity: parseInt(rData[i][2]) || 0, occupants: occ, ts: new Date(rData[i][4]).getTime() || 0, isDeleted: String(rData[i][6]).toUpperCase() === 'TRUE' });
- }
+const id = String(rData[i][0]).trim();
+if(id && id !== "Room ID") {
+  let occ = [];
+  try { occ = JSON.parse(rData[i][3] || '[]'); } catch(e){}
+  rooms.push({ id: id, name: String(rData[i][1]), capacity: parseInt(rData[i][2]) || 0, occupants: occ, ts: new Date(rData[i][4]).getTime() || 0, isDeleted: String(rData[i][6]).toUpperCase() === 'TRUE' });
+}
 }
 }
 const res = { status: 'success', rooms };
@@ -717,27 +666,27 @@ let sheet = ss.getSheetByName("Rooms");
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
- const id = String(data[i][0]).trim();
- if(id && id !== "Room ID") existingMap[id] = i + 1;
+const id = String(data[i][0]).trim();
+if(id && id !== "Room ID") existingMap[id] = i + 1;
 }
 
 updates.forEach(u => {
- const tsDate = new Date(u.ts);
- const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
- const occStr = JSON.stringify(u.occupants || []);
+const tsDate = new Date(u.ts);
+const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
+const occStr = JSON.stringify(u.occupants || []);
 
- if (existingMap[u.id]) {
-   const rowIndex = existingMap[u.id];
-   const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+if (existingMap[u.id]) {
+  const rowIndex = existingMap[u.id];
+  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
-   if (u.ts > existingTs) {
-      sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.name, u.capacity, occStr, tsDate, takenBy, isDel]]);
-   }
- } else {
-   sheet.appendRow([u.id, u.name, u.capacity, occStr, tsDate, takenBy, isDel]);
-   existingMap[u.id] = sheet.getLastRow();
- }
+  if (u.ts > existingTs) {
+     sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.name, u.capacity, occStr, tsDate, takenBy, isDel]]);
+  }
+} else {
+  sheet.appendRow([u.id, u.name, u.capacity, occStr, tsDate, takenBy, isDel]);
+  existingMap[u.id] = sheet.getLastRow();
+}
 });
 
 // Global Sweep
@@ -745,25 +694,25 @@ SpreadsheetApp.flush();
 const freshData = sheet.getDataRange().getValues();
 const roomsList = [];
 for(let i=1; i<freshData.length; i++) {
- const id = String(freshData[i][0]).trim();
- if(id && String(freshData[i][6]).toUpperCase() !== 'TRUE') {
-   let occ = [];
-   try { occ = JSON.parse(freshData[i][3] || '[]'); } catch(e){}
-   roomsList.push({ rowIdx: i + 1, id: id, occupants: occ, ts: new Date(freshData[i][4]).getTime() || 0 });
- }
+const id = String(freshData[i][0]).trim();
+if(id && String(freshData[i][6]).toUpperCase() !== 'TRUE') {
+  let occ = [];
+  try { occ = JSON.parse(freshData[i][3] || '[]'); } catch(e){}
+  roomsList.push({ rowIdx: i + 1, id: id, occupants: occ, ts: new Date(freshData[i][4]).getTime() || 0 });
+}
 }
 
 roomsList.sort((a,b) => b.ts - a.ts);
 const seenNrics = new Set();
 
 roomsList.forEach(r => {
- const newOcc = [];
- let changed = false;
- r.occupants.forEach(n => {
-   if(!seenNrics.has(n)) { seenNrics.add(n); newOcc.push(n); } 
-   else changed = true;
- });
- if(changed) sheet.getRange(r.rowIdx, 4, 1, 2).setValues([[JSON.stringify(newOcc), new Date()]]);
+const newOcc = [];
+let changed = false;
+r.occupants.forEach(n => {
+  if(!seenNrics.has(n)) { seenNrics.add(n); newOcc.push(n); } 
+  else changed = true;
+});
+if(changed) sheet.getRange(r.rowIdx, 4, 1, 2).setValues([[JSON.stringify(newOcc), new Date()]]);
 });
 
 // Atomic Write-Through Cache
@@ -794,11 +743,11 @@ const result = {};
 
 for (let i = 1; i < data.length; i++) {
 if (data[i][0] === juncture) {
- const nric = String(data[i][1]).trim().toUpperCase();
- const status = (String(data[i][2]).trim() === 'true');
- const tsVal = new Date(data[i][3]).getTime();
- const ts = isNaN(tsVal) ? 0 : tsVal;
- result[nric] = { status: status, ts: ts };
+const nric = String(data[i][1]).trim().toUpperCase();
+const status = (String(data[i][2]).trim() === 'true');
+const tsVal = new Date(data[i][3]).getTime();
+const ts = isNaN(tsVal) ? 0 : tsVal;
+result[nric] = { status: status, ts: ts };
 }
 }
 const res = { status: 'success', data: result };
@@ -817,47 +766,47 @@ if(!sheet) return { status: 'error', message: 'Sheet not found.' };
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
- if (data[i][0] === juncture) {
-   existingMap[String(data[i][1]).trim().toUpperCase()] = i + 1; 
- }
+if (data[i][0] === juncture) {
+  existingMap[String(data[i][1]).trim().toUpperCase()] = i + 1; 
+}
 }
 
 updates.forEach(u => {
- const nric = String(u.nric).trim().toUpperCase();
- const status = u.status ? 'true' : 'false';
- const ts = u.ts || Date.now();
- const tsDate = new Date(ts);
+const nric = String(u.nric).trim().toUpperCase();
+const status = u.status ? 'true' : 'false';
+const ts = u.ts || Date.now();
+const tsDate = new Date(ts);
 
- if (existingMap[nric]) {
-   const rowIndex = existingMap[nric];
-   const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+if (existingMap[nric]) {
+  const rowIndex = existingMap[nric];
+  const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
-   if (ts > existingTs) {
-     sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
-   }
- } else {
-   sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
-   existingMap[nric] = sheet.getLastRow();
- }
+  if (ts > existingTs) {
+    sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
+  }
+} else {
+  sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
+  existingMap[nric] = sheet.getLastRow();
+}
 });
 
 // Write-Through Cache
 const cacheKey = getCacheKey('ATTENDANCE_' + juncture);
 const str = getLargeCache(cacheKey);
 if(str) {
- try {
-   const cData = JSON.parse(str);
-   updates.forEach(u => {
-     const nric = String(u.nric).trim().toUpperCase();
-     if(!cData.data[nric] || u.ts > cData.data[nric].ts) {
-       cData.data[nric] = { status: u.status, ts: u.ts };
-     }
-   });
-   putLargeCache(cacheKey, JSON.stringify(cData));
- } catch(e) {}
+try {
+  const cData = JSON.parse(str);
+  updates.forEach(u => {
+    const nric = String(u.nric).trim().toUpperCase();
+    if(!cData.data[nric] || u.ts > cData.data[nric].ts) {
+      cData.data[nric] = { status: u.status, ts: u.ts };
+    }
+  });
+  putLargeCache(cacheKey, JSON.stringify(cData));
+} catch(e) {}
 } else {
- fetchAttendanceData(juncture, true);
+fetchAttendanceData(juncture, true);
 }
 
 return { status: 'success' };
@@ -913,29 +862,29 @@ try { if(existingStr) existingData = JSON.parse(existingStr); } catch(e){}
 let changed = false;
 
 if (payload.config && payload.config.ts) {
- if (!existingData.config || !existingData.config.ts || payload.config.ts > existingData.config.ts) {
-   existingData.config = payload.config;
-   changed = true;
- }
+if (!existingData.config || !existingData.config.ts || payload.config.ts > existingData.config.ts) {
+  existingData.config = payload.config;
+  changed = true;
+}
 }
 
 if (payload.updates && Array.isArray(payload.updates)) {
- let optMap = {};
- if(existingData.options) existingData.options.forEach(o => optMap[o.id] = o);
+let optMap = {};
+if(existingData.options) existingData.options.forEach(o => optMap[o.id] = o);
 
- payload.updates.forEach(u => {
-   let ext = optMap[u.id];
-   if (!ext || !ext.ts || !u.ts || u.ts > ext.ts) {
-     optMap[u.id] = u;
-     changed = true;
-   }
- });
- existingData.options = Object.values(optMap);
+payload.updates.forEach(u => {
+  let ext = optMap[u.id];
+  if (!ext || !ext.ts || !u.ts || u.ts > ext.ts) {
+    optMap[u.id] = u;
+    changed = true;
+  }
+});
+existingData.options = Object.values(optMap);
 }
 
 if(changed) {
- sheet.getRange(2, 1).setValue(JSON.stringify(existingData));
- fetchFinance(true); // Write-Through
+sheet.getRange(2, 1).setValue(JSON.stringify(existingData));
+fetchFinance(true); // Write-Through
 }
 
 return fetchFinance();
@@ -957,23 +906,23 @@ if (!sheet) return { status: 'success', receipts: [] };
 const data = sheet.getDataRange().getValues();
 const receipts = [];
 for (let i = 1; i < data.length; i++) {
- const id = String(data[i][0]).trim();
- if (!id || id === "Receipt ID") continue;
- receipts.push({
-   id: id,
-   ts: new Date(data[i][1]).getTime() || 0,
-   uploaderNric: String(data[i][2] || ''),
-   currency: String(data[i][3] || ''),
-   amount: parseFloat(data[i][4]) || 0,
-   rate: parseFloat(data[i][5]) || 1,
-   sgdAmount: parseFloat(data[i][6]) || 0,
-   categoryId: String(data[i][7] || ''),
-   fileUrl: String(data[i][8] || ''),
-   remarks: String(data[i][9] || ''),
-   isDeleted: String(data[i][10]).toUpperCase() === 'TRUE',
-   paidByNric: String(data[i][11] || ''),
-   isReimbursed: String(data[i][12]).toUpperCase() === 'TRUE'
- });
+const id = String(data[i][0]).trim();
+if (!id || id === "Receipt ID") continue;
+receipts.push({
+  id: id,
+  ts: new Date(data[i][1]).getTime() || 0,
+  uploaderNric: String(data[i][2] || ''),
+  currency: String(data[i][3] || ''),
+  amount: parseFloat(data[i][4]) || 0,
+  rate: parseFloat(data[i][5]) || 1,
+  sgdAmount: parseFloat(data[i][6]) || 0,
+  categoryId: String(data[i][7] || ''),
+  fileUrl: String(data[i][8] || ''),
+  remarks: String(data[i][9] || ''),
+  isDeleted: String(data[i][10]).toUpperCase() === 'TRUE',
+  paidByNric: String(data[i][11] || ''),
+  isReimbursed: String(data[i][12]).toUpperCase() === 'TRUE'
+});
 }
 const res = { status: 'success', receipts };
 putLargeCache(cacheKey, JSON.stringify(res));
@@ -993,9 +942,9 @@ else receiptsFolder = tripFolder.createFolder("Receipts");
 
 let fileUrl = "";
 if (payload.fileData) {
- const blob = Utilities.newBlob(Utilities.base64Decode(payload.fileData), payload.mimeType, payload.fileName);
- const file = receiptsFolder.createFile(blob);
- fileUrl = file.getUrl();
+const blob = Utilities.newBlob(Utilities.base64Decode(payload.fileData), payload.mimeType, payload.fileName);
+const file = receiptsFolder.createFile(blob);
+fileUrl = file.getUrl();
 }
 
 const ss = getDatabase();
@@ -1003,8 +952,8 @@ let sheet = ss.getSheetByName("Receipts");
 const newId = "rec_" + Date.now() + "_" + Math.random().toString(36).substr(2,5);
 
 sheet.appendRow([
- newId, new Date(), payload.uploaderNric, payload.currency, payload.amount, payload.rate, 
- payload.sgdAmount, payload.categoryId, fileUrl, payload.remarks, false, payload.paidByNric || payload.uploaderNric, false
+newId, new Date(), payload.uploaderNric, payload.currency, payload.amount, payload.rate, 
+payload.sgdAmount, payload.categoryId, fileUrl, payload.remarks, false, payload.paidByNric || payload.uploaderNric, false
 ]);
 
 fetchReceipts(true);
@@ -1023,23 +972,23 @@ let sheet = ss.getSheetByName("Receipts");
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
- const id = String(data[i][0]).trim();
- if(id && id !== "Receipt ID") existingMap[id] = i + 1;
+const id = String(data[i][0]).trim();
+if(id && id !== "Receipt ID") existingMap[id] = i + 1;
 }
 
 updates.forEach(u => {
- const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
- const isReim = u.isReimbursed ? 'TRUE' : 'FALSE';
- if (existingMap[u.id]) {
-   const rowIndex = existingMap[u.id];
-   const existingTsVal = new Date(data[rowIndex - 1][1]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
-   if (u.ts > existingTs) {
-     sheet.getRange(rowIndex, 2, 1, 12).setValues([[
-       new Date(u.ts), u.uploaderNric, u.currency, u.amount, u.rate, u.sgdAmount, u.categoryId, u.fileUrl, u.remarks, isDel, u.paidByNric || u.uploaderNric, isReim
-     ]]);
-   }
- }
+const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
+const isReim = u.isReimbursed ? 'TRUE' : 'FALSE';
+if (existingMap[u.id]) {
+  const rowIndex = existingMap[u.id];
+  const existingTsVal = new Date(data[rowIndex - 1][1]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+  if (u.ts > existingTs) {
+    sheet.getRange(rowIndex, 2, 1, 12).setValues([[
+      new Date(u.ts), u.uploaderNric, u.currency, u.amount, u.rate, u.sgdAmount, u.categoryId, u.fileUrl, u.remarks, isDel, u.paidByNric || u.uploaderNric, isReim
+    ]]);
+  }
+}
 });
 
 fetchReceipts(true);
@@ -1084,27 +1033,27 @@ let sheet = ss.getSheetByName("Minutes");
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
- const id = String(data[i][0]).trim();
- if(id && id !== "Note ID") existingMap[id] = i + 1;
+const id = String(data[i][0]).trim();
+if(id && id !== "Note ID") existingMap[id] = i + 1;
 }
 
 updates.forEach(u => {
- const id = u.id;
- const tsDate = new Date(u.ts);
- const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
+const id = u.id;
+const tsDate = new Date(u.ts);
+const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
 
- if (existingMap[id]) {
-   const rowIndex = existingMap[id];
-   const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
-   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
+if (existingMap[id]) {
+  const rowIndex = existingMap[id];
+  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+  const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
-   if (u.ts > existingTs) {
-     sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
-   }
- } else {
-   sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
-   existingMap[id] = sheet.getLastRow();
- }
+  if (u.ts > existingTs) {
+    sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
+  }
+} else {
+  sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
+  existingMap[id] = sheet.getLastRow();
+}
 });
 
 // Write-Through Cache
@@ -1198,9 +1147,9 @@ let folder = (!targetFolderId || targetFolderId === 'root') ? getTripFolder() : 
 const files = []; const folders = [];
 const fileIter = folder.getFiles();
 while(fileIter.hasNext()) {
- const f = fileIter.next(); let mime = f.getMimeType(); let url = f.getUrl(); let isShortcut = false;
- if (mime === 'application/vnd.google-apps.shortcut') { isShortcut = true; try { const tMime = f.getTargetMimeType(); url = tMime === 'application/vnd.google-apps.folder' ? `https://drive.google.com/drive/folders/${f.getTargetId()}` : `https://drive.google.com/open?id=${f.getTargetId()}`; mime = tMime; } catch(e) {} }
- files.push({ id: f.getId(), name: f.getName(), mimeType: mime, url: url, isShortcut: isShortcut });
+const f = fileIter.next(); let mime = f.getMimeType(); let url = f.getUrl(); let isShortcut = false;
+if (mime === 'application/vnd.google-apps.shortcut') { isShortcut = true; try { const tMime = f.getTargetMimeType(); url = tMime === 'application/vnd.google-apps.folder' ? `https://drive.google.com/drive/folders/${f.getTargetId()}` : `https://drive.google.com/open?id=${f.getTargetId()}`; mime = tMime; } catch(e) {} }
+files.push({ id: f.getId(), name: f.getName(), mimeType: mime, url: url, isShortcut: isShortcut });
 }
 const folderIter = folder.getFolders();
 while(folderIter.hasNext()) { const f = folderIter.next(); folders.push({ id: f.getId(), name: f.getName() }); }
@@ -1218,10 +1167,10 @@ function bulkDriveOperation(action, items, targetFid, singleNewName) {
 try {
 let targetFolder = null; if (action === 'copy' || action === 'move') targetFolder = targetFid === 'root' ? getTripFolder() : DriveApp.getFolderById(targetFid);
 for (let i = 0; i < items.length; i++) {
- const item = items[i]; const nameToUse = (items.length === 1 && singleNewName) ? singleNewName : item.name;
- if (action === 'delete') { if (item.isFolder) DriveApp.getFolderById(item.id).setTrashed(true); else DriveApp.getFileById(item.id).setTrashed(true); } 
- else if (action === 'move') { if (item.isFolder) { let folder = DriveApp.getFolderById(item.id); folder.moveTo(targetFolder); if (folder.getName() !== nameToUse) folder.setName(nameToUse); } else { let file = DriveApp.getFileById(item.id); file.moveTo(targetFolder); if (file.getName() !== nameToUse) file.setName(nameToUse); } } 
- else if (action === 'copy') { if (item.isFolder) { let sourceFolder = DriveApp.getFolderById(item.id); let newFolder = targetFolder.createFolder(nameToUse); copyFolderRecursive(sourceFolder, newFolder); } else { let sourceFile = DriveApp.getFileById(item.id); sourceFile.makeCopy(nameToUse, targetFolder); } }
+const item = items[i]; const nameToUse = (items.length === 1 && singleNewName) ? singleNewName : item.name;
+if (action === 'delete') { if (item.isFolder) DriveApp.getFolderById(item.id).setTrashed(true); else DriveApp.getFileById(item.id).setTrashed(true); } 
+else if (action === 'move') { if (item.isFolder) { let folder = DriveApp.getFolderById(item.id); folder.moveTo(targetFolder); if (folder.getName() !== nameToUse) folder.setName(nameToUse); } else { let file = DriveApp.getFileById(item.id); file.moveTo(targetFolder); if (file.getName() !== nameToUse) file.setName(nameToUse); } } 
+else if (action === 'copy') { if (item.isFolder) { let sourceFolder = DriveApp.getFolderById(item.id); let newFolder = targetFolder.createFolder(nameToUse); copyFolderRecursive(sourceFolder, newFolder); } else { let sourceFile = DriveApp.getFileById(item.id); sourceFile.makeCopy(nameToUse, targetFolder); } }
 }
 Utilities.sleep(1500); return getDriveContents(targetFid);
 } catch (e) { return { status: 'error', message: e.message }; }
