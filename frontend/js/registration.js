@@ -81,7 +81,7 @@ const medicalHtml = `
   <div class="medical-div">
     <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-blue-400">Medical</h4>
     <div class="mb-4">
-      <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Medical Conditions</label>
+      <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Medical Conditions and Medications to take note of</label>
       <textarea required class="reg-f-medical w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" rows="2" placeholder="Nil if none"></textarea>
     </div>
   </div>
