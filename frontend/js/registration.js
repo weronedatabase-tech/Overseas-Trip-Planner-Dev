@@ -4,13 +4,20 @@ let lastAddedTraineeName = "";
 let currentCaregiverIdx = null;
 
 async function fetchPublicTrainees() {
-try {
-   const res = await apiCall('getPublicTrainees');
-   if (res.status === 'success' && res.trainees) {
-       publicTrainees = res.trainees;
-   }
-} catch (e) {
-   console.warn("Failed to fetch public trainees");
+let attempts = 0;
+let success = false;
+while(attempts < 3 && !success) {
+    try {
+        const res = await apiCall('getPublicTrainees');
+        if (res.status === 'success' && res.trainees) {
+            publicTrainees = res.trainees;
+            success = true;
+        }
+    } catch (e) {
+        attempts++;
+        console.warn(`Failed to fetch public trainees (Attempt ${attempts})`);
+        if(attempts < 3) await new Promise(r => setTimeout(r, 1500));
+    }
 }
 }
 
@@ -88,10 +95,10 @@ const caregiverHtml = `
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="relative">
           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name <span class="text-red-500">*</span></label>
-          <input required type="text" id="reg-f-related-${idx}" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
+          <input required disabled type="text" id="reg-f-related-${idx}" onclick="showTraineeDropdown(${idx})" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
           <ul id="trainee-dropdown-${idx}" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl mt-1 max-h-48 overflow-y-auto hidden-force custom-scrollbar"></ul>
       </div>
-      <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label><input required type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
+      <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label><input required disabled type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
     </div>
   </div>
 `;
@@ -158,9 +165,13 @@ const medicalDiv = block.querySelector('.medical-div');
 
 if (selectEl.value === 'CAREGIVER') {
   caregiverDiv.classList.remove('hidden-force');
+  const cgInputs = caregiverDiv.querySelectorAll('input');
+  cgInputs.forEach(i => i.disabled = false);
   openCaregiverPopup(idx);
 } else {
   caregiverDiv.classList.add('hidden-force');
+  const cgInputs = caregiverDiv.querySelectorAll('input');
+  cgInputs.forEach(i => i.disabled = true);
   
   if (selectEl.value === 'TRAINEE') {
       const nameInput = block.querySelector('.reg-f-name');
@@ -330,7 +341,11 @@ matches.forEach(t => {
 });
 
 if(html === '') {
-    html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No matches found</li>`;
+    if (query === '') {
+        html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No trainees available. Please add a Trainee first.</li>`;
+    } else {
+        html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No matches found</li>`;
+    }
 }
 
 dd.innerHTML = html;
@@ -413,7 +428,11 @@ matches.forEach(t => {
 });
 
 if(html === '') {
-    html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No matches found</li>`;
+    if (query === '') {
+        html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No trainees available. Please add a Trainee first.</li>`;
+    } else {
+        html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No matches found</li>`;
+    }
 }
 
 dd.innerHTML = html;
