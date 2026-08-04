@@ -13,6 +13,32 @@ try {
 }
 }
 
+function getFirstTraineeName() {
+    const allBlocks = Array.from(document.getElementsByClassName('member-block'));
+    for (let b of allBlocks) {
+        const role = b.querySelector('.reg-f-role').value;
+        if (role === 'TRAINEE') {
+            return b.querySelector('.reg-f-name').value;
+        }
+    }
+    return "";
+}
+
+function syncTraineeName() {
+    const traineeName = getFirstTraineeName();
+    lastAddedTraineeName = traineeName; 
+    const allBlocks = Array.from(document.getElementsByClassName('member-block'));
+    for (let b of allBlocks) {
+        const role = b.querySelector('.reg-f-role').value;
+        if (role === 'CAREGIVER') {
+            const relatedInput = b.querySelector('.reg-f-related');
+            if (relatedInput && relatedInput.dataset.manual !== 'true') {
+                relatedInput.value = traineeName;
+            }
+        }
+    }
+}
+
 function addRegMember() {
 const idx = regMemberCount++;
 let groupOpts = `<option value="">Select...</option>`;
@@ -26,8 +52,8 @@ if (appSettings.projectGroups) {
 const isMain = idx === 0;
 
 const headerBtn = isMain 
-  ? `<div class="absolute top-4 right-4 bg-primary text-white font-bold px-2 py-0.5 text-[10px] rounded border border-blue-800 tracking-wider">MAIN POC</div>` 
-  : `<button type="button" onclick="this.closest('.member-block').remove()" class="absolute top-4 right-4 text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 dark:bg-gray-700 dark:text-red-400 px-2 py-1 rounded transition focus:outline-none">Remove</button>`;
+  ? `` 
+  : `<button type="button" onclick="this.closest('.member-block').remove(); syncTraineeName();" class="absolute top-4 right-4 text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 dark:bg-gray-700 dark:text-red-400 px-2 py-1 rounded transition focus:outline-none">Remove</button>`;
 
 const headerHtml = `
   ${headerBtn}
@@ -36,10 +62,10 @@ const headerHtml = `
 
 const personalInfoHtml = `
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Full Name (As in Passport)</label><input required type="text" class="reg-f-name w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
+    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Full Name (As in Passport)</label><input required type="text" class="reg-f-name w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" oninput="syncTraineeName()"></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Short Name / Nickname</label><input required type="text" class="reg-f-shortname w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Preferred name"></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Email</label><input required type="email" class="reg-f-email w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
-    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Role</label><select required class="reg-f-role w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" onchange="toggleTraineeFields(this, ${idx})"><option value="TRAINEE">Trainee</option><option value="CAREGIVER">Caregiver</option><option value="VOLUNTEER">Volunteer</option></select></div>
+    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Role</label><select required class="reg-f-role w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" onchange="toggleTraineeFields(this, ${idx}); syncTraineeName();"><option value="TRAINEE">Trainee</option><option value="CAREGIVER">Caregiver</option><option value="VOLUNTEER">Volunteer</option></select></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Gender</label><select required class="reg-f-gender w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"><option>Male</option><option>Female</option></select></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Contact Number (8-digit)</label><input required type="tel" pattern="[0-9]{8}" class="reg-f-contact w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Date of Birth</label><input required type="text" id="dob_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('dob_${idx}', 'dob')" class="reg-f-dob w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium text-center cursor-pointer bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
@@ -53,7 +79,7 @@ const caregiverHtml = `
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="relative">
           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name</label>
-          <input required disabled type="text" id="reg-f-related-${idx}" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx})" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
+          <input required disabled type="text" id="reg-f-related-${idx}" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
           <ul id="trainee-dropdown-${idx}" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl mt-1 max-h-48 overflow-y-auto hidden-force custom-scrollbar"></ul>
       </div>
       <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee</label><input required disabled type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
@@ -127,24 +153,12 @@ if (selectEl.value === 'CAREGIVER') {
   cgInputs.forEach(i => i.disabled = false);
   
   const relatedInput = document.getElementById(`reg-f-related-${idx}`);
-  if(relatedInput && lastAddedTraineeName && !relatedInput.value) {
+  if(relatedInput && lastAddedTraineeName && relatedInput.dataset.manual !== 'true') {
       relatedInput.value = lastAddedTraineeName;
   }
 } else {
   caregiverDiv.classList.add('hidden-force');
   cgInputs.forEach(i => i.disabled = true);
-  
-  if (selectEl.value === 'TRAINEE') {
-      const nameInput = block.querySelector('.reg-f-name');
-      if(nameInput) {
-          nameInput.addEventListener('change', (e) => {
-              if(selectEl.value === 'TRAINEE') lastAddedTraineeName = e.target.value.trim();
-          });
-          nameInput.addEventListener('blur', (e) => {
-              if(selectEl.value === 'TRAINEE') lastAddedTraineeName = e.target.value.trim();
-          });
-      }
-  }
 }
 
 const medInputs = medicalDiv.querySelectorAll('input, textarea');
@@ -198,6 +212,7 @@ function selectTraineeDropdown(idx, name) {
 const input = document.getElementById(`reg-f-related-${idx}`);
 if(input) {
    input.value = name;
+   input.dataset.manual = 'true';
    const dd = document.getElementById(`trainee-dropdown-${idx}`);
    if(dd) dd.classList.add('hidden-force');
 }
