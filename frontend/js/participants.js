@@ -345,11 +345,11 @@ function renderRosterTable() {
 let data = [...adminRosterData];
 
 if (rosterSearchQuery) {
-   data = data.filter(p => {
-       return Object.values(p).some(val => 
-           val && val.toString().toLowerCase().includes(rosterSearchQuery)
-       );
-   });
+    const queryParts = rosterSearchQuery.split(/\s+/);
+    data = data.filter(p => {
+        const fullString = Object.values(p).map(v => v ? v.toString().toLowerCase() : '').join(' ');
+        return queryParts.every(part => fullString.includes(part));
+    });
 }
 
 data.sort((a, b) => {

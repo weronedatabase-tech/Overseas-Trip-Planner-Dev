@@ -168,12 +168,10 @@ function renderMedicalTable() {
 let data = [...medicalRosterData];
 
 if (medicalSearchQuery) {
+   const queryParts = medicalSearchQuery.split(/\s+/);
    data = data.filter(p => {
-       return (p.fullName && p.fullName.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.shortName && p.shortName.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.diet && p.diet.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.medical && p.medical.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.otherPoints && p.otherPoints.toLowerCase().includes(medicalSearchQuery));
+       const fullString = ((p.fullName || '') + ' ' + (p.shortName || '') + ' ' + (p.diet || '') + ' ' + (p.medical || '') + ' ' + (p.otherPoints || '')).toLowerCase();
+       return queryParts.every(part => fullString.includes(part));
    });
 }
 

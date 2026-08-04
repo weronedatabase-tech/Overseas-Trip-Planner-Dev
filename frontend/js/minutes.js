@@ -232,11 +232,10 @@ let sorted = Array.from(minutesMap.values())
    .sort((a, b) => b.ts - a.ts); 
    
 if (minutesSearchQuery) {
+   const queryParts = minutesSearchQuery.split(/\s+/);
    sorted = sorted.filter(n => {
-       return (n.content && n.content.toLowerCase().includes(minutesSearchQuery)) ||
-              (n.assignedTo && n.assignedTo.toLowerCase().includes(minutesSearchQuery)) ||
-              (n.date && n.date.toLowerCase().includes(minutesSearchQuery)) ||
-              (n.updatedBy && n.updatedBy.toLowerCase().includes(minutesSearchQuery));
+       const fullString = ((n.content || '') + ' ' + (n.assignedTo || '') + ' ' + (n.date || '') + ' ' + (n.updatedBy || '')).toLowerCase();
+       return queryParts.every(part => fullString.includes(part));
    });
 }
    
@@ -264,10 +263,9 @@ if (note.isDeleted) {
 }
 
 if (minutesSearchQuery) {
-   const matches = (note.content && note.content.toLowerCase().includes(minutesSearchQuery)) ||
-                   (note.assignedTo && note.assignedTo.toLowerCase().includes(minutesSearchQuery)) ||
-                   (note.date && note.date.toLowerCase().includes(minutesSearchQuery)) ||
-                   (note.updatedBy && note.updatedBy.toLowerCase().includes(minutesSearchQuery));
+   const queryParts = minutesSearchQuery.split(/\s+/);
+   const fullString = ((note.content || '') + ' ' + (note.assignedTo || '') + ' ' + (note.date || '') + ' ' + (note.updatedBy || '')).toLowerCase();
+   const matches = queryParts.every(part => fullString.includes(part));
    if (!matches) {
        if (card) card.remove();
        return;
