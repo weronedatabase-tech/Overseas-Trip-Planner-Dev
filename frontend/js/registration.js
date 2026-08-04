@@ -2,9 +2,12 @@ let regMemberCount = 0;
 let publicTrainees = [];
 let lastAddedTraineeName = "";
 let currentCaregiverIdx = null;
+let dropdownLock = 0;
 
 // Global click listener to robustly handle dropdown closing without relying on mobile 'blur' events
 document.addEventListener('click', (e) => {
+    if (Date.now() - dropdownLock < 500) return; // Prevent mobile click-shift glitches
+
     // Hide popup dropdown if clicked outside
     const popupInput = document.getElementById('cgPopupTraineeName');
     const popupDd = document.getElementById('cgPopupTraineeDropdown');
@@ -360,6 +363,7 @@ if(html === '') {
 }
 
 dd.innerHTML = html;
+dropdownLock = Date.now();
 dd.classList.remove('hidden-force');
 }
 
@@ -430,6 +434,7 @@ if(html === '') {
 }
 
 dd.innerHTML = html;
+dropdownLock = Date.now();
 dd.classList.remove('hidden-force');
 }
 
