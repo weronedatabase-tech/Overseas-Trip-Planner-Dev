@@ -201,8 +201,6 @@ popupRel.value = inlineRel || '';
 
 document.getElementById('cgPopupTraineeDropdown').classList.add('hidden-force');
 document.getElementById('caregiverPopupModal').classList.remove('hidden-force');
-
-setTimeout(() => popupName.focus(), 50);
 }
 
 function closeCaregiverPopup() {
@@ -261,7 +259,8 @@ for (let b of allBlocks) {
     const role = b.querySelector('.reg-f-role').value;
     if (role === 'TRAINEE') {
         const tName = b.querySelector('.reg-f-name').value.trim().toLowerCase();
-        if (tName === val) {
+        const tShort = b.querySelector('.reg-f-shortname').value.trim().toLowerCase();
+        if (tName === val || (tShort && tShort === val)) {
             inForm = true;
             break;
         }
@@ -293,10 +292,33 @@ const dd = document.getElementById('cgPopupTraineeDropdown');
 if(!input || !dd) return;
 
 const query = input.value.toLowerCase().trim();
-let matches = publicTrainees;
+
+let localTrainees = [];
+const allBlocks = Array.from(document.getElementsByClassName('member-block'));
+for (let b of allBlocks) {
+    const role = b.querySelector('.reg-f-role').value;
+    if (role === 'TRAINEE') {
+        const tName = b.querySelector('.reg-f-name').value.trim();
+        const tShort = b.querySelector('.reg-f-shortname').value.trim();
+        if (tName) {
+            localTrainees.push({name: tName, shortName: tShort});
+        }
+    }
+}
+
+let allTrainees = [...publicTrainees, ...localTrainees];
+const seen = new Set();
+allTrainees = allTrainees.filter(t => {
+    const k = t.name.toLowerCase();
+    if(seen.has(k)) return false;
+    seen.add(k);
+    return true;
+});
+
+let matches = allTrainees;
 
 if (query) {
-    matches = publicTrainees.filter(t => 
+    matches = allTrainees.filter(t => 
         t.name.toLowerCase().includes(query) || 
         (t.shortName && t.shortName.toLowerCase().includes(query))
     );
@@ -325,7 +347,6 @@ if(input) {
 }
 }
 
-
 function showTraineeDropdown(idx) {
 filterTraineeDropdown(idx);
 }
@@ -353,10 +374,33 @@ const dd = document.getElementById(`trainee-dropdown-${idx}`);
 if(!input || !dd) return;
 
 const query = input.value.toLowerCase().trim();
-let matches = publicTrainees;
+
+let localTrainees = [];
+const allBlocks = Array.from(document.getElementsByClassName('member-block'));
+for (let b of allBlocks) {
+    const role = b.querySelector('.reg-f-role').value;
+    if (role === 'TRAINEE') {
+        const tName = b.querySelector('.reg-f-name').value.trim();
+        const tShort = b.querySelector('.reg-f-shortname').value.trim();
+        if (tName) {
+            localTrainees.push({name: tName, shortName: tShort});
+        }
+    }
+}
+
+let allTrainees = [...publicTrainees, ...localTrainees];
+const seen = new Set();
+allTrainees = allTrainees.filter(t => {
+    const k = t.name.toLowerCase();
+    if(seen.has(k)) return false;
+    seen.add(k);
+    return true;
+});
+
+let matches = allTrainees;
 
 if (query) {
-   matches = publicTrainees.filter(t => 
+   matches = allTrainees.filter(t => 
        t.name.toLowerCase().includes(query) || 
        (t.shortName && t.shortName.toLowerCase().includes(query))
    );
