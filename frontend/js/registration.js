@@ -264,7 +264,10 @@ closeCaregiverPopup();
 function isValidTraineeName(val) {
 if (!val) return false;
 val = val.toLowerCase();
-const inPublic = publicTrainees.some(t => t.name.toLowerCase() === val || (t.shortName && t.shortName.toLowerCase() === val));
+const inPublic = publicTrainees.some(t => 
+    (t.name && t.name.toLowerCase() === val) || 
+    (t.shortName && t.shortName.toLowerCase() === val)
+);
 
 let inForm = false;
 const allBlocks = Array.from(document.getElementsByClassName('member-block'));
@@ -285,10 +288,13 @@ return inPublic || inForm;
 function validateCgPopupTrainee() {
 if (cgPopupTimeout) clearTimeout(cgPopupTimeout);
 cgPopupTimeout = setTimeout(() => {
+   const input = document.getElementById('cgPopupTraineeName');
+   // If the input is still active, this was a spurious mobile blur. Ignore it.
+   if (input && document.activeElement === input) return;
+
    const dd = document.getElementById('cgPopupTraineeDropdown');
    if(dd) dd.classList.add('hidden-force');
 
-   const input = document.getElementById('cgPopupTraineeName');
    if(input && input.value.trim() !== '') {
        const val = input.value.trim();
        if (!isValidTraineeName(val)) {
@@ -324,6 +330,7 @@ for (let b of allBlocks) {
 let allTrainees = [...publicTrainees, ...localTrainees];
 const seen = new Set();
 allTrainees = allTrainees.filter(t => {
+   if(!t.name) return false;
    const k = t.name.toLowerCase();
    if(seen.has(k)) return false;
    seen.add(k);
@@ -334,7 +341,7 @@ let matches = allTrainees;
 
 if (query) {
    matches = allTrainees.filter(t => 
-       t.name.toLowerCase().includes(query) || 
+       (t.name && t.name.toLowerCase().includes(query)) || 
        (t.shortName && t.shortName.toLowerCase().includes(query))
    );
 }
@@ -374,10 +381,13 @@ filterTraineeDropdown(idx);
 function hideTraineeDropdown(idx) {
 if (traineeDropdownTimeouts[idx]) clearTimeout(traineeDropdownTimeouts[idx]);
 traineeDropdownTimeouts[idx] = setTimeout(() => {
+  const input = document.getElementById(`reg-f-related-${idx}`);
+  // If the input is still active, this was a spurious mobile blur. Ignore it.
+  if (input && document.activeElement === input) return;
+
   const dd = document.getElementById(`trainee-dropdown-${idx}`);
   if(dd) dd.classList.add('hidden-force');
 
-  const input = document.getElementById(`reg-f-related-${idx}`);
   if(input && input.value.trim() !== '') {
       const val = input.value.trim();
       if (!isValidTraineeName(val)) {
@@ -413,6 +423,7 @@ for (let b of allBlocks) {
 let allTrainees = [...publicTrainees, ...localTrainees];
 const seen = new Set();
 allTrainees = allTrainees.filter(t => {
+   if(!t.name) return false;
    const k = t.name.toLowerCase();
    if(seen.has(k)) return false;
    seen.add(k);
@@ -423,7 +434,7 @@ let matches = allTrainees;
 
 if (query) {
   matches = allTrainees.filter(t => 
-      t.name.toLowerCase().includes(query) || 
+      (t.name && t.name.toLowerCase().includes(query)) || 
       (t.shortName && t.shortName.toLowerCase().includes(query))
   );
 }
