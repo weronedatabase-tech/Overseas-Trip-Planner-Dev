@@ -1,6 +1,7 @@
 let regMemberCount = 0;
 let publicTrainees = [];
 let lastAddedTraineeName = "";
+let currentCaregiverIdx = null;
 
 async function fetchPublicTrainees() {
 try {
@@ -62,10 +63,18 @@ const headerHtml = `
 
 const personalInfoHtml = `
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div class="md:col-span-2">
+        <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Role <span class="text-red-500">*</span></label>
+        <select required class="reg-f-role w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" onchange="toggleTraineeFields(this, ${idx}); syncTraineeName();">
+            <option value="" disabled selected>Select Role...</option>
+            <option value="TRAINEE">Trainee</option>
+            <option value="CAREGIVER">Caregiver</option>
+            <option value="VOLUNTEER">Volunteer</option>
+        </select>
+    </div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Full Name (As in Passport) <span class="text-red-500">*</span></label><input required type="text" class="reg-f-name w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" oninput="syncTraineeName()"></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Short Name / Nickname <span class="text-red-500">*</span></label><input required type="text" class="reg-f-shortname w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Preferred name"></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Email <span class="text-red-500">*</span></label><input required type="email" class="reg-f-email w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
-    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Role <span class="text-red-500">*</span></label><select required class="reg-f-role w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" onchange="toggleTraineeFields(this, ${idx}); syncTraineeName();"><option value="TRAINEE">Trainee</option><option value="CAREGIVER">Caregiver</option><option value="VOLUNTEER">Volunteer</option></select></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Gender <span class="text-red-500">*</span></label><select required class="reg-f-gender w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"><option>Male</option><option>Female</option></select></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Contact Number (8-digit) <span class="text-red-500">*</span></label><input required type="tel" pattern="[0-9]{8}" class="reg-f-contact w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Date of Birth <span class="text-red-500">*</span></label><input required type="text" id="dob_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('dob_${idx}', 'dob')" class="reg-f-dob w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium text-center cursor-pointer bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
@@ -79,10 +88,10 @@ const caregiverHtml = `
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="relative">
           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name <span class="text-red-500">*</span></label>
-          <input required disabled type="text" id="reg-f-related-${idx}" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
+          <input required type="text" id="reg-f-related-${idx}" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
           <ul id="trainee-dropdown-${idx}" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl mt-1 max-h-48 overflow-y-auto hidden-force custom-scrollbar"></ul>
       </div>
-      <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label><input required disabled type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
+      <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label><input required type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
     </div>
   </div>
 `;
@@ -104,7 +113,7 @@ const medicalHtml = `
     <input required type="text" class="reg-f-diet w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Nil if none">
   </div>
   
-  <div class="medical-div">
+  <div class="medical-div hidden-force">
     <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-blue-400">Medical</h4>
     <div class="mb-4">
       <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Medical Conditions and Medications to take note of <span class="text-red-500">*</span></label>
@@ -147,18 +156,23 @@ const block = selectEl.closest('.member-block');
 const caregiverDiv = block.querySelector('.trainee-div');
 const medicalDiv = block.querySelector('.medical-div');
 
-const cgInputs = caregiverDiv.querySelectorAll('input');
 if (selectEl.value === 'CAREGIVER') {
   caregiverDiv.classList.remove('hidden-force');
-  cgInputs.forEach(i => i.disabled = false);
-  
-  const relatedInput = document.getElementById(`reg-f-related-${idx}`);
-  if(relatedInput && lastAddedTraineeName && relatedInput.dataset.manual !== 'true') {
-      relatedInput.value = lastAddedTraineeName;
-  }
+  openCaregiverPopup(idx);
 } else {
   caregiverDiv.classList.add('hidden-force');
-  cgInputs.forEach(i => i.disabled = true);
+  
+  if (selectEl.value === 'TRAINEE') {
+      const nameInput = block.querySelector('.reg-f-name');
+      if(nameInput) {
+          nameInput.addEventListener('change', (e) => {
+              if(selectEl.value === 'TRAINEE') lastAddedTraineeName = e.target.value.trim();
+          });
+          nameInput.addEventListener('blur', (e) => {
+              if(selectEl.value === 'TRAINEE') lastAddedTraineeName = e.target.value.trim();
+          });
+      }
+  }
 }
 
 const medInputs = medicalDiv.querySelectorAll('input, textarea');
@@ -171,6 +185,147 @@ if (selectEl.value === 'TRAINEE') {
 }
 }
 
+function openCaregiverPopup(idx) {
+currentCaregiverIdx = idx;
+const inlineName = document.getElementById(`reg-f-related-${idx}`).value;
+const block = document.querySelector(`.member-block[data-idx="${idx}"]`);
+const inlineRel = block.querySelector('.reg-f-relation').value;
+
+const defaultName = inlineName || getFirstTraineeName();
+const popupName = document.getElementById('cgPopupTraineeName');
+const popupRel = document.getElementById('cgPopupRelation');
+
+popupName.value = defaultName;
+popupName.dataset.manual = defaultName ? 'false' : 'true';
+popupRel.value = inlineRel || '';
+
+document.getElementById('cgPopupTraineeDropdown').classList.add('hidden-force');
+document.getElementById('caregiverPopupModal').classList.remove('hidden-force');
+
+setTimeout(() => popupName.focus(), 50);
+}
+
+function closeCaregiverPopup() {
+document.getElementById('caregiverPopupModal').classList.add('hidden-force');
+currentCaregiverIdx = null;
+}
+
+function cancelCaregiverPopup() {
+if (currentCaregiverIdx !== null) {
+    const block = document.querySelector(`.member-block[data-idx="${currentCaregiverIdx}"]`);
+    if (block) {
+        const roleSel = block.querySelector('.reg-f-role');
+        roleSel.value = "";
+        toggleTraineeFields(roleSel, currentCaregiverIdx);
+    }
+}
+closeCaregiverPopup();
+}
+
+function confirmCaregiverPopup() {
+const nameVal = document.getElementById('cgPopupTraineeName').value.trim();
+const relVal = document.getElementById('cgPopupRelation').value.trim();
+
+if (!nameVal || !relVal) {
+    alert("Please fill in both fields.");
+    return;
+}
+
+if (!isValidTraineeName(nameVal)) {
+    alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
+    return;
+}
+
+if (currentCaregiverIdx !== null) {
+    const inlineName = document.getElementById(`reg-f-related-${currentCaregiverIdx}`);
+    const block = document.querySelector(`.member-block[data-idx="${currentCaregiverIdx}"]`);
+    const inlineRel = block.querySelector('.reg-f-relation');
+    
+    if (inlineName) {
+        inlineName.value = nameVal;
+        inlineName.dataset.manual = 'false';
+    }
+    if (inlineRel) inlineRel.value = relVal;
+}
+closeCaregiverPopup();
+}
+
+function isValidTraineeName(val) {
+if (!val) return false;
+val = val.toLowerCase();
+const inPublic = publicTrainees.some(t => t.name.toLowerCase() === val || (t.shortName && t.shortName.toLowerCase() === val));
+
+let inForm = false;
+const allBlocks = Array.from(document.getElementsByClassName('member-block'));
+for (let b of allBlocks) {
+    const role = b.querySelector('.reg-f-role').value;
+    if (role === 'TRAINEE') {
+        const tName = b.querySelector('.reg-f-name').value.trim().toLowerCase();
+        if (tName === val) {
+            inForm = true;
+            break;
+        }
+    }
+}
+return inPublic || inForm;
+}
+
+function validateCgPopupTrainee() {
+setTimeout(() => {
+    const dd = document.getElementById('cgPopupTraineeDropdown');
+    if(dd) dd.classList.add('hidden-force');
+
+    const input = document.getElementById('cgPopupTraineeName');
+    if(input && input.value.trim() !== '') {
+        const val = input.value.trim();
+        if (!isValidTraineeName(val)) {
+            alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
+            input.value = '';
+            input.dataset.manual = 'false';
+        }
+    }
+}, 250);
+}
+
+function filterCgPopupDropdown() {
+const input = document.getElementById('cgPopupTraineeName');
+const dd = document.getElementById('cgPopupTraineeDropdown');
+if(!input || !dd) return;
+
+const query = input.value.toLowerCase().trim();
+let matches = publicTrainees;
+
+if (query) {
+    matches = publicTrainees.filter(t => 
+        t.name.toLowerCase().includes(query) || 
+        (t.shortName && t.shortName.toLowerCase().includes(query))
+    );
+}
+
+let html = '';
+matches.forEach(t => {
+    html += `<li class="px-3 py-2 text-sm font-bold text-gray-800 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition border-b border-gray-100 dark:border-gray-700 last:border-0" onmousedown="selectCgPopupTrainee('${t.name.replace(/'/g, "\\'")}')">${t.name} ${t.shortName ? `(${t.shortName})` : ''}</li>`;
+});
+
+if(html === '') {
+    html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No matches found</li>`;
+}
+
+dd.innerHTML = html;
+dd.classList.remove('hidden-force');
+}
+
+function selectCgPopupTrainee(name) {
+const input = document.getElementById('cgPopupTraineeName');
+if(input) {
+    input.value = name;
+    input.dataset.manual = 'true';
+    const dd = document.getElementById('cgPopupTraineeDropdown');
+    if(dd) dd.classList.add('hidden-force');
+}
+}
+
+
 function showTraineeDropdown(idx) {
 filterTraineeDropdown(idx);
 }
@@ -182,24 +337,8 @@ setTimeout(() => {
 
    const input = document.getElementById(`reg-f-related-${idx}`);
    if(input && input.value.trim() !== '') {
-       const val = input.value.trim().toLowerCase();
-       
-       const inPublic = publicTrainees.some(t => t.name.toLowerCase() === val || (t.shortName && t.shortName.toLowerCase() === val));
-       
-       let inForm = false;
-       const allBlocks = Array.from(document.getElementsByClassName('member-block'));
-       for (let b of allBlocks) {
-           const role = b.querySelector('.reg-f-role').value;
-           if (role === 'TRAINEE') {
-               const tName = b.querySelector('.reg-f-name').value.trim().toLowerCase();
-               if (tName === val) {
-                   inForm = true;
-                   break;
-               }
-           }
-       }
-       
-       if (!inPublic && !inForm) {
+       const val = input.value.trim();
+       if (!isValidTraineeName(val)) {
            alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
            input.value = '';
            input.dataset.manual = 'false';

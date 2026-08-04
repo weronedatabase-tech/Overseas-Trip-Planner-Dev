@@ -61,6 +61,31 @@
 </div>
 </div>
 
+<!-- CAREGIVER SETUP POPUP MODAL -->
+<div id="caregiverPopupModal" class="fixed inset-0 bg-black/60 z-[100] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 dark:border-gray-700 animate-slide-up relative">
+    <h3 class="text-lg font-black text-gray-900 dark:text-white mb-1">Caregiver Details</h3>
+    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-5">Please specify the Trainee you are caring for.</p>
+    
+    <div class="space-y-4">
+        <div class="relative">
+            <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name <span class="text-red-500">*</span></label>
+            <input type="text" id="cgPopupTraineeName" onfocus="filterCgPopupDropdown()" oninput="filterCgPopupDropdown(); this.dataset.manual='true';" onblur="validateCgPopupTrainee()" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off" placeholder="Search trainee...">
+            <ul id="cgPopupTraineeDropdown" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl mt-1 max-h-48 overflow-y-auto hidden-force custom-scrollbar"></ul>
+        </div>
+        <div>
+            <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label>
+            <input type="text" id="cgPopupRelation" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Mother, Sibling">
+        </div>
+    </div>
+
+    <div class="mt-6 flex space-x-3">
+        <button type="button" onclick="cancelCaregiverPopup()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition focus:outline-none">Cancel</button>
+        <button type="button" onclick="confirmCaregiverPopup()" class="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold shadow-sm hover:bg-blue-600 transition focus:outline-none">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <script src="backend/config.js"></script>
 <script src="frontend/js/api.js"></script>
 <script src="frontend/js/state.js"></script>
