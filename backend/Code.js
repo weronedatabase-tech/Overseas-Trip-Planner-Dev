@@ -390,14 +390,14 @@ return { status: 'success', family: family };
 }
 
 function updateProfile(member) {
+const props = PropertiesService.getScriptProperties();
+if (props.getProperty('ALLOW_EDITS') !== 'true') return { status: 'error', message: 'Editing locked.' };
+const ss = getDatabase();
+const sheet = ss.getSheetByName("Raw Data"); 
+
 const lock = LockService.getScriptLock();
 try {
 lock.waitLock(15000);
-const props = PropertiesService.getScriptProperties();
-if (props.getProperty('ALLOW_EDITS') !== 'true') return { status: 'error', message: 'Editing locked.' };
-
-const ss = getDatabase();
-const sheet = ss.getSheetByName("Raw Data"); 
 const data = sheet.getDataRange().getValues();
 
 for (let i = 1; i < data.length; i++) {
@@ -449,21 +449,39 @@ return { status: 'success', trainees };
 }
 
 function submitRegistration(payloadArray) {
+if (PropertiesService.getScriptProperties().getProperty('REGISTRATION_OPEN') !== 'true') return { status: 'error', message: 'Registration is closed.' };
+const sheet = getDatabase().getSheetByName("Raw Data"); 
+
 const lock = LockService.getScriptLock();
 try {
 lock.waitLock(15000);
-if (PropertiesService.getScriptProperties().getProperty('REGISTRATION_OPEN') !== 'true') return { status: 'error', message: 'Registration is closed.' };
-const sheet = getDatabase().getSheetByName("Raw Data"); 
+
+const data = sheet.getDataRange().getValues();
+const existingNrics = new Set();
+for (let i = 1; i < data.length; i++) {
+  if (data[i][11]) existingNrics.add(String(data[i][11]).trim().toUpperCase());
+}
+
 const pocNric = payloadArray[0].nric.toUpperCase();
-payloadArray.forEach(p => {
-sheet.appendRow([
-  new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
-  p.nric.toUpperCase(), p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
-  p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric, p.shortName||'', p.medical||''
-]);
-});
-CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
-CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+const newRows = [];
+
+for (let p of payloadArray) {
+  const pNric = String(p.nric).trim().toUpperCase();
+  if (existingNrics.has(pNric)) continue;
+  existingNrics.add(pNric);
+  newRows.push([
+    new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
+    pNric, p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
+    p.emergencyName||'', p.emergencyContact||'', p.emergencyRelation||'', p.sleeping||'', p.otherPoints||'', pocNric, p.shortName||'', p.medical||''
+  ]);
+}
+
+if (newRows.length > 0) {
+  sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, newRows[0].length).setValues(newRows);
+  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
+  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+}
+
 return { status: 'success' };
 } catch(e) { return { status: 'error', message: e.message }; }
 finally { lock.releaseLock(); }
@@ -583,21 +601,22 @@ return res;
 }
 
 function syncPairingUpdates(updates, takenBy) {
-const lock = LockService.getScriptLock();
-try {
-lock.waitLock(15000);
 const ss = getDatabase();
 const sheet = ss.getSheetByName("Pairings");
 if(!sheet) return { status: 'error', message: 'Sheet not found.' };
 
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(15000);
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for(let i=1; i<data.length; i++) {
 const t = String(data[i][0]).trim().toUpperCase();
 const v = String(data[i][1]).trim().toUpperCase();
-if(t && v) existingMap[`${t}_${v}`] = i + 1;
+if(t && v) existingMap[`${t}_${v}`] = i;
 }
 
+let changed = false;
 updates.forEach(u => {
 const t = String(u.traineeNric).trim().toUpperCase();
 const v = String(u.volNric).trim().toUpperCase();
@@ -606,19 +625,24 @@ const ts = u.ts || Date.now();
 const tsDate = new Date(ts);
 const key = `${t}_${v}`;
 
-if(existingMap[key]) {
+if(existingMap[key] !== undefined) {
   const rowIndex = existingMap[key];
-  const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+  const existingTsVal = new Date(data[rowIndex][3]).getTime();
   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
   if (ts > existingTs) {
-    sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy]]);
+    data[rowIndex][2] = status;
+    data[rowIndex][3] = tsDate;
+    data[rowIndex][4] = takenBy;
+    changed = true;
   }
 } else {
-  sheet.appendRow([t, v, status, tsDate, takenBy]);
-  existingMap[key] = sheet.getLastRow();
+  data.push([t, v, status, tsDate, takenBy]);
+  existingMap[key] = data.length - 1;
+  changed = true;
 }
 });
+if (changed) sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
 // Atomic Write-Through Cache
 const matchFn = (x, u) => x.traineeNric === u.traineeNric && x.volNric === u.volNric;
@@ -657,63 +681,73 @@ return res;
 }
 
 function syncRoomUpdates(updates, takenBy) {
-const lock = LockService.getScriptLock();
-try {
-lock.waitLock(15000);
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Rooms");
 
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(15000);
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
 const id = String(data[i][0]).trim();
-if(id && id !== "Room ID") existingMap[id] = i + 1;
+if(id && id !== "Room ID") existingMap[id] = i;
 }
 
+let dataChanged = false;
 updates.forEach(u => {
 const tsDate = new Date(u.ts);
 const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
 const occStr = JSON.stringify(u.occupants || []);
 
-if (existingMap[u.id]) {
+if (existingMap[u.id] !== undefined) {
   const rowIndex = existingMap[u.id];
-  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+  const existingTsVal = new Date(data[rowIndex][4]).getTime();
   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
   if (u.ts > existingTs) {
-     sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.name, u.capacity, occStr, tsDate, takenBy, isDel]]);
+     data[rowIndex][1] = u.name;
+     data[rowIndex][2] = u.capacity;
+     data[rowIndex][3] = occStr;
+     data[rowIndex][4] = tsDate;
+     data[rowIndex][5] = takenBy;
+     data[rowIndex][6] = isDel;
+     dataChanged = true;
   }
 } else {
-  sheet.appendRow([u.id, u.name, u.capacity, occStr, tsDate, takenBy, isDel]);
-  existingMap[u.id] = sheet.getLastRow();
+  data.push([u.id, u.name, u.capacity, occStr, tsDate, takenBy, isDel]);
+  existingMap[u.id] = data.length - 1;
+  dataChanged = true;
 }
 });
 
-// Global Sweep
-SpreadsheetApp.flush();
-const freshData = sheet.getDataRange().getValues();
+// Global Sweep directly on memory array `data`
 const roomsList = [];
-for(let i=1; i<freshData.length; i++) {
-const id = String(freshData[i][0]).trim();
-if(id && String(freshData[i][6]).toUpperCase() !== 'TRUE') {
+for(let i=1; i<data.length; i++) {
+const id = String(data[i][0]).trim();
+if(id && String(data[i][6]).toUpperCase() !== 'TRUE') {
   let occ = [];
-  try { occ = JSON.parse(freshData[i][3] || '[]'); } catch(e){}
-  roomsList.push({ rowIdx: i + 1, id: id, occupants: occ, ts: new Date(freshData[i][4]).getTime() || 0 });
+  try { occ = JSON.parse(data[i][3] || '[]'); } catch(e){}
+  roomsList.push({ rowIdx: i, id: id, occupants: occ, ts: new Date(data[i][4]).getTime() || 0 });
 }
 }
-
 roomsList.sort((a,b) => b.ts - a.ts);
 const seenNrics = new Set();
-
 roomsList.forEach(r => {
 const newOcc = [];
-let changed = false;
+let occChanged = false;
 r.occupants.forEach(n => {
   if(!seenNrics.has(n)) { seenNrics.add(n); newOcc.push(n); } 
-  else changed = true;
+  else occChanged = true;
 });
-if(changed) sheet.getRange(r.rowIdx, 4, 1, 2).setValues([[JSON.stringify(newOcc), new Date()]]);
+if(occChanged) {
+   data[r.rowIdx][3] = JSON.stringify(newOcc);
+   data[r.rowIdx][4] = new Date();
+   dataChanged = true;
+}
 });
+
+if(dataChanged) sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
 // Atomic Write-Through Cache
 fetchRoomsOnly(true);
@@ -756,40 +790,46 @@ return res;
 }
 
 function syncAttendanceUpdate(juncture, updates, takenBy) {
-const lock = LockService.getScriptLock();
-try {
-lock.waitLock(15000);
 const ss = getDatabase();
 const sheet = ss.getSheetByName("Attendance");
 if(!sheet) return { status: 'error', message: 'Sheet not found.' };
 
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(15000);
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
 if (data[i][0] === juncture) {
-  existingMap[String(data[i][1]).trim().toUpperCase()] = i + 1; 
+  existingMap[String(data[i][1]).trim().toUpperCase()] = i; 
 }
 }
 
+let dataChanged = false;
 updates.forEach(u => {
 const nric = String(u.nric).trim().toUpperCase();
 const status = u.status ? 'true' : 'false';
 const ts = u.ts || Date.now();
 const tsDate = new Date(ts);
 
-if (existingMap[nric]) {
+if (existingMap[nric] !== undefined) {
   const rowIndex = existingMap[nric];
-  const existingTsVal = new Date(data[rowIndex - 1][3]).getTime();
+  const existingTsVal = new Date(data[rowIndex][3]).getTime();
   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
   if (ts > existingTs) {
-    sheet.getRange(rowIndex, 3, 1, 3).setValues([[status, tsDate, takenBy || 'System']]);
+    data[rowIndex][2] = status;
+    data[rowIndex][3] = tsDate;
+    data[rowIndex][4] = takenBy || 'System';
+    dataChanged = true;
   }
 } else {
-  sheet.appendRow([juncture, nric, status, tsDate, takenBy || 'System']);
-  existingMap[nric] = sheet.getLastRow();
+  data.push([juncture, nric, status, tsDate, takenBy || 'System']);
+  existingMap[nric] = data.length - 1;
+  dataChanged = true;
 }
 });
+if (dataChanged) sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
 // Write-Through Cache
 const cacheKey = getCacheKey('ATTENDANCE_' + juncture);
@@ -849,11 +889,12 @@ return res;
 }
 
 function saveFinance(payload) {
+const ss = getDatabase();
+let sheet = ss.getSheetByName("Finance Options");
+
 const lock = LockService.getScriptLock();
 try {
 lock.waitLock(15000);
-const ss = getDatabase();
-let sheet = ss.getSheetByName("Finance Options");
 
 let existingStr = sheet.getRange(2, 1).getValue();
 let existingData = { options: [], config: {} };
@@ -930,15 +971,17 @@ return res;
 }
 
 function uploadReceipt(payload) {
-const lock = LockService.getScriptLock();
-try {
-lock.waitLock(15000);
+const ss = getDatabase();
+let sheet = ss.getSheetByName("Receipts");
 
 const tripFolder = getTripFolder();
 let receiptsFolder;
 const folders = tripFolder.getFoldersByName("Receipts");
 if (folders.hasNext()) receiptsFolder = folders.next();
-else receiptsFolder = tripFolder.createFolder("Receipts");
+else {
+  try { receiptsFolder = tripFolder.createFolder("Receipts"); }
+  catch(e) { receiptsFolder = tripFolder.getFoldersByName("Receipts").next(); }
+}
 
 let fileUrl = "";
 if (payload.fileData) {
@@ -947,10 +990,11 @@ const file = receiptsFolder.createFile(blob);
 fileUrl = file.getUrl();
 }
 
-const ss = getDatabase();
-let sheet = ss.getSheetByName("Receipts");
 const newId = "rec_" + Date.now() + "_" + Math.random().toString(36).substr(2,5);
 
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(15000);
 sheet.appendRow([
 newId, new Date(), payload.uploaderNric, payload.currency, payload.amount, payload.rate, 
 payload.sgdAmount, payload.categoryId, fileUrl, payload.remarks, false, payload.paidByNric || payload.uploaderNric, false
@@ -963,33 +1007,45 @@ finally { lock.releaseLock(); }
 }
 
 function syncReceipts(updates) {
-const lock = LockService.getScriptLock();
-try {
-lock.waitLock(15000);
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Receipts");
 
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(15000);
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
 const id = String(data[i][0]).trim();
-if(id && id !== "Receipt ID") existingMap[id] = i + 1;
+if(id && id !== "Receipt ID") existingMap[id] = i;
 }
 
+let dataChanged = false;
 updates.forEach(u => {
 const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
 const isReim = u.isReimbursed ? 'TRUE' : 'FALSE';
-if (existingMap[u.id]) {
+if (existingMap[u.id] !== undefined) {
   const rowIndex = existingMap[u.id];
-  const existingTsVal = new Date(data[rowIndex - 1][1]).getTime();
+  const existingTsVal = new Date(data[rowIndex][1]).getTime();
   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
   if (u.ts > existingTs) {
-    sheet.getRange(rowIndex, 2, 1, 12).setValues([[
-      new Date(u.ts), u.uploaderNric, u.currency, u.amount, u.rate, u.sgdAmount, u.categoryId, u.fileUrl, u.remarks, isDel, u.paidByNric || u.uploaderNric, isReim
-    ]]);
+    data[rowIndex][1] = new Date(u.ts);
+    data[rowIndex][2] = u.uploaderNric;
+    data[rowIndex][3] = u.currency;
+    data[rowIndex][4] = u.amount;
+    data[rowIndex][5] = u.rate;
+    data[rowIndex][6] = u.sgdAmount;
+    data[rowIndex][7] = u.categoryId;
+    data[rowIndex][8] = u.fileUrl;
+    data[rowIndex][9] = u.remarks;
+    data[rowIndex][10] = isDel;
+    data[rowIndex][11] = u.paidByNric || u.uploaderNric;
+    data[rowIndex][12] = isReim;
+    dataChanged = true;
   }
 }
 });
+if(dataChanged) sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
 fetchReceipts(true);
 return fetchReceipts();
@@ -1024,37 +1080,46 @@ return res;
 }
 
 function syncMinutes(updates, takenBy) {
-const lock = LockService.getScriptLock();
-try {
-lock.waitLock(15000);
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Minutes");
 
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(15000);
 const data = sheet.getDataRange().getValues();
 const existingMap = {};
 for (let i = 1; i < data.length; i++) {
 const id = String(data[i][0]).trim();
-if(id && id !== "Note ID") existingMap[id] = i + 1;
+if(id && id !== "Note ID") existingMap[id] = i;
 }
 
+let dataChanged = false;
 updates.forEach(u => {
 const id = u.id;
 const tsDate = new Date(u.ts);
 const isDel = u.isDeleted ? 'TRUE' : 'FALSE';
 
-if (existingMap[id]) {
+if (existingMap[id] !== undefined) {
   const rowIndex = existingMap[id];
-  const existingTsVal = new Date(data[rowIndex - 1][4]).getTime();
+  const existingTsVal = new Date(data[rowIndex][4]).getTime();
   const existingTs = isNaN(existingTsVal) ? 0 : existingTsVal;
 
   if (u.ts > existingTs) {
-    sheet.getRange(rowIndex, 2, 1, 6).setValues([[u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]]);
+    data[rowIndex][1] = u.date;
+    data[rowIndex][2] = u.content;
+    data[rowIndex][3] = u.assignedTo;
+    data[rowIndex][4] = tsDate;
+    data[rowIndex][5] = u.updatedBy || takenBy;
+    data[rowIndex][6] = isDel;
+    dataChanged = true;
   }
 } else {
-  sheet.appendRow([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
-  existingMap[id] = sheet.getLastRow();
+  data.push([id, u.date, u.content, u.assignedTo, tsDate, u.updatedBy || takenBy, isDel]);
+  existingMap[id] = data.length - 1;
+  dataChanged = true;
 }
 });
+if(dataChanged) sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
 // Write-Through Cache
 const matchFn = (x, u) => x.id === u.id;
