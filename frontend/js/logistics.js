@@ -1021,10 +1021,9 @@ let targetArr = isSourceVol ? trainees : vols;
 
 const query = document.getElementById('pairingSearchInput') ? document.getElementById('pairingSearchInput').value.toLowerCase().trim() : '';
 if (query) {
-    const queryParts = query.split(/\s+/);
     const matchFn = (p) => {
-        const fullString = ((p.displayName || p.name || '') + ' ' + (p.nric || '') + ' ' + (p.group || '')).toLowerCase();
-        return queryParts.every(part => fullString.includes(part));
+        const dName = (p.displayName || p.name).toLowerCase();
+        return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
     };
     sourceArr = sourceArr.filter(matchFn);
     targetArr = targetArr.filter(matchFn);
@@ -1073,10 +1072,9 @@ const unassignedArr = globalLogistics.participants.filter(p => !allNricsInRooms.
 
 let filteredUnassigned = unassignedArr;
 if (query) {
-    const queryParts = query.split(/\s+/);
     filteredUnassigned = unassignedArr.filter(p => {
-        const fullString = ((p.displayName || p.name || '') + ' ' + (p.nric || '') + ' ' + (p.group || '')).toLowerCase();
-        return queryParts.every(part => fullString.includes(part));
+        const dName = (p.displayName || p.name).toLowerCase();
+        return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
     });
 }
 
@@ -1275,15 +1273,11 @@ document.getElementById('sheetListContainer').innerHTML = html || `<p class="tex
 }
 
 function filterBottomSheet() {
-const query = document.getElementById('sheetSearchInput').value.toLowerCase().trim();
-const queryParts = query ? query.split(/\s+/) : [];
+const query = document.getElementById('sheetSearchInput').value.toLowerCase();
 const items = document.querySelectorAll('.sheet-list-item');
 items.forEach(item => {
-    if (queryParts.length === 0 || queryParts.every(part => item.dataset.name.includes(part))) {
-        item.classList.remove('hidden-force');
-    } else {
-        item.classList.add('hidden-force');
-    }
+    if (item.dataset.name.includes(query)) item.classList.remove('hidden-force');
+    else item.classList.add('hidden-force');
 });
 }
 

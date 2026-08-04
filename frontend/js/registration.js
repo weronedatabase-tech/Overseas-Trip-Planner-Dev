@@ -343,11 +343,10 @@ allTrainees = allTrainees.filter(t => {
 let matches = allTrainees;
 
 if (query) {
-    const queryParts = query.split(/\s+/);
-    matches = allTrainees.filter(t => {
-        const fullString = ((t.name || '') + ' ' + (t.shortName || '')).toLowerCase();
-        return queryParts.every(part => fullString.includes(part));
-    });
+   matches = allTrainees.filter(t => 
+       (t.name && t.name.toLowerCase().includes(query)) || 
+       (t.shortName && t.shortName.toLowerCase().includes(query))
+   );
 }
 
 let html = '';
@@ -415,11 +414,10 @@ allTrainees = allTrainees.filter(t => {
 let matches = allTrainees;
 
 if (query) {
-    const queryParts = query.split(/\s+/);
-    matches = allTrainees.filter(t => {
-        const fullString = ((t.name || '') + ' ' + (t.shortName || '')).toLowerCase();
-        return queryParts.every(part => fullString.includes(part));
-    });
+  matches = allTrainees.filter(t => 
+      (t.name && t.name.toLowerCase().includes(query)) || 
+      (t.shortName && t.shortName.toLowerCase().includes(query))
+  );
 }
 
 let html = '';

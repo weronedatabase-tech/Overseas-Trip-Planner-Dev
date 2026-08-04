@@ -1029,10 +1029,9 @@ function processFeeCard(poc, members) {
 
     let match = true;
     if (finSearchQuery) {
-        const queryParts = finSearchQuery.split(/\s+/);
         match = members.some(m => {
-            const fullString = ((m.shortName || '') + ' ' + (m.name || '') + ' ' + (m.nric || '')).toLowerCase();
-            return queryParts.every(part => fullString.includes(part));
+            const dName = (m.shortName || m.name).toLowerCase();
+            return dName.includes(finSearchQuery) || m.nric.toLowerCase().includes(finSearchQuery);
         });
     }
 
