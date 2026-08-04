@@ -2,8 +2,30 @@ let regMemberCount = 0;
 let publicTrainees = [];
 let lastAddedTraineeName = "";
 let currentCaregiverIdx = null;
-let cgPopupTimeout = null;
-let traineeDropdownTimeouts = {};
+
+// Global click listener to robustly handle dropdown closing without relying on mobile 'blur' events
+document.addEventListener('click', (e) => {
+    // Hide popup dropdown if clicked outside
+    const popupInput = document.getElementById('cgPopupTraineeName');
+    const popupDd = document.getElementById('cgPopupTraineeDropdown');
+    if (popupDd && !popupDd.classList.contains('hidden-force')) {
+        if (e.target !== popupInput && !popupDd.contains(e.target)) {
+            popupDd.classList.add('hidden-force');
+        }
+    }
+
+    // Hide inline dropdowns if clicked outside
+    const allInlineDds = document.querySelectorAll('ul[id^="trainee-dropdown-"]');
+    allInlineDds.forEach(dd => {
+        if (!dd.classList.contains('hidden-force')) {
+            const inputId = dd.id.replace('trainee-dropdown-', 'reg-f-related-');
+            const input = document.getElementById(inputId);
+            if (e.target !== input && !dd.contains(e.target)) {
+                dd.classList.add('hidden-force');
+            }
+        }
+    });
+});
 
 async function fetchPublicTrainees() {
 let attempts = 0;
@@ -97,7 +119,7 @@ const caregiverHtml = `
    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
      <div class="relative">
          <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name <span class="text-red-500">*</span></label>
-         <input required disabled type="text" id="reg-f-related-${idx}" onclick="showTraineeDropdown(${idx})" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
+         <input required disabled type="text" id="reg-f-related-${idx}" onclick="showTraineeDropdown(${idx})" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off" placeholder="Search trainee...">
          <ul id="trainee-dropdown-${idx}" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl mt-1 max-h-48 overflow-y-auto hidden-force custom-scrollbar"></ul>
      </div>
      <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label><input required disabled type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
@@ -285,29 +307,7 @@ for (let b of allBlocks) {
 return inPublic || inForm;
 }
 
-function validateCgPopupTrainee() {
-if (cgPopupTimeout) clearTimeout(cgPopupTimeout);
-cgPopupTimeout = setTimeout(() => {
-   const input = document.getElementById('cgPopupTraineeName');
-   // If the input is still active, this was a spurious mobile blur. Ignore it.
-   if (input && document.activeElement === input) return;
-
-   const dd = document.getElementById('cgPopupTraineeDropdown');
-   if(dd) dd.classList.add('hidden-force');
-
-   if(input && input.value.trim() !== '') {
-       const val = input.value.trim();
-       if (!isValidTraineeName(val)) {
-           alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
-           input.value = '';
-           input.dataset.manual = 'false';
-       }
-   }
-}, 250);
-}
-
 function filterCgPopupDropdown() {
-if (cgPopupTimeout) clearTimeout(cgPopupTimeout);
 const input = document.getElementById('cgPopupTraineeName');
 const dd = document.getElementById('cgPopupTraineeDropdown');
 if(!input || !dd) return;
@@ -373,34 +373,11 @@ if(input) {
 }
 }
 
-
 function showTraineeDropdown(idx) {
 filterTraineeDropdown(idx);
 }
 
-function hideTraineeDropdown(idx) {
-if (traineeDropdownTimeouts[idx]) clearTimeout(traineeDropdownTimeouts[idx]);
-traineeDropdownTimeouts[idx] = setTimeout(() => {
-  const input = document.getElementById(`reg-f-related-${idx}`);
-  // If the input is still active, this was a spurious mobile blur. Ignore it.
-  if (input && document.activeElement === input) return;
-
-  const dd = document.getElementById(`trainee-dropdown-${idx}`);
-  if(dd) dd.classList.add('hidden-force');
-
-  if(input && input.value.trim() !== '') {
-      const val = input.value.trim();
-      if (!isValidTraineeName(val)) {
-          alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
-          input.value = '';
-          input.dataset.manual = 'false';
-      }
-  }
-}, 250);
-}
-
 function filterTraineeDropdown(idx) {
-if (traineeDropdownTimeouts[idx]) clearTimeout(traineeDropdownTimeouts[idx]);
 const input = document.getElementById(`reg-f-related-${idx}`);
 const dd = document.getElementById(`trainee-dropdown-${idx}`);
 if(!input || !dd) return;
@@ -472,17 +449,27 @@ let blocks = document.getElementsByClassName('member-block');
 
 for (let i = 0; i < blocks.length; i++) {
  let b = blocks[i];
+ const role = b.querySelector('.reg-f-role').value;
+ const relatedTrainee = b.querySelector('.reg-f-related') ? b.querySelector('.reg-f-related').value.trim() : '';
+
+ if (role === 'CAREGIVER') {
+     if (!isValidTraineeName(relatedTrainee)) {
+         alert(`Person ${i + 1}: Pls add/register the Trainee first before adding yourself as the Caregiver.`);
+         return;
+     }
+ }
+
  finalData.push({
    fullName: b.querySelector('.reg-f-name').value,
    shortName: b.querySelector('.reg-f-shortname').value,
    email: b.querySelector('.reg-f-email').value, 
-   role: b.querySelector('.reg-f-role').value, 
+   role: role, 
    gender: b.querySelector('.reg-f-gender').value,
    contact: b.querySelector('.reg-f-contact').value, 
    dob: b.querySelector('.reg-f-dob').value, 
    group: b.querySelector('.reg-f-group').value, 
    address: b.querySelector('.reg-f-address').value,
-   relatedTrainee: b.querySelector('.reg-f-related') ? b.querySelector('.reg-f-related').value : '', 
+   relatedTrainee: relatedTrainee, 
    relationship: b.querySelector('.reg-f-relation') ? b.querySelector('.reg-f-relation').value : '', 
    nric: b.querySelector('.reg-f-nric').value.toUpperCase(), 
    nationality: b.querySelector('.reg-f-nat').value,
