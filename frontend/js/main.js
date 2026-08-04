@@ -235,25 +235,41 @@ if (cachedSettings) {
  } catch(e) {}
 }
 
-// 2. Background Network Revalidation
+// 2. Background Network Revalidation (With cold-start retries)
+let config = null;
+let attempts = 0;
+
+while(attempts < 3 && !config) {
+   try {
+       config = await apiCall('getSettings');
+   } catch(e) {
+       attempts++;
+       console.warn(`Hydration attempt ${attempts} failed:`, e.message);
+       if(attempts < 3) await new Promise(res => setTimeout(res, 1500));
+   }
+}
+
 try {
- const config = await apiCall('getSettings');
- appSettings = config;
- localStorage.setItem('appSettings', JSON.stringify(appSettings));
- 
- applyHydrationDOMUpdates();
- 
- if (!isHydrated) {
-   isHydrated = true;
-   if(window.initPage) window.initPage();
- } else if (window.location.pathname.endsWith('settings.html') && typeof buildSettingsUI === 'function') {
-   buildSettingsUI();
- }
+   if (config) {
+       appSettings = config;
+       localStorage.setItem('appSettings', JSON.stringify(appSettings));
+       applyHydrationDOMUpdates();
+
+       if (!isHydrated) {
+           isHydrated = true;
+           if(window.initPage) window.initPage();
+       } else if (window.location.pathname.endsWith('settings.html') && typeof buildSettingsUI === 'function') {
+           buildSettingsUI();
+       }
+   } else if (!cachedSettings) {
+       // Critical failure on first load without cache
+       showToast("Server connection delayed. Please refresh the page.", true);
+   }
 } catch (e) {
- console.warn("Background hydration failed", e);
+   console.warn("Background hydration processing failed", e);
 } finally {
- const viewLoading = document.getElementById('viewLoading');
- if(viewLoading) viewLoading.classList.add('hidden-force');
+   const viewLoading = document.getElementById('viewLoading');
+   if(viewLoading) viewLoading.classList.add('hidden-force');
 }
 }
 
