@@ -300,10 +300,6 @@ document.removeEventListener('touchend', onMouseUp);
 
 let draggedColId = null;
 window.onColDragStart = function(e, colId) {
-if (resizingCol) {
-    e.preventDefault();
-    return;
-}
 draggedColId = colId;
 e.dataTransfer.effectAllowed = "move";
 e.target.classList.add('opacity-50');
