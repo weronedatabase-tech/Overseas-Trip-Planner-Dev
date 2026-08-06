@@ -185,8 +185,7 @@ case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, 
 case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
 case 'saveTripSettings': result = saveTripSettings(data.title, data.year, data.start, data.end); break;
 case 'fetchAdminRoster': result = fetchAdminRoster(); break;
-case 'adminUpdateParticipant': result = updateProfile(data.member, true); break;
-case 'deleteParticipant': result = deleteParticipant(data.nric); break;
+case 'getParticipantSummary': result = getParticipantSummary(data.nric); break;
 case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
 case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
 case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
@@ -390,9 +389,9 @@ family.sort((a, b) => {
 return { status: 'success', family: family };
 }
 
-function updateProfile(member, isAdmin = false) {
+function updateProfile(member) {
 const props = PropertiesService.getScriptProperties();
-if (!isAdmin && props.getProperty('ALLOW_EDITS') !== 'true') return { status: 'error', message: 'Editing locked.' };
+if (props.getProperty('ALLOW_EDITS') !== 'true') return { status: 'error', message: 'Editing locked.' };
 const ss = getDatabase();
 const sheet = ss.getSheetByName("Raw Data"); 
 
@@ -1266,43 +1265,4 @@ types.forEach(t => { keys.push(t + "_" + dbId); keys.push(t + "_" + dbId + "_cou
 cache.removeAll(keys);
 } catch(e) {}
 return { status: 'success' };
-}
-function deleteParticipant(nric) {
-  const ss = getDatabase();
-  const sheet = ss.getSheetByName("Raw Data");
-  let archiveSheet = ss.getSheetByName("Archived Participants");
-  
-  if (!archiveSheet) {
-    archiveSheet = ss.insertSheet("Archived Participants");
-    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    archiveSheet.appendRow(headers);
-  }
-  
-  const lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(15000);
-    const data = sheet.getDataRange().getValues();
-    
-    let rowIndex = -1;
-    let rowData = null;
-    for (let i = 1; i < data.length; i++) {
-      if (String(data[i][11]).trim().toUpperCase() === String(nric || '').trim().toUpperCase()) {
-        rowIndex = i + 1;
-        rowData = data[i];
-        break;
-      }
-    }
-    
-    if (rowIndex === -1) return { status: 'error', message: 'Participant not found.' };
-    
-    archiveSheet.appendRow(rowData);
-    sheet.deleteRow(rowIndex);
-    
-    CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
-    return { status: 'success' };
-  } catch(e) {
-    return { status: 'error', message: e.message };
-  } finally {
-    lock.releaseLock();
-  }
 }
