@@ -56,3 +56,10 @@ background: #18181b; background-image: linear-gradient(to right, #18181b 0%, #27
 input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], select, textarea { transition: all 0.2s ease-in-out; }
 .hide-spinners::-webkit-outer-spin-button, .hide-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .hide-spinners { -moz-appearance: textfield; }
+[data-nric] {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
