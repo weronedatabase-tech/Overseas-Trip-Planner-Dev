@@ -977,7 +977,7 @@ document.getElementById('tab-logistics').innerHTML = `
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
             <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                 <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Assigned Groups</span>
-                <button onclick="addGroupList()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-plus mr-1"></i>Add</button>
+                <button onclick="openManageGroupsSheet()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-cog mr-1"></i>Manage</button>
             </div>
             <div id="groupListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
         </div>
@@ -1017,7 +1017,7 @@ document.getElementById('tab-logistics').innerHTML = `
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
             <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                 <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Assigned Buses</span>
-                <button onclick="addBusList()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-plus mr-1"></i>Add</button>
+                <button onclick="openManageBusesSheet()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-cog mr-1"></i>Manage</button>
             </div>
             <div id="busListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
         </div>
@@ -1889,7 +1889,7 @@ function renderGroupBusOptions() {
     let html = `<div class="flex flex-col gap-2">`;
     
     // Unassign option
-    if (!query || "unassign".includes(query)) {
+    if (activeAssignNric && (!query || "unassign".includes(query))) {
         html += `
         <div onclick="selectGroupBusOption('')" class="sheet-list-item cursor-pointer p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition" data-name="unassign">
             <span class="font-bold text-gray-700 dark:text-gray-200 text-sm">Unassigned</span>
@@ -1978,19 +1978,32 @@ function removeGroupBusFromPopup(val) {
     renderGroupBusOptions();
 }
 
-function addGroupList() {
+
+function openManageGroupsSheet() {
+    activeAssignNric = null; // No assignment
     activeAssignType = 'group';
-    addGroupBusFromPopup();
+    document.getElementById('sheetTitle').innerHTML = `Manage <span class="text-primary">Groups</span>`;
+    const searchInput = document.getElementById('sheetSearchInput');
+    if(searchInput) searchInput.value = '';
+    renderGroupBusOptions();
+    document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
 }
+
+function openManageBusesSheet() {
+    activeAssignNric = null; // No assignment
+    activeAssignType = 'bus';
+    document.getElementById('sheetTitle').innerHTML = `Manage <span class="text-primary">Buses</span>`;
+    const searchInput = document.getElementById('sheetSearchInput');
+    if(searchInput) searchInput.value = '';
+    renderGroupBusOptions();
+    document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
+}
+
+
 
 function removeGroupList(gName) {
     activeAssignType = 'group';
     removeGroupBusFromPopup(gName);
-}
-
-function addBusList() {
-    activeAssignType = 'bus';
-    addGroupBusFromPopup();
 }
 
 function removeBusList(bName) {
