@@ -975,6 +975,10 @@ document.getElementById('tab-logistics').innerHTML = `
             <div id="groupUnassignedPool" class="dnd-group-dropzone space-y-1.5 flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar pb-6"></div>
         </div>
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
+            <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Assigned Groups</span>
+                <button onclick="addGroupList()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-plus mr-1"></i>Add</button>
+            </div>
             <div id="groupListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
         </div>
     </div>
@@ -1011,6 +1015,10 @@ document.getElementById('tab-logistics').innerHTML = `
             <div id="busUnassignedPool" class="dnd-bus-dropzone space-y-1.5 flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar pb-6"></div>
         </div>
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
+            <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Assigned Buses</span>
+                <button onclick="addBusList()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-plus mr-1"></i>Add</button>
+            </div>
             <div id="busListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
         </div>
     </div>
@@ -1023,8 +1031,8 @@ let pendingGroupUpdates = new Map();
 let pendingBusUpdates = new Map();
 let isGroupSyncing = false;
 let isBusSyncing = false;
-let activeGroupsList = ["1", "2", "3", "4", "5", "6", "7"];
-let activeBusesList = ["1", "2", "3", "4", "5"];
+let activeGroupsList = JSON.parse(localStorage.getItem('activeGroupsList')) || [];
+let activeBusesList = JSON.parse(localStorage.getItem('activeBusesList')) || [];
 
 function renderGroups() {
     if(!globalLogistics || !document.getElementById('groupListContainer')) return;
@@ -1075,7 +1083,10 @@ function renderGroups() {
         grpHtml += `
         <div class="dnd-group-dropzone bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm transition-colors" data-group="${gName}">
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
-                <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Group ${gName}</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Group ${gName}</span>
+                    <button onclick="removeGroupList('${gName}')" class="text-gray-400 hover:text-red-500 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                </div>
                 <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${groupMap[gName].length} Pax</span>
             </div>
             <div class="flex flex-col gap-1 min-h-[40px] relative pointer-events-auto z-10 w-full rounded border border-transparent transition-all">
@@ -1088,12 +1099,13 @@ function renderGroups() {
 }
 
 function generateGroupCardHtml(item) {
+    const dynColor = getProjectColor(item.group);
     const dName = item.displayName || item.name;
     const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
     const roleShort = item.role.substring(0,3).toUpperCase();
     return `
-    <div class="dnd-group-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}">
-        <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-1 rounded shadow-sm border w-full flex items-start justify-between gap-1 border-gray-300 dark:border-gray-600">
+    <div class="dnd-group-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" onclick="openGroupAssignSheet('${item.nric}')">
+        <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-1 rounded shadow-sm border ${dynColor} w-full flex items-start justify-between gap-1">
             <span class="break-words whitespace-normal text-left flex-1">${dName}</span>
         </div>
         <span class="text-[7px] md:text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1.5 py-0.5 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0 self-start w-max">${roleShort}</span>
@@ -1150,7 +1162,10 @@ function renderBuses() {
         busHtml += `
         <div class="dnd-bus-dropzone bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm transition-colors" data-bus="${bName}">
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
-                <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Bus ${bName}</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Bus ${bName}</span>
+                    <button onclick="removeBusList('${bName}')" class="text-gray-400 hover:text-red-500 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                </div>
                 <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${busMap[bName].length} Pax</span>
             </div>
             <div class="flex flex-col gap-1 min-h-[40px] relative pointer-events-auto z-10 w-full rounded border border-transparent transition-all">
@@ -1168,7 +1183,7 @@ function generateBusCardHtml(item) {
     const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
     const roleShort = item.role.substring(0,3).toUpperCase();
     return `
-    <div class="dnd-bus-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}">
+    <div class="dnd-bus-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" onclick="openBusAssignSheet('${item.nric}')">
         <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-1 rounded shadow-sm border ${dynColor} w-full flex items-start justify-between gap-1">
             <span class="break-words whitespace-normal text-left flex-1">${dName}</span>
         </div>
@@ -1262,6 +1277,7 @@ function getConnectedParticipants(startNric) {
 }
 
 function autoGroup() {
+    if (activeGroupsList.length === 0) return showToast("Please add at least one group first.");
     let unassigned = globalLogistics.participants.filter(p => !p.logisticsGroup);
     if (unassigned.length === 0) return;
     
@@ -1286,6 +1302,7 @@ function autoGroup() {
 }
 
 function autoBus() {
+    if (activeBusesList.length === 0) return showToast("Please add at least one bus first.");
     let unassigned = globalLogistics.participants.filter(p => !p.bus);
     if (unassigned.length === 0) return;
     
@@ -1831,3 +1848,153 @@ function closeSelectionSheet() {
 document.getElementById('selectionBottomSheet').classList.add('hidden-force'); 
 activeRoomTargetId = null; 
 }
+
+let activeAssignNric = null;
+let activeAssignType = null; // 'group' or 'bus'
+
+function openGroupAssignSheet(nric) {
+    activeAssignNric = nric;
+    activeAssignType = 'group';
+    const p = globalLogistics.participants.find(x => x.nric === nric);
+    if (!p) return;
+    
+    document.getElementById('sheetTitle').innerHTML = `Assign <span class="text-primary">${p.displayName || p.name}</span>`;
+    const searchInput = document.getElementById('sheetSearchInput');
+    if(searchInput) searchInput.value = '';
+    
+    renderGroupBusOptions();
+    
+    document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
+}
+
+function openBusAssignSheet(nric) {
+    activeAssignNric = nric;
+    activeAssignType = 'bus';
+    const p = globalLogistics.participants.find(x => x.nric === nric);
+    if (!p) return;
+    
+    document.getElementById('sheetTitle').innerHTML = `Assign <span class="text-primary">${p.displayName || p.name}</span>`;
+    const searchInput = document.getElementById('sheetSearchInput');
+    if(searchInput) searchInput.value = '';
+    
+    renderGroupBusOptions();
+    
+    document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
+}
+
+function renderGroupBusOptions() {
+    const query = document.getElementById('sheetSearchInput').value.toLowerCase().trim();
+    const list = activeAssignType === 'group' ? activeGroupsList : activeBusesList;
+    
+    let html = `<div class="flex flex-col gap-2">`;
+    
+    // Unassign option
+    if (!query || "unassign".includes(query)) {
+        html += `
+        <div onclick="selectGroupBusOption('')" class="sheet-list-item cursor-pointer p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition" data-name="unassign">
+            <span class="font-bold text-gray-700 dark:text-gray-200 text-sm">Unassigned</span>
+        </div>`;
+    }
+    
+    list.forEach(item => {
+        if (query && !item.toLowerCase().includes(query)) return;
+        html += `
+        <div class="sheet-list-item p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between transition hover:bg-gray-50 dark:hover:bg-gray-750" data-name="${item.toLowerCase()}">
+            <div class="cursor-pointer flex-1 font-bold text-gray-900 dark:text-white text-sm" onclick="selectGroupBusOption('${item}')">${activeAssignType === 'group' ? 'Group ' : 'Bus '}${item}</div>
+            <button onclick="removeGroupBusFromPopup('${item}')" class="text-gray-400 hover:text-red-500 p-2 -mr-2"><i class="fa-solid fa-trash text-xs"></i></button>
+        </div>`;
+    });
+    
+    // Add new
+    html += `
+    <div onclick="addGroupBusFromPopup()" class="cursor-pointer p-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+        <span class="font-bold text-primary text-sm flex items-center gap-2"><i class="fa-solid fa-plus"></i> Add New ${activeAssignType === 'group' ? 'Group' : 'Bus'}</span>
+    </div>`;
+    
+    html += `</div>`;
+    
+    document.getElementById('sheetListContainer').innerHTML = html;
+}
+
+function selectGroupBusOption(value) {
+    if (!activeAssignNric) return;
+    if (activeAssignType === 'group') {
+        handleGroupDrop(activeAssignNric, value);
+    } else {
+        handleBusDrop(activeAssignNric, value);
+    }
+    closeSelectionSheet();
+}
+
+function addGroupBusFromPopup() {
+    const typeName = activeAssignType === 'group' ? 'Group' : 'Bus';
+    const name = prompt(`Enter new ${typeName} name:`);
+    if (!name || !name.trim()) return;
+    const val = name.trim();
+    
+    if (activeAssignType === 'group') {
+        if (!activeGroupsList.includes(val)) {
+            activeGroupsList.push(val);
+            localStorage.setItem('activeGroupsList', JSON.stringify(activeGroupsList));
+        }
+    } else {
+        if (!activeBusesList.includes(val)) {
+            activeBusesList.push(val);
+            localStorage.setItem('activeBusesList', JSON.stringify(activeBusesList));
+        }
+    }
+    renderGroupBusOptions();
+    if (activeAssignType === 'group') renderGroups();
+    else renderBuses();
+}
+
+function removeGroupBusFromPopup(val) {
+    const typeName = activeAssignType === 'group' ? 'Group' : 'Bus';
+    if (!confirm(`Are you sure you want to remove ${typeName} ${val}?`)) return;
+    
+    if (activeAssignType === 'group') {
+        globalLogistics.participants.forEach(p => {
+            if (p.logisticsGroup === val) {
+                p.logisticsGroup = "";
+                pendingGroupUpdates.set(p.nric, { nric: p.nric, value: "" });
+            }
+        });
+        activeGroupsList = activeGroupsList.filter(x => x !== val);
+        localStorage.setItem('activeGroupsList', JSON.stringify(activeGroupsList));
+        renderGroups();
+        if (pendingGroupUpdates.size > 0) triggerGroupSync();
+    } else {
+        globalLogistics.participants.forEach(p => {
+            if (p.bus === val) {
+                p.bus = "";
+                pendingBusUpdates.set(p.nric, { nric: p.nric, value: "" });
+            }
+        });
+        activeBusesList = activeBusesList.filter(x => x !== val);
+        localStorage.setItem('activeBusesList', JSON.stringify(activeBusesList));
+        renderBuses();
+        if (pendingBusUpdates.size > 0) triggerBusSync();
+    }
+    renderGroupBusOptions();
+}
+
+function addGroupList() {
+    activeAssignType = 'group';
+    addGroupBusFromPopup();
+}
+
+function removeGroupList(gName) {
+    activeAssignType = 'group';
+    removeGroupBusFromPopup(gName);
+}
+
+function addBusList() {
+    activeAssignType = 'bus';
+    addGroupBusFromPopup();
+}
+
+function removeBusList(bName) {
+    activeAssignType = 'bus';
+    removeGroupBusFromPopup(bName);
+}
+
