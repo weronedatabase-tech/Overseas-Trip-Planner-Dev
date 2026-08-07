@@ -185,7 +185,8 @@ case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, 
 case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
 case 'saveTripSettings': result = saveTripSettings(data.title, data.year, data.start, data.end); break;
 case 'fetchAdminRoster': result = fetchAdminRoster(); break;
-case 'getParticipantSummary': result = getParticipantSummary(data.nric); break;
+case 'adminUpdateParticipant': result = updateProfile(data.member, true); break;
+case 'deleteParticipant': result = deleteParticipant(data.nric); break;
 case 'addDriveAccess': result = addDriveAccess(data.email, data.role); break;
 case 'removeDriveAccess': result = removeDriveAccess(data.email); break;
 case 'massDriveAccess': result = massDriveAccess(data.actionType, data.emails, data.role); break;
@@ -200,6 +201,7 @@ case 'fetchLogistics': result = fetchLogistics(); break;
 case 'syncPairingUpdates': result = syncPairingUpdates(data.updates, data.takenBy || 'Admin'); break;
 case 'fetchPairingsOnly': result = fetchPairingsOnly(); break;
 case 'syncRoomUpdates': result = syncRoomUpdates(data.updates, data.takenBy || 'Admin'); break;
+case 'syncAssignments': result = syncAssignments(data.updates, data.column); break;
 case 'fetchRoomsOnly': result = fetchRoomsOnly(); break;
 case 'fetchAttendanceData': result = fetchAttendanceData(data.juncture); break;
 case 'syncAttendanceUpdate': result = syncAttendanceUpdate(data.juncture, data.updates, data.takenBy); break;
@@ -389,9 +391,9 @@ family.sort((a, b) => {
 return { status: 'success', family: family };
 }
 
-function updateProfile(member) {
+function updateProfile(member, isAdmin = false) {
 const props = PropertiesService.getScriptProperties();
-if (props.getProperty('ALLOW_EDITS') !== 'true') return { status: 'error', message: 'Editing locked.' };
+if (!isAdmin && props.getProperty('ALLOW_EDITS') !== 'true') return { status: 'error', message: 'Editing locked.' };
 const ss = getDatabase();
 const sheet = ss.getSheetByName("Raw Data"); 
 
@@ -526,7 +528,9 @@ results.push({
   otherPoints: String(data[i][20]||'').trim(), 
   pocNric: String(data[i][21]||'').trim().toUpperCase(), 
   shortName: String(data[i][22]||'').trim().toUpperCase(),
-  medical: String(data[i][23]||'').trim()
+  medical: String(data[i][23]||'').trim(),
+  bus: String(data[i][24]||'').trim(),
+  logisticsGroup: String(data[i][25]||'').trim()
 });
 }
 }
@@ -559,6 +563,8 @@ participants.push({
   gender: String(pData[i][7]).trim(),
   nric: String(pData[i][11]).trim().toUpperCase(),
   pocNric: String(pData[i][21]).trim().toUpperCase(),
+  bus: String(pData[i][24]||'').trim(),
+  logisticsGroup: String(pData[i][25]||'').trim(),
   sleeping: pData[i][19] ? String(pData[i][19]).trim() : ''
 });
 }
@@ -1265,4 +1271,96 @@ types.forEach(t => { keys.push(t + "_" + dbId); keys.push(t + "_" + dbId + "_cou
 cache.removeAll(keys);
 } catch(e) {}
 return { status: 'success' };
+}
+function deleteParticipant(nric) {
+  const ss = getDatabase();
+  const sheet = ss.getSheetByName("Raw Data");
+  let archiveSheet = ss.getSheetByName("Archived Participants");
+  
+  if (!archiveSheet) {
+    archiveSheet = ss.insertSheet("Archived Participants");
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    archiveSheet.appendRow(headers);
+  }
+  
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000);
+    const data = sheet.getDataRange().getValues();
+    
+    let rowIndex = -1;
+    let rowData = null;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][11]).trim().toUpperCase() === String(nric || '').trim().toUpperCase()) {
+        rowIndex = i + 1;
+        rowData = data[i];
+        break;
+      }
+    }
+    
+    if (rowIndex === -1) return { status: 'error', message: 'Participant not found.' };
+    
+    archiveSheet.appendRow(rowData);
+    sheet.deleteRow(rowIndex);
+    
+    CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
+    return { status: 'success' };
+  } catch(e) {
+    return { status: 'error', message: e.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+
+function syncAssignments(updates, column) {
+const ss = getDatabase();
+const sheet = ss.getSheetByName("Raw Data");
+const lock = LockService.getScriptLock();
+try {
+lock.waitLock(15000);
+const data = sheet.getDataRange().getValues();
+const existingMap = {};
+for (let i = 1; i < data.length; i++) {
+  const nric = String(data[i][11]).trim().toUpperCase();
+  if (nric) existingMap[nric] = i;
+}
+let colIndex = 25;
+if (column === 'group') colIndex = 6;
+else if (column === 'bus') colIndex = 24;
+else if (column === 'logisticsGroup') colIndex = 25;
+let dataChanged = false;
+
+// Ensure all rows are at least colIndex + 1 in length
+const targetLength = Math.max(data[0].length, colIndex + 1);
+for (let i = 0; i < data.length; i++) {
+    while (data[i].length < targetLength) {
+        data[i].push("");
+    }
+}
+
+updates.forEach(u => {
+  if (existingMap[u.nric] !== undefined) {
+    const rowIndex = existingMap[u.nric];
+    if (data[rowIndex][colIndex] !== u.value) {
+        data[rowIndex][colIndex] = u.value || '';
+        dataChanged = true;
+    }
+  }
+});
+
+if (dataChanged) {
+  if (sheet.getMaxColumns() < targetLength) {
+      sheet.insertColumnsAfter(sheet.getMaxColumns(), targetLength - sheet.getMaxColumns());
+  }
+  sheet.getRange(1, 1, data.length, targetLength).setValues(data);
+  SpreadsheetApp.flush();
+  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
+  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+  precomputeAppCache();
+}
+return { status: 'success' };
+
+} catch(e) { return { status: 'error', message: e.message }; }
+finally { lock.releaseLock(); }
 }

@@ -65,9 +65,11 @@ function startDrag(e, clientX, clientY, isTouch) {
     if(e.target.closest('.remove-x') || e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
 
     let draggable = e.target.closest('.dnd-draggable');
+    
     let roomDraggable = e.target.closest('.dnd-room-draggable');
-
-    if(!draggable && !roomDraggable) return;
+    let groupDraggable = e.target.closest('.dnd-group-draggable');
+    let busDraggable = e.target.closest('.dnd-bus-draggable');
+    if(!draggable && !roomDraggable && !groupDraggable && !busDraggable) return;
 
     if (draggable) {
         const pairingContainer = document.getElementById('log-pairings');
@@ -79,8 +81,17 @@ function startDrag(e, clientX, clientY, isTouch) {
         if(!roomsContainer || roomsContainer.classList.contains('hidden-force')) return;
         dndState.type = 'rooming';
         dndState.el = roomDraggable;
+    } else if (groupDraggable) {
+        const groupsContainer = document.getElementById('log-groups');
+        if(!groupsContainer || groupsContainer.classList.contains('hidden-force')) return;
+        dndState.type = 'grouping';
+        dndState.el = groupDraggable;
+    } else if (busDraggable) {
+        const busesContainer = document.getElementById('log-buses');
+        if(!busesContainer || busesContainer.classList.contains('hidden-force')) return;
+        dndState.type = 'busing';
+        dndState.el = busDraggable;
     }
-
     dndState.nameNode = dndState.el.querySelector('.main-name-pill') || dndState.el;
     const rect = dndState.nameNode.getBoundingClientRect();
     dndState.rectWidth = rect.width;
@@ -151,7 +162,26 @@ function moveDrag(e, clientX, clientY, isTouch) {
                     dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
-        } else if (dndState.type === 'rooming') {
+        } else if (dndState.type === 'grouping') {
+            const activeGroup = elAtPoint ? elAtPoint.closest('.dnd-group-dropzone') : null;
+            document.querySelectorAll('.dnd-group-dropzone').forEach(dz => {
+                if (dz === activeGroup) {
+                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                } else {
+                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                }
+            });
+        } else if (dndState.type === 'busing') {
+            const activeBus = elAtPoint ? elAtPoint.closest('.dnd-bus-dropzone') : null;
+            document.querySelectorAll('.dnd-bus-dropzone').forEach(dz => {
+                if (dz === activeBus) {
+                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                } else {
+                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                }
+            });
+        }
+ else if (dndState.type === 'rooming') {
             const activeRoom = elAtPoint ? elAtPoint.closest('.dnd-room-dropzone') : null;
             document.querySelectorAll('.dnd-room-dropzone').forEach(dz => {
                 if (dz === activeRoom) {
@@ -172,7 +202,7 @@ function endDrag(e, clientX, clientY) {
         dndState.clone = null; 
         dndState.isDragging = false;
 
-        document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary'));
+        document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone, .dnd-group-dropzone, .dnd-bus-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary'));
 
         const elAtPoint = document.elementFromPoint(clientX, clientY);
 
@@ -205,13 +235,22 @@ function updateClonePosition(x, y) {
     }
 }
 }
-
 // ==========================================
 // PAIRING LOGIC
 // ==========================================
+
 function handleDndDrop(sourceNric, sourceRole, targetNric) {
 let volNric = sourceRole === 'VOLUNTEER' ? sourceNric : targetNric;
 let traineeNric = sourceRole === 'TRAINEE' ? sourceNric : targetNric;
+
+// Group Constraint Check
+let vPerson = globalLogistics.participants.find(p => p.nric === volNric);
+let tPerson = globalLogistics.participants.find(p => p.nric === traineeNric);
+if (vPerson && tPerson && vPerson.group && tPerson.group && vPerson.group !== tPerson.group) {
+    showToast("Cannot pair: Trainee and Volunteer must be in the same group, or one must be unassigned.", true);
+    return;
+}
+
 
 let existing = globalLogistics.pairings.find(p => p.traineeNric === traineeNric && p.volNric === volNric);
 
@@ -904,9 +943,447 @@ document.getElementById('tab-logistics').innerHTML = `
     </div>
 </div>
 
-<div id="log-groups" class="hidden-force flex-1 mt-2 w-full"><div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"><p class="text-sm text-gray-500 dark:text-gray-400">Group builder coming soon...</p></div></div>
-<div id="log-buses" class="hidden-force flex-1 mt-2 w-full"><div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"><p class="text-sm text-gray-500 dark:text-gray-400">Bus Allocation coming soon...</p></div></div>
+<div id="log-groups" class="hidden-force flex-1 flex flex-col min-h-0 w-full relative">
+    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
+        <div class="flex justify-between items-center px-1">
+            <div class="flex flex-wrap items-center gap-1 md:gap-1.5">
+                <h3 class="text-xs md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1 shrink-0">Groups</h3>
+                <button onclick="autoGroup()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Auto Group">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span class="whitespace-nowrap">Auto Group</span>
+                </button>
+                <button onclick="resetGroupAssignments()" class="bg-orange-50 text-orange-600 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-orange-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Clear all Assignments">
+                    <svg class="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <span class="whitespace-nowrap">Clear</span>
+                </button>
+            </div>
+            <button onclick="manualSyncGroups(this)" class="btn-sync-groups text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+                <span class="btn-text">Saved</span><i class="fa-solid fa-circle-notch fa-spin btn-spinner hidden ml-1"></i>
+            </button>
+        </div>
+        <div class="relative w-full flex items-center gap-2">
+            <div class="relative flex-1">
+                <input type="text" id="groupSearchInput" oninput="renderGroups()" placeholder="Search..." class="w-full p-1.5 pl-7 pr-8 border border-gray-300 dark:border-gray-700 rounded text-[10px] font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+                <i class="fa-solid fa-search absolute left-2.5 top-2 text-gray-400 text-[10px]"></i>
+                <button onclick="clearSearch('groupSearchInput', 'renderGroups')" class="absolute right-1.5 top-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative">
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+            <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800/50">Unassigned (<span id="groupUnassignedCount">0</span>)</h4>
+            <div id="groupUnassignedPool" class="dnd-group-dropzone space-y-1.5 flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar pb-6"></div>
+        </div>
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
+            <div id="groupListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
+        </div>
+    </div>
+</div>
+<div id="log-buses" class="hidden-force flex-1 flex flex-col min-h-0 w-full relative">
+    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
+        <div class="flex justify-between items-center px-1">
+            <div class="flex flex-wrap items-center gap-1 md:gap-1.5">
+                <h3 class="text-xs md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1 shrink-0">Buses</h3>
+                <button onclick="autoBus()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Auto Bus">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span class="whitespace-nowrap">Auto Bus</span>
+                </button>
+                <button onclick="resetBusAssignments()" class="bg-orange-50 text-orange-600 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-orange-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Clear all Assignments">
+                    <svg class="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <span class="whitespace-nowrap">Clear</span>
+                </button>
+            </div>
+            <button onclick="manualSyncBuses(this)" class="btn-sync-buses text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+                <span class="btn-text">Saved</span><i class="fa-solid fa-circle-notch fa-spin btn-spinner hidden ml-1"></i>
+            </button>
+        </div>
+        <div class="relative w-full flex items-center gap-2">
+            <div class="relative flex-1">
+                <input type="text" id="busSearchInput" oninput="renderBuses()" placeholder="Search..." class="w-full p-1.5 pl-7 pr-8 border border-gray-300 dark:border-gray-700 rounded text-[10px] font-bold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+                <i class="fa-solid fa-search absolute left-2.5 top-2 text-gray-400 text-[10px]"></i>
+                <button onclick="clearSearch('busSearchInput', 'renderBuses')" class="absolute right-1.5 top-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative">
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+            <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800/50">Unassigned (<span id="busUnassignedCount">0</span>)</h4>
+            <div id="busUnassignedPool" class="dnd-bus-dropzone space-y-1.5 flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar pb-6"></div>
+        </div>
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
+            <div id="busListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
+        </div>
+    </div>
+</div>
 `;
+}
+
+
+let pendingGroupUpdates = new Map();
+let pendingBusUpdates = new Map();
+let isGroupSyncing = false;
+let isBusSyncing = false;
+let activeGroupsList = ["1", "2", "3", "4", "5", "6", "7"];
+let activeBusesList = ["1", "2", "3", "4", "5"];
+
+function renderGroups() {
+    if(!globalLogistics || !document.getElementById('groupListContainer')) return;
+    const query = document.getElementById('groupSearchInput') ? document.getElementById('groupSearchInput').value.toLowerCase().trim() : '';
+    
+    let unassigned = [];
+    let groupMap = {};
+    activeGroupsList.forEach(g => groupMap[g] = []);
+
+    globalLogistics.participants.forEach(p => {
+        let pGroup = String(p.logisticsGroup || "").trim();
+        if (pGroup && !activeGroupsList.includes(pGroup)) {
+            activeGroupsList.push(pGroup);
+            groupMap[pGroup] = [];
+        }
+        
+        let match = false;
+        if (query) {
+            const dName = (p.displayName || p.name).toLowerCase();
+            match = dName.includes(query) || p.nric.toLowerCase().includes(query) || pGroup.toLowerCase().includes(query);
+        } else {
+            match = true;
+        }
+        
+        if (!match) return;
+
+        if (pGroup) {
+            groupMap[pGroup].push(p);
+        } else {
+            unassigned.push(p);
+        }
+    });
+
+    document.getElementById('groupUnassignedCount').innerText = unassigned.length;
+    let unHtml = '';
+    unassigned.forEach(item => {
+        unHtml += generateGroupCardHtml(item);
+    });
+    document.getElementById('groupUnassignedPool').innerHTML = unHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-2">All assigned / No matches.</p>';
+
+    let grpHtml = '';
+    activeGroupsList.forEach(gName => {
+        let occHtml = '';
+        groupMap[gName].forEach(item => {
+            occHtml += generateGroupCardHtml(item);
+        });
+
+        grpHtml += `
+        <div class="dnd-group-dropzone bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm transition-colors" data-group="${gName}">
+            <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
+                <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Group ${gName}</span>
+                <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${groupMap[gName].length} Pax</span>
+            </div>
+            <div class="flex flex-col gap-1 min-h-[40px] relative pointer-events-auto z-10 w-full rounded border border-transparent transition-all">
+                ${occHtml || '<span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 m-1 pointer-events-none text-center py-2 w-full">Drop here...</span>'}
+            </div>
+        </div>
+        `;
+    });
+    document.getElementById('groupListContainer').innerHTML = grpHtml;
+}
+
+function generateGroupCardHtml(item) {
+    const dName = item.displayName || item.name;
+    const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+    const roleShort = item.role.substring(0,3).toUpperCase();
+    return `
+    <div class="dnd-group-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}">
+        <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-1 rounded shadow-sm border w-full flex items-start justify-between gap-1 border-gray-300 dark:border-gray-600">
+            <span class="break-words whitespace-normal text-left flex-1">${dName}</span>
+        </div>
+        <span class="text-[7px] md:text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1.5 py-0.5 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0 self-start w-max">${roleShort}</span>
+    </div>
+    `;
+}
+
+function renderBuses() {
+    if(!globalLogistics || !document.getElementById('busListContainer')) return;
+    const query = document.getElementById('busSearchInput') ? document.getElementById('busSearchInput').value.toLowerCase().trim() : '';
+    
+    let unassigned = [];
+    let busMap = {};
+    activeBusesList.forEach(b => busMap[b] = []);
+
+    globalLogistics.participants.forEach(p => {
+        let pBus = String(p.bus || "").trim();
+        if (pBus && !activeBusesList.includes(pBus)) {
+            activeBusesList.push(pBus);
+            busMap[pBus] = [];
+        }
+        
+        let match = false;
+        if (query) {
+            const dName = (p.displayName || p.name).toLowerCase();
+            match = dName.includes(query) || p.nric.toLowerCase().includes(query) || pBus.toLowerCase().includes(query);
+        } else {
+            match = true;
+        }
+        
+        if (!match) return;
+
+        if (pBus) {
+            busMap[pBus].push(p);
+        } else {
+            unassigned.push(p);
+        }
+    });
+
+    document.getElementById('busUnassignedCount').innerText = unassigned.length;
+    let unHtml = '';
+    unassigned.forEach(item => {
+        unHtml += generateBusCardHtml(item);
+    });
+    document.getElementById('busUnassignedPool').innerHTML = unHtml || '<p class="text-[10px] text-gray-500 font-bold p-2 text-center mt-2">All assigned / No matches.</p>';
+
+    let busHtml = '';
+    activeBusesList.forEach(bName => {
+        let occHtml = '';
+        busMap[bName].forEach(item => {
+            occHtml += generateBusCardHtml(item);
+        });
+
+        busHtml += `
+        <div class="dnd-bus-dropzone bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm transition-colors" data-bus="${bName}">
+            <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
+                <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Bus ${bName}</span>
+                <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${busMap[bName].length} Pax</span>
+            </div>
+            <div class="flex flex-col gap-1 min-h-[40px] relative pointer-events-auto z-10 w-full rounded border border-transparent transition-all">
+                ${occHtml || '<span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 m-1 pointer-events-none text-center py-2 w-full">Drop here...</span>'}
+            </div>
+        </div>
+        `;
+    });
+    document.getElementById('busListContainer').innerHTML = busHtml;
+}
+
+function generateBusCardHtml(item) {
+    const dynColor = getProjectColor(item.group);
+    const dName = item.displayName || item.name;
+    const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+    const roleShort = item.role.substring(0,3).toUpperCase();
+    return `
+    <div class="dnd-bus-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}">
+        <div class="main-name-pill font-extrabold text-[10px] md:text-[11px] px-1.5 py-1 rounded shadow-sm border ${dynColor} w-full flex items-start justify-between gap-1">
+            <span class="break-words whitespace-normal text-left flex-1">${dName}</span>
+        </div>
+        <span class="text-[7px] md:text-[8px] font-black ${roleColor} bg-gray-50 dark:bg-gray-700 px-1.5 py-0.5 rounded uppercase border border-gray-100 dark:border-gray-600 shrink-0 self-start w-max">${roleShort}</span>
+    </div>
+    `;
+}
+
+function handleGroupDrop(nric, groupName) {
+    const p = globalLogistics.participants.find(x => x.nric === nric);
+    if (!p) return;
+    p.logisticsGroup = groupName;
+    pendingGroupUpdates.set(nric, { nric: nric, value: groupName });
+
+    // Handle pairing logic (auto group paired vols / caregivers)
+    let connected = getConnectedParticipants(nric);
+    connected.forEach(cNric => {
+        let cp = globalLogistics.participants.find(x => x.nric === cNric);
+        if (cp && cp.logisticsGroup !== groupName) {
+            cp.logisticsGroup = groupName;
+            pendingGroupUpdates.set(cNric, { nric: cNric, value: groupName });
+        }
+    });
+
+    renderGroups();
+    triggerGroupSync();
+}
+
+function handleBusDrop(nric, busName) {
+    const p = globalLogistics.participants.find(x => x.nric === nric);
+    if (!p) return;
+    p.bus = busName;
+    pendingBusUpdates.set(nric, { nric: nric, value: busName });
+
+    // Handle pairing logic (auto bus paired vols / caregivers)
+    let connected = getConnectedParticipants(nric);
+    connected.forEach(cNric => {
+        let cp = globalLogistics.participants.find(x => x.nric === cNric);
+        if (cp && cp.bus !== busName) {
+            cp.bus = busName;
+            pendingBusUpdates.set(cNric, { nric: cNric, value: busName });
+        }
+    });
+
+    renderBuses();
+    triggerBusSync();
+}
+
+function getConnectedParticipants(startNric) {
+    const connected = new Set([startNric]);
+    const queue = [startNric];
+    const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status || p.status === 'ACTIVE'));
+
+    while(queue.length > 0) {
+        const current = queue.shift();
+        const p = globalLogistics.participants.find(x => x.nric === current);
+        if (!p) continue;
+
+        // Auto link related trainees/caregivers
+        if (p.role === 'CAREGIVER' && p.relatedTrainee) {
+            const rel = globalLogistics.participants.find(x => x.role === 'TRAINEE' && x.name === p.relatedTrainee);
+            if (rel && !connected.has(rel.nric)) {
+                connected.add(rel.nric);
+                queue.push(rel.nric);
+            }
+        }
+        if (p.role === 'TRAINEE') {
+            globalLogistics.participants.forEach(x => {
+                if (x.role === 'CAREGIVER' && x.relatedTrainee === p.name) {
+                    if (!connected.has(x.nric)) {
+                        connected.add(x.nric);
+                        queue.push(x.nric);
+                    }
+                }
+            });
+        }
+
+        // Auto link pairings
+        activePairings.forEach(pair => {
+            if (pair.traineeNric === current && !connected.has(pair.volNric)) {
+                connected.add(pair.volNric);
+                queue.push(pair.volNric);
+            }
+            if (pair.volNric === current && !connected.has(pair.traineeNric)) {
+                connected.add(pair.traineeNric);
+                queue.push(pair.traineeNric);
+            }
+        });
+    }
+    return Array.from(connected);
+}
+
+function autoGroup() {
+    let unassigned = globalLogistics.participants.filter(p => !p.logisticsGroup);
+    if (unassigned.length === 0) return;
+    
+    // Basic greedy grouping for demonstration
+    let groupIdx = 0;
+    unassigned.forEach(p => {
+        if (!p.logisticsGroup) {
+            let connected = getConnectedParticipants(p.nric);
+            let targetGroup = activeGroupsList[groupIdx % activeGroupsList.length];
+            connected.forEach(cNric => {
+                let cp = globalLogistics.participants.find(x => x.nric === cNric);
+                if (cp && !cp.logisticsGroup) {
+                    cp.logisticsGroup = targetGroup;
+                    pendingGroupUpdates.set(cNric, { nric: cNric, value: targetGroup });
+                }
+            });
+            groupIdx++;
+        }
+    });
+    renderGroups();
+    triggerGroupSync();
+}
+
+function autoBus() {
+    let unassigned = globalLogistics.participants.filter(p => !p.bus);
+    if (unassigned.length === 0) return;
+    
+    // Auto bus assigns by groups first, then connected
+    let busIdx = 0;
+    unassigned.forEach(p => {
+        if (!p.bus) {
+            let connected = getConnectedParticipants(p.nric);
+            // Additionally pull in people from the same group
+            if (p.logisticsGroup) {
+                globalLogistics.participants.forEach(x => {
+                    if (x.logisticsGroup === p.logisticsGroup && !connected.includes(x.nric)) {
+                        connected.push(x.nric);
+                    }
+                });
+            }
+            let targetBus = activeBusesList[busIdx % activeBusesList.length];
+            connected.forEach(cNric => {
+                let cp = globalLogistics.participants.find(x => x.nric === cNric);
+                if (cp && !cp.bus) {
+                    cp.bus = targetBus;
+                    pendingBusUpdates.set(cNric, { nric: cNric, value: targetBus });
+                }
+            });
+            busIdx++;
+        }
+    });
+    renderBuses();
+    triggerBusSync();
+}
+
+function resetGroupAssignments() {
+    if (!confirm("Clear all group assignments?")) return;
+    globalLogistics.participants.forEach(p => {
+        if (p.logisticsGroup) {
+            p.logisticsGroup = "";
+            pendingGroupUpdates.set(p.nric, { nric: p.nric, value: "" });
+        }
+    });
+    renderGroups();
+    triggerGroupSync();
+}
+
+function resetBusAssignments() {
+    if (!confirm("Clear all bus assignments?")) return;
+    globalLogistics.participants.forEach(p => {
+        if (p.bus) {
+            p.bus = "";
+            pendingBusUpdates.set(p.nric, { nric: p.nric, value: "" });
+        }
+    });
+    renderBuses();
+    triggerBusSync();
+}
+
+async function manualSyncGroups() {
+    if (pendingGroupUpdates.size > 0) await executeGroupSync();
+}
+async function manualSyncBuses() {
+    if (pendingBusUpdates.size > 0) await executeBusSync();
+}
+
+let groupSyncTimeout = null;
+function triggerGroupSync() {
+    if (groupSyncTimeout) clearTimeout(groupSyncTimeout);
+    groupSyncTimeout = setTimeout(executeGroupSync, 800);
+}
+
+let busSyncTimeout = null;
+function triggerBusSync() {
+    if (busSyncTimeout) clearTimeout(busSyncTimeout);
+    busSyncTimeout = setTimeout(executeBusSync, 800);
+}
+
+async function executeGroupSync() {
+    if (isGroupSyncing || pendingGroupUpdates.size === 0) return;
+    isGroupSyncing = true;
+    const batch = Array.from(pendingGroupUpdates.values());
+    pendingGroupUpdates.clear();
+    try {
+        await apiCall('syncAssignments', { updates: batch, column: 'logisticsGroup' });
+    } finally {
+        isGroupSyncing = false;
+        if (pendingGroupUpdates.size > 0) triggerGroupSync();
+    }
+}
+
+async function executeBusSync() {
+    if (isBusSyncing || pendingBusUpdates.size === 0) return;
+    isBusSyncing = true;
+    const batch = Array.from(pendingBusUpdates.values());
+    pendingBusUpdates.clear();
+    try {
+        await apiCall('syncAssignments', { updates: batch, column: 'bus' });
+    } finally {
+        isBusSyncing = false;
+        if (pendingBusUpdates.size > 0) triggerBusSync();
+    }
 }
 
 function switchLogisticsSubTab(tabId) {
@@ -939,8 +1416,10 @@ try {
     if (typeof applyGlobalSorting === "function") {
         globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
     }
-    renderPairings(); 
+    renderPairings();
     renderRooms();
+    renderGroups();
+    renderBuses();
 
     setSyncButtonState('saved');
     setRoomSyncButtonState('saved');
@@ -1281,11 +1760,23 @@ items.forEach(item => {
 });
 }
 
+
 function confirmPairing(targetNric) {
 if(!currentPairingTarget) return; 
-closeSelectionSheet(); 
+
 const traineeNric = currentPairingSourceRole === 'TRAINEE' ? currentPairingTarget : targetNric;
 const volNric = currentPairingSourceRole === 'TRAINEE' ? targetNric : currentPairingTarget;
+
+// Group Constraint Check
+let vPerson = globalLogistics.participants.find(p => p.nric === volNric);
+let tPerson = globalLogistics.participants.find(p => p.nric === traineeNric);
+if (vPerson && tPerson && vPerson.group && tPerson.group && vPerson.group !== tPerson.group) {
+    showToast("Cannot pair: Trainee and Volunteer must be in the same group, or one must be unassigned.", true);
+    closeSelectionSheet();
+    return;
+}
+
+closeSelectionSheet();
 let existing = globalLogistics.pairings.find(p => p.traineeNric === traineeNric && p.volNric === volNric);
 
 if(!existing || existing.status !== 'ACTIVE') {

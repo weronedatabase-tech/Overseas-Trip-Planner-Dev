@@ -87,10 +87,10 @@ async function submitLandingReceipt(e) {
         const base64 = await toBase64(file);
         const payload = {
             uploaderNric: nric,
-            currency: 'SGD',
+            currency: document.getElementById('landingRecCurrency').value,
             amount: amount,
-            rate: 1,
-            sgdAmount: amount,
+            rate: parseFloat(document.getElementById('landingRecRate').value) || 1,
+            sgdAmount: parseFloat(document.getElementById('landingRecSgd').value) || amount,
             categoryId: category,
             remarks: remarks,
             fileName: file.name,
@@ -107,4 +107,19 @@ async function submitLandingReceipt(e) {
     } finally {
         setBtnLoading(btn, false);
     }
+}
+
+function landingCurChange() {
+    let cur = document.getElementById('landingRecCurrency').value;
+    let rate = 1;
+    if (cur === 'MYR') rate = 0.28;
+    // can add more default rates here if needed
+    document.getElementById('landingRecRate').value = rate;
+    landingCalcSgd();
+}
+
+function landingCalcSgd() {
+    let amt = parseFloat(document.getElementById('landingRecAmount').value) || 0;
+    let rate = parseFloat(document.getElementById('landingRecRate').value) || 1;
+    document.getElementById('landingRecSgd').value = (amt * rate).toFixed(2);
 }
