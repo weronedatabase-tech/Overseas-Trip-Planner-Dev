@@ -1,12 +1,11 @@
 let medicalRosterData = [];
 let medicalSearchQuery = '';
 
-let medSortRules = JSON.parse(localStorage.getItem('medicalSortRules_v2')) || [{ col: 'fullName', asc: true }];
-let medCols = JSON.parse(localStorage.getItem('medicalCols_v2')) || [
-{ id: 'medical', label: 'Medical & Medications', width: 300, visible: true },
-{ id: 'otherPoints', label: 'Other Notes', width: 220, visible: true },
-{ id: 'emergencyName', label: 'Emergency Contact Name', width: 180, visible: true },
-{ id: 'emergencyContact', label: 'Emergency Contact No.', width: 180, visible: true }
+let medSortRules = JSON.parse(localStorage.getItem('expiredSortRules')) || [{ col: 'fullName', asc: true }];
+let medCols = JSON.parse(localStorage.getItem('expiredCols')) || [
+{ id: 'passportNo', label: 'Passport No.', width: 150, visible: true },
+{ id: 'passportExpiry', label: 'Expiry Date', width: 150, visible: true },
+{ id: 'nationality', label: 'Nationality', width: 120, visible: true }
 ];
 
 
@@ -18,7 +17,7 @@ document.getElementById('tab-medical').innerHTML = `
    <div class="p-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center gap-2 shrink-0">
        <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg flex items-center gap-2">
            <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zM12 9v6m-3-3h6" /></svg>
-           Medical & Medications
+           Expired Passports
        </h3>
        <button onclick="loadMedicalData()" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none shadow-sm" title="Refresh">
            <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -114,7 +113,7 @@ if (mResizingCol === 'fullName') {
 
 function onMedMouseUp() {
 if (mResizingCol && mResizingCol !== 'fullName') {
-   localStorage.setItem('medicalCols_v2', JSON.stringify(medCols));
+   localStorage.setItem('expiredCols', JSON.stringify(medCols));
 }
 mResizingCol = null;
 document.removeEventListener('mousemove', onMedMouseMove);
@@ -155,20 +154,26 @@ const toIdx = medCols.findIndex(c => c.id === targetColId);
 if(fromIdx > -1 && toIdx > -1) {
    const [moved] = medCols.splice(fromIdx, 1);
    medCols.splice(toIdx, 0, moved);
-   localStorage.setItem('medicalCols_v2', JSON.stringify(medCols));
+   localStorage.setItem('expiredCols', JSON.stringify(medCols));
    renderMedicalTable();
 }
 }
 
 function renderMedicalTable() {
-let data = medicalRosterData.filter(p => p.medical || p.otherPoints || p.emergencyName || p.emergencyContact);
+let tripEnd = appSettings.tripEndDate ? new Date(appSettings.tripEndDate) : null;
+let minExpiry = null;
+if (tripEnd && !isNaN(tripEnd.getTime())) {
+   minExpiry = new Date(tripEnd);
+   minExpiry.setMonth(minExpiry.getMonth() + 6);
+}
+
+let data = medicalRosterData.filter(p => p.passportNo || p.passportExpiry || p.nationality);
 if (medicalSearchQuery) {
    data = data.filter(p => {
        return (p.fullName && p.fullName.toLowerCase().includes(medicalSearchQuery)) ||
               (p.shortName && p.shortName.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.diet && p.diet.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.medical && p.medical.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.otherPoints && p.otherPoints.toLowerCase().includes(medicalSearchQuery));
+              (p.passportNo && p.passportNo.toLowerCase().includes(medicalSearchQuery)) ||
+              (p.nationality && p.nationality.toLowerCase().includes(medicalSearchQuery));
    });
 }
 data.sort((a, b) => {
@@ -185,7 +190,7 @@ let headHtml = `<tr>
        <div class="font-bold text-gray-700 dark:text-gray-300">Participant</div>
    </th>
    <th class="p-3 bg-gray-100 dark:bg-gray-800 align-top w-[65%] text-left">
-       <div class="font-bold text-gray-700 dark:text-gray-300">Medical & Emergency Details</div>
+       <div class="font-bold text-gray-700 dark:text-gray-300">Passport Details</div>
    </th>
 </tr>`;
 thead.innerHTML = headHtml;
@@ -210,25 +215,30 @@ data.forEach(p => {
            ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-[10px]">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
        </td>
        <td class="p-3 align-top w-[65%] text-xs leading-relaxed whitespace-normal break-words border-l border-gray-100 dark:border-gray-800/50">
-           <div class="flex flex-col gap-3">`;
+           <div class="flex flex-col gap-2">`;
 
-   const hasMedical = p.medical && p.medical.trim() && p.medical.trim().toLowerCase() !== 'nil' && p.medical.trim().toLowerCase() !== 'none';
-   if (hasMedical) {
-       html += `<div><span class="font-bold text-gray-500 uppercase text-[10px] block mb-0.5">Medical & Medications:</span> <span class="text-rose-700 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap">${p.medical}</span></div>`;
+   html += `<div class="grid grid-cols-2 gap-4">
+       <div>
+           <span class="font-bold text-gray-500 uppercase text-[10px] block mb-0.5">Passport Number</span>
+           <div class="font-mono font-bold text-gray-800 dark:text-gray-200">${(p.passportNo || '-').toUpperCase()}</div>
+       </div>
+       <div>
+           <span class="font-bold text-gray-500 uppercase text-[10px] block mb-0.5">Nationality</span>
+           <div class="font-bold text-gray-800 dark:text-gray-200">${(p.nationality || '-').toUpperCase()}</div>
+       </div>
+   </div>`;
+
+   let isExpired = false;
+   if (minExpiry && p.passportExpiry) {
+       const expD = new Date(p.passportExpiry);
+       if (!isNaN(expD.getTime()) && expD < minExpiry) isExpired = true;
    }
+   const expiryDisplay = p.passportExpiry ? new Date(p.passportExpiry).toLocaleDateString('en-GB') : '-';
    
-   const hasNotes = p.otherPoints && p.otherPoints.trim() && p.otherPoints.trim().toLowerCase() !== 'nil' && p.otherPoints.trim().toLowerCase() !== 'none';
-   if (hasNotes) {
-       html += `<div><span class="font-bold text-gray-500 uppercase text-[10px] block mb-0.5">Other Notes:</span> <span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap block">${p.otherPoints}</span></div>`;
-   }
-   
-   if (p.emergencyName || p.emergencyContact) {
-       html += `<div class="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
-           <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold mb-1">Emergency Contact</div>
-           <div class="font-bold text-gray-800 dark:text-gray-200">${(p.emergencyName || '-').toUpperCase()} ${p.emergencyRelation ? `(${p.emergencyRelation.toUpperCase()})` : ''}</div>
-           <div class="font-mono text-blue-600 dark:text-blue-400 font-bold mt-0.5">${p.emergencyContact || '-'}</div>
-       </div>`;
-   }
+   html += `<div class="mt-2 p-2 rounded border ${isExpired ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'}">
+       <span class="font-bold ${isExpired ? 'text-red-500' : 'text-gray-500'} uppercase text-[10px] block mb-0.5">Expiry Date</span>
+       <div class="font-bold ${isExpired ? 'text-red-700 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}">${expiryDisplay} ${isExpired ? '<span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-[9px] uppercase tracking-wider">Expires within 6 months of trip</span>' : ''}</div>
+   </div>`;
 
    html += `</div></td></tr>`;
 });

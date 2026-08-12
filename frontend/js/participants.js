@@ -1,11 +1,11 @@
 let adminRosterData = [];
 let rosterSearchQuery = '';
 
-let rosterSortRules = JSON.parse(localStorage.getItem('rosterSortRules')) || [{ col: 'fullName', asc: true }];
+let rosterSortRules = JSON.parse(localStorage.getItem('rosterSortRules')) || [{ col: 'specialSort', asc: true }];
 
 let rosterCols = JSON.parse(localStorage.getItem('rosterCols')) || [
-{ id: 'role', label: 'Role', width: 90, visible: true },
-{ id: 'group', label: 'Project', width: 100, visible: true },
+{ id: 'role', label: 'Role', width: 90, visible: false },
+{ id: 'group', label: 'Project', width: 100, visible: false },
 { id: 'room', label: 'Room', width: 120, visible: true },
 { id: 'pairings', label: 'Pairing(s)', width: 150, visible: true },
 { id: 'bus', label: 'Bus', width: 90, visible: true },
@@ -37,18 +37,42 @@ if (!rosterCols.find(c => c.id === 'medical')) {
     localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
 }
 
+
+// Force hide role and group in existing localStorage rosterCols if they are still visible
+const savedCols = JSON.parse(localStorage.getItem('rosterCols'));
+if (savedCols) {
+    let changed = false;
+    savedCols.forEach(c => {
+        if ((c.id === 'role' || c.id === 'group') && c.visible) {
+            c.visible = false;
+            changed = true;
+        }
+    });
+    if (changed) {
+        localStorage.setItem('rosterCols', JSON.stringify(savedCols));
+        rosterCols = savedCols;
+    }
+}
+
 let traineeShortNames = {};
 
 function buildParticipantsUI() {
 document.getElementById('tab-participants').innerHTML = `
 <div class="flex flex-col h-full w-full relative bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
    <div class="p-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center gap-2 shrink-0">
-       <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg">Participant Roster</h3>
        <div class="flex items-center gap-2">
-           <button onclick="window.location.href='medical.html'" class="bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 text-[10px] md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:bg-red-100 transition shadow-sm focus:outline-none shrink-0 flex items-center gap-1">
-               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zM12 9v6m-3-3h6" /></svg>
-               Medical & Diet
-           </button>
+       <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg">Participant Roster <span id="rosterTotalCount" class="text-gray-500 font-bold text-sm">(0)</span></h3>
+       <button onclick="showRosterBreakdownModal()" class="text-gray-400 hover:text-primary focus:outline-none transition bg-gray-100 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-900/30 rounded-full p-1" title="View Breakdown">
+           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+       </button>
+       </div>
+       <div class="flex items-center gap-2">
+           <select onchange="if(this.value) window.location.href=this.value" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer shrink-0">
+               <option value="" disabled selected>Custom Views</option>
+               <option value="medical.html">Medical</option>
+               <option value="diet.html">Dietary</option>
+               <option value="expired.html">Passports</option>
+           </select>
            <button onclick="loadParticipantsData()" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none shadow-sm" title="Refresh Roster">
                <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
            </button>
@@ -126,7 +150,55 @@ const c = rosterCols.find(x => x.id === colId);
 if(c) c.visible = isVisible;
 localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
 renderRosterTable();
+
+   const countEl = document.getElementById('rosterTotalCount');
+   if(countEl) countEl.innerText = `(${adminRosterData.length})`;
+
 }
+
+window.showRosterBreakdownModal = function() {
+    let breakdown = {};
+    adminRosterData.forEach(p => {
+        const role = p.role || 'UNKNOWN';
+        const project = (p.group || 'None').toUpperCase();
+        if(!breakdown[project]) breakdown[project] = { TRAINEE: 0, VOLUNTEER: 0, CAREGIVER: 0, total: 0 };
+        if(breakdown[project][role] !== undefined) breakdown[project][role]++;
+        else breakdown[project][role] = 1;
+        breakdown[project].total++;
+    });
+    
+    let html = '<div class="space-y-4">';
+    const projKeys = Object.keys(breakdown).sort((a,b) => a.localeCompare(b));
+    projKeys.forEach(proj => {
+        const bd = breakdown[proj];
+        html += `<div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h4 class="font-black text-sm text-gray-900 dark:text-white mb-2">${proj} <span class="text-gray-500 font-medium">(${bd.total})</span></h4>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                <div class="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 p-1.5 rounded font-bold border border-blue-200 dark:border-blue-800">TRN: ${bd.TRAINEE}</div>
+                <div class="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 p-1.5 rounded font-bold border border-green-200 dark:border-green-800">VOL: ${bd.VOLUNTEER}</div>
+                <div class="bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 p-1.5 rounded font-bold border border-purple-200 dark:border-purple-800">CGV: ${bd.CAREGIVER}</div>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+    
+    const existing = document.getElementById('rosterBreakdownModal');
+    if(existing) existing.remove();
+    
+    const modalHtml = `
+    <div id="rosterBreakdownModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-gray-200 dark:border-gray-800 animate-slide-up">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+                <h3 class="font-black text-lg text-gray-900 dark:text-white tracking-tight">Participant Breakdown</h3>
+                <button type="button" onclick="document.getElementById('rosterBreakdownModal').remove()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-1 focus:outline-none">&times;</button>
+            </div>
+            <div class="p-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                ${html}
+            </div>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+};
 
 async function loadParticipantsData() {
 const loader = document.getElementById('rosterLoading');
@@ -134,11 +206,11 @@ if(loader) loader.classList.remove('hidden-force');
 
 try {
    const [rostRes, logRes] = await Promise.all([
-       apiCall('fetchAdminRoster'),
-       apiCall('fetchLogistics')
-   ]);
+        apiCall('fetchAdminRoster').catch(e => { console.warn("fetchAdminRoster failed", e); return { roster: [] }; }),
+        apiCall('fetchLogistics').catch(e => { console.warn("fetchLogistics failed", e); return null; })
+    ]);
    
-   adminRosterData = rostRes.roster || [];
+   adminRosterData = rostRes.roster || []; applyCaregiverLabels(adminRosterData);
    const logisticsData = logRes || { rooms: [], pairings: [] };
    
    traineeShortNames = {};
@@ -164,8 +236,8 @@ try {
            const v = adminRosterData.find(x => x.nric === pair.volNric);
            const t = adminRosterData.find(x => x.nric === pair.traineeNric);
            
-           if(v) pairingsMap[pair.traineeNric].push((v.shortName || v.fullName).toUpperCase());
-           if(t) pairingsMap[pair.volNric].push((t.shortName || t.fullName).toUpperCase());
+           if(v) pairingsMap[pair.traineeNric].push(((v.shortName || v.fullName) || '').toUpperCase());
+           if(t) pairingsMap[pair.volNric].push(((t.shortName || t.fullName) || '').toUpperCase());
        });
    }
 
@@ -173,7 +245,7 @@ try {
        p.room = roomsMap[p.nric] || 'UNASSIGNED';
        let myPairings = pairingsMap[p.nric] ? [...pairingsMap[p.nric]] : [];
        if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-           const related = adminRosterData.find(x => x.fullName.toLowerCase() === p.relatedTrainee.toLowerCase() && x.role === 'TRAINEE');
+           const related = adminRosterData.find(x => (x.fullName||'').toLowerCase() === (p.relatedTrainee||'').toLowerCase() && x.role === 'TRAINEE');
            if (related && pairingsMap[related.nric]) {
                myPairings.push(...pairingsMap[related.nric]);
            }
@@ -183,7 +255,7 @@ try {
 
    renderRosterTable();
 } catch(e) {
-   showToast("Failed to load roster.", true);
+   console.error(e); showToast("Error: " + e.message, true);
 } finally {
    if(loader) loader.classList.add('hidden-force');
 }
@@ -272,7 +344,7 @@ if (e.touches) {
 } else {
    startX = e.clientX;
 }
-const colDef = colId === 'fullName' ? {width: 250} : rosterCols.find(c => c.id === colId);
+const colDef = colId === 'fullName' ? {width: Math.min(250, window.innerWidth / 3)} : rosterCols.find(c => c.id === colId);
 startWidth = colDef.width || 150;
 document.addEventListener('mousemove', onMouseMove);
 document.addEventListener('mouseup', onMouseUp);
@@ -441,7 +513,7 @@ data.sort((a, b) => {
 
 const thead = document.getElementById('rosterTableHead');
 let headHtml = `<tr>
-   <th class="p-3 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top" style="width: 200px; min-width: 200px; max-width: 200px;" data-col-id="fullName">
+   <th class="p-3 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top sticky left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;" data-col-id="fullName">
        <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('fullName')">Full Name <span class="text-[8px]">↕</span></div>
        <div class="resize-handle" onmousedown="initResize(event, 'fullName')" ontouchstart="initResize(event, 'fullName')"></div>
    </th>`;
@@ -504,18 +576,16 @@ data.forEach(p => {
    
    const roleStr = p.role.substring(0, 3).toUpperCase();
    const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
-   
-   let famTag = '';
-   if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-       const tShort = (traineeShortNames[(p.relatedTrainee || '').toLowerCase()] || p.relatedTrainee || '').toUpperCase();
-       famTag = `<div class="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 leading-tight whitespace-normal break-words">[${tShort}]</div>`;
-   }
-
-   html += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
-       <td class="p-3 align-top roster-col-fullName" style="width: 200px; min-width: 200px; max-width: 200px;">
+    
+    html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
+       <td class="p-3 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
-           <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>
-           ${famTag}
+           ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
+           <div class="flex items-center gap-1 mt-1 flex-wrap">
+               <span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span>
+               <span class="px-1.5 py-0.5 rounded border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span>
+           </div>
+           ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-[10px]">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
        </td>`;
        
    rosterCols.forEach(c => {

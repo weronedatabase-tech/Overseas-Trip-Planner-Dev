@@ -1,9 +1,22 @@
 const fs = require('fs');
-let code = fs.readFileSync('frontend/js/logistics.js', 'utf8');
 
-code = code.replace(/}\s*}\s*else if \(dndState\.type === 'grouping'\)/g, "} else if (dndState.type === 'grouping')");
-code = code.replace(/dndState\.clone\.style\.transform = `translate3d\(\$\{centerX\}px, \$\{centerY\}px, 0px\) scale\(1\.05\)`[^}]*}\s*}\s*}/g, 
-`dndState.clone.style.transform = \`translate3d(\${centerX}px, \${centerY}px, 0px) scale(1.05)\`;
-    }
-}`);
-fs.writeFileSync('frontend/js/logistics.js', code);
+function fixSyntax(filepath) {
+    let code = fs.readFileSync(filepath, 'utf8');
+    // We want to remove the extra bracket before "} else {"
+    code = code.replace(/}\s*}\s*} else {/g, '}\n           } else {'); 
+    // wait, what did my bad sed do? It did: 
+    // code = code.replace(/} else {/g, 'else {');
+    // then I reverted: code.replace(/else {/g, '} else {');
+    // So "else {" became "} else {".
+    // Let's just do a smart regex:
+    // look for `           }\n           } else {`
+    // and replace with `           } else {`
+    
+    code = code.replace(/           }\n           } else {/g, '           } else {');
+    
+    fs.writeFileSync(filepath, code);
+}
+
+fixSyntax('frontend/js/diet.js');
+fixSyntax('frontend/js/medical.js');
+fixSyntax('frontend/js/expired.js');

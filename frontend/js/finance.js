@@ -103,8 +103,8 @@ try {
     }
 
     const [finRes, recRes] = await Promise.all([
-        apiCall('fetchFinance'),
-        apiCall('fetchReceipts')
+        apiCall('fetchFinance').catch(e => { console.warn("fetchFinance failed", e); return { data: { options: [], config: {} }, rates: { "SGD": 1 } }; }),
+        apiCall('fetchReceipts').catch(e => { console.warn("fetchReceipts failed", e); return { receipts: [] }; })
     ]);
 
     globalFinanceRates = finRes.rates || { "SGD": 1, "MYR": 0.28 };
@@ -318,9 +318,9 @@ financePollInterval = setInterval(async () => {
 
     try {
         const [finRes, recRes] = await Promise.all([
-            apiCall('fetchFinance'),
-            apiCall('fetchReceipts')
-        ]);
+        apiCall('fetchFinance').catch(e => { console.warn("fetchFinance failed", e); return { data: { options: [], config: {} }, rates: { "SGD": 1 } }; }),
+        apiCall('fetchReceipts').catch(e => { console.warn("fetchReceipts failed", e); return { receipts: [] }; })
+    ]);
 
         if (lastLocalChange > fetchStartTime) return; 
 
@@ -928,7 +928,7 @@ activeReceipts.forEach(r => {
             ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 font-bold underline px-2">View</a>` : '-'}
         </td>
         <td class="p-3 text-center">
-            <button onclick="deleteReceipt('${r.id}')" class="text-gray-400 hover:text-red-500 transition p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+            <button onclick="deleteReceipt('${r.id}')" class="text-red-500 hover:text-red-600 transition p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
         </td>
     </tr>`;
 });
@@ -1074,7 +1074,7 @@ cardsData.forEach(c => {
         <div class="grid grid-cols-2 gap-2 p-2 bg-gray-50/50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800">
             <div>
                 <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Custom Deviation (SGD)</label>
-                <input type="number" step="0.01" value="${c.dev}" oninput="formatMoneyInput(this, false); updateFeeDeviation('${c.poc}', 'amount', this.value)" onblur="formatMoneyInput(this, true); updateFeeDeviation('${c.poc}', 'amount', this.value)" class="w-full px-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary shadow-sm text-right" ${c.isPaid ? 'disabled opacity-70' : ''}>
+                <input type="number" step="0.01" value="${c.dev}" oninput="formatMoneyInput(this, false); if(!financeConfig.feeDeviations['${c.poc}']) financeConfig.feeDeviations['${c.poc}'] = {}; financeConfig.feeDeviations['${c.poc}'].amount = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFeeDeviation('${c.poc}', 'amount', this.value)" class="w-full px-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary shadow-sm text-right" ${c.isPaid ? 'disabled opacity-70' : ''}>
             </div>
             <div>
                 <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Final Expected</label>
@@ -1096,7 +1096,7 @@ cont.innerHTML = `
             <div class="flex flex-col gap-2 w-full md:w-auto">
                 <div class="flex items-center gap-2">
                     <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Per-Pax Fee (SGD):</label>
-                    <input type="number" step="0.01" value="${baseFee}" oninput="formatMoneyInput(this, false); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-24 text-sm font-black border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
+                    <input type="number" step="0.01" value="${baseFee}" oninput="formatMoneyInput(this, false); financeConfig.perPersonFee = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-24 text-sm font-black border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
                 </div>
                 <div class="flex items-center gap-2">
                     <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">PayNow Number:</label>
@@ -1144,8 +1144,7 @@ if (field === 'amount') {
 
 queueFinanceUpdate();
 
-clearTimeout(window.feeRenderTimeout);
-window.feeRenderTimeout = setTimeout(() => { renderFeeTracker(); }, 800);
+
 }
 
 function toggleFeeReceived(poc, status) {

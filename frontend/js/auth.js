@@ -48,12 +48,41 @@ function togglePassword(id) {
    eyeClosed.classList.add('hidden-force');
  }
 }
-function toggleLandingReceipt() {
+async function toggleLandingReceipt() {
     const wrapper = document.getElementById('landingReceiptFormWrapper');
     const icon = document.getElementById('receiptExpandIcon');
     if (wrapper.classList.contains('hidden-force')) {
         wrapper.classList.remove('hidden-force');
         icon.classList.add('rotate-180');
+
+        try {
+            const catSelect = document.getElementById('landingRecCategory');
+            if (catSelect) {
+                catSelect.innerHTML = '<option value="" disabled selected>Loading categories...</option>';
+                const finRes = await apiCall('fetchFinance');
+                const financeConfig = finRes.data?.config || {};
+                const financeOptions = finRes.data?.options || (Array.isArray(finRes.data) ? finRes.data : []);
+                
+                let optionsHtml = '';
+                if (financeConfig.finalOptionId) {
+                    const opt = financeOptions.find(o => o.id === financeConfig.finalOptionId);
+                    if (opt && opt.fields) {
+                        opt.fields.forEach(f => {
+                            optionsHtml += `<option value="${f.id}">${f.name}</option>`;
+                        });
+                    }
+                }
+                if (optionsHtml === '') {
+                    optionsHtml = '<option value="" disabled selected>No categories available</option>';
+                } else {
+                    optionsHtml = '<option value="" disabled selected>Select Category</option>' + optionsHtml;
+                }
+                catSelect.innerHTML = optionsHtml;
+            }
+        } catch(e) {
+            console.error('Failed to fetch finance options', e);
+        }
+
     } else {
         wrapper.classList.add('hidden-force');
         icon.classList.remove('rotate-180');

@@ -1,24 +1,12 @@
 const fs = require('fs');
 let code = fs.readFileSync('frontend/js/participants.js', 'utf8');
 
-// Ensure 'bus' column exists
-if (!code.includes("c.id === 'bus'")) {
-    // 1. Add to initial array
-    const oldInit = "id: 'pairings', label: 'Pairing(s)', width: 150, visible: true },";
-    code = code.replace(oldInit, oldInit + "\n{ id: 'bus', label: 'Bus', width: 90, visible: true },");
+// Replace 250px default width for fullName with a calculation or CSS min/max
+code = code.replace(/style="width: 250px; min-width: 250px; max-width: 250px;"/g, 
+    'style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;"');
 
-    // 2. Add to compatibility check
-    const checkStr = `if (!rosterCols.find(c => c.id === 'bus')) {
-    const pairIdx = rosterCols.findIndex(c => c.id === 'pairings');
-    rosterCols.splice(pairIdx > -1 ? pairIdx + 1 : rosterCols.length, 0, { id: 'bus', label: 'Bus', width: 90, visible: true });
-}`;
-    code = code.replace(/if \(\!rosterCols\.find\(c => c\.id === 'medical'\)\) \{/g, checkStr + "\nif (!rosterCols.find(c => c.id === 'medical')) {");
-    
-    // 3. Render bus
-    const pairRender = "} else if (c.id === 'pairings') {";
-    code = code.replace(pairRender, `} else if (c.id === 'bus') {
-               html += \`<td class="\${baseClass} font-bold" \${styleStr}>\${(p.bus || 'UNASSIGNED').toUpperCase()}</td>\`;
-           } else if (c.id === 'pairings') {`);
-}
+code = code.replace(/const colDef = colId === 'fullName' \? \{width: 250\} : rosterCols.find\(c => c.id === colId\);/g,
+    'const colDef = colId === \'fullName\' ? {width: Math.min(250, window.innerWidth / 3)} : rosterCols.find(c => c.id === colId);');
 
 fs.writeFileSync('frontend/js/participants.js', code);
+console.log("Patched participants.js");

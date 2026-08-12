@@ -204,7 +204,12 @@ window.formatMoneyInput = function(input, isBlur) {
  let cursorStart = input.selectionStart;
  let oldLen = input.value.length;
  
- let val = input.value.replace(/[^0-9.]/g, '');
+  let val = input.value.replace(/[^0-9.-]/g, '');
+ if(val !== '') {
+     let isNegative = val[0] === '-';
+     val = val.replace(/-/g, '');
+     if(isNegative) val = '-' + val;
+ }
  if(val === '') {
      input.value = '';
      return;
@@ -235,4 +240,28 @@ window.formatMoneyInput = function(input, isBlur) {
      let newCursor = cursorStart + diff;
      try { input.setSelectionRange(newCursor, newCursor); } catch(e){}
  }
+};
+
+window.applyCaregiverLabels = function(participants) {
+    if (!participants) return;
+    const traineeMap = {};
+    participants.forEach(p => {
+        if (p.role === 'TRAINEE') {
+            const searchKey = String(p.nric || '').toLowerCase();
+            const searchKey2 = String(p.name || '').toLowerCase();
+            const searchKey3 = String(p.shortName || '').toLowerCase();
+            traineeMap[searchKey] = p.shortName || p.name;
+            traineeMap[searchKey2] = p.shortName || p.name;
+            traineeMap[searchKey3] = p.shortName || p.name;
+        }
+    });
+
+    participants.forEach(p => {
+        if (p.role === 'CAREGIVER') {
+            let tName = p.relatedTrainee ? (traineeMap[String(p.relatedTrainee).toLowerCase()] || p.relatedTrainee) : '';
+            if (tName) {
+                p.caregiverFor = tName;
+            }
+        }
+    });
 };

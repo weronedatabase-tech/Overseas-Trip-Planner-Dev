@@ -157,27 +157,27 @@ function moveDrag(e, clientX, clientY, isTouch) {
             const activeDz = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
             document.querySelectorAll('.dnd-dropzone').forEach(dz => {
                 if (dz === activeDz && dz.dataset.role !== dndState.el.dataset.role) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         } else if (dndState.type === 'grouping') {
             const activeGroup = elAtPoint ? elAtPoint.closest('.dnd-group-dropzone') : null;
             document.querySelectorAll('.dnd-group-dropzone').forEach(dz => {
                 if (dz === activeGroup) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         } else if (dndState.type === 'busing') {
             const activeBus = elAtPoint ? elAtPoint.closest('.dnd-bus-dropzone') : null;
             document.querySelectorAll('.dnd-bus-dropzone').forEach(dz => {
                 if (dz === activeBus) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         }
@@ -185,9 +185,9 @@ function moveDrag(e, clientX, clientY, isTouch) {
             const activeRoom = elAtPoint ? elAtPoint.closest('.dnd-room-dropzone') : null;
             document.querySelectorAll('.dnd-room-dropzone').forEach(dz => {
                 if (dz === activeRoom) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         }
@@ -202,7 +202,7 @@ function endDrag(e, clientX, clientY) {
         dndState.clone = null; 
         dndState.isDragging = false;
 
-        document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone, .dnd-group-dropzone, .dnd-bus-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-gray-800', 'dark:border-primary', 'ring-1', 'ring-primary'));
+        document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone, .dnd-group-dropzone, .dnd-bus-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary'));
 
         const elAtPoint = document.elementFromPoint(clientX, clientY);
 
@@ -530,7 +530,6 @@ if(changed) {
 
 function autoAssignRooms() {
 if(!confirm("This will automatically assign unassigned participants into EXISTING rooms based on their connections. Continue?")) return;
-
 const activeRooms = globalLogistics.rooms.filter(r => !r.isDeleted);
 const roomAssignments = {};
 activeRooms.forEach(r => {
@@ -543,32 +542,24 @@ function getRoomState(roomId) {
     let hasFamily = false;
     let hasVolunteer = false;
     let genderSet = new Set();
-
     r.occupants.forEach(n => {
         const p = globalLogistics.participants.find(x => x.nric === n);
         if (p) {
             if (p.role === 'VOLUNTEER') hasVolunteer = true;
             if (p.role === 'CAREGIVER') hasFamily = true;
-            
-            // Check if trainee is part of a family
             const targetPoc = p.pocNric || p.nric; const familyMembers = globalLogistics.participants.filter(x => (x.pocNric || x.nric) === targetPoc);
             if (familyMembers.some(x => x.role === 'CAREGIVER')) hasFamily = true;
-
             if (p.gender) genderSet.add(p.gender.toLowerCase());
         }
     });
-
     let gender = 'empty';
     if (genderSet.size > 1) gender = 'mixed';
     else if (genderSet.has('male')) gender = 'male';
     else if (genderSet.has('female')) gender = 'female';
-
     return { hasFamily, hasVolunteer, gender, available: r.capacity - r.occupants.length };
 }
 
 let placedCount = 0;
-
-// 1. Group by POC to establish distinct family blocks
 const unassigned = globalLogistics.participants.filter(p => !roomAssignments[p.nric]);
 if(unassigned.length === 0) { showToast("Everyone is already assigned."); return; }
 
@@ -577,13 +568,10 @@ unassigned.forEach(p => {
     if(!familyGroups[p.pocNric || p.nric]) familyGroups[p.pocNric || p.nric] = [];
     familyGroups[p.pocNric || p.nric].push(p);
 });
-
 const families = [];
 const nonFamily = [];
-
 Object.keys(familyGroups).forEach(poc => {
     const group = familyGroups[poc];
-    // A group is a family if it contains a Caregiver or has size > 1
     if(group.some(p => p.role === 'CAREGIVER') || group.length > 1) {
         families.push(group);
     } else {
@@ -591,17 +579,14 @@ Object.keys(familyGroups).forEach(poc => {
     }
 });
 
-// Sort families by size desc
 families.sort((a,b) => b.length - a.length);
 
-// 2. Assign Families First
+// 2. Assign Families First (Must be kept together)
 families.forEach(fam => {
     let bestRoom = activeRooms.find(r => {
         const state = getRoomState(r.id);
-        // Family fits and room has NO volunteers
         return state.available >= fam.length && !state.hasVolunteer;
     });
-
     if (bestRoom) {
         fam.forEach(p => {
             bestRoom.occupants.push(p.nric);
@@ -617,7 +602,6 @@ families.forEach(fam => {
 const pairClusters = [];
 const visited = new Set();
 const remainingUnassigned = nonFamily.filter(p => !roomAssignments[p.nric]);
-
 const pairingsMap = {};
 (globalLogistics.pairings || []).forEach(p => {
     if(p.status === 'ACTIVE') {
@@ -632,12 +616,20 @@ remainingUnassigned.forEach(p => {
     if(!visited.has(p.nric)) {
         const cluster = [];
         const q = [p.nric];
+        let cGender = p.gender ? p.gender.toLowerCase() : null;
+        
         while(q.length > 0) {
             const curr = q.shift();
             if(!visited.has(curr)) {
-                visited.add(curr);
                 const pObj = globalLogistics.participants.find(x => x.nric === curr);
                 if(pObj && !roomAssignments[curr]) {
+                    const pGen = pObj.gender ? pObj.gender.toLowerCase() : null;
+                    if (!cGender && pGen) cGender = pGen;
+                    // Do not violate gender rule
+                    if (pGen && cGender && pGen !== cGender) {
+                        continue;
+                    }
+                    visited.add(curr);
                     cluster.push(pObj);
                     (pairingsMap[curr] || []).forEach(n => { if(!visited.has(n)) q.push(n); });
                 }
@@ -647,7 +639,13 @@ remainingUnassigned.forEach(p => {
     }
 });
 
-pairClusters.sort((a,b) => b.length - a.length);
+// Sort clusters: volunteers first, then by size
+pairClusters.sort((a,b) => {
+    const aHasVol = a.some(p => p.role === 'VOLUNTEER') ? 1 : 0;
+    const bHasVol = b.some(p => p.role === 'VOLUNTEER') ? 1 : 0;
+    if (aHasVol !== bHasVol) return bHasVol - aHasVol;
+    return b.length - a.length;
+});
 
 // 4. Assign Pair Clusters (Independent Trainees & Volunteers)
 pairClusters.forEach(cluster => {
@@ -656,17 +654,21 @@ pairClusters.forEach(cluster => {
     if(gSet.size > 1) cGender = 'mixed';
     else if(gSet.has('male')) cGender = 'male';
     else if(gSet.has('female')) cGender = 'female';
-
+    
     const hasVol = cluster.some(p => p.role === 'VOLUNTEER');
-
+    
     let bestRoom = activeRooms.find(r => {
         const state = getRoomState(r.id);
         if(state.available < cluster.length) return false;
-        if(hasVol && state.hasFamily) return false; // Prevent Vol + Family
-        if(state.gender !== 'empty' && cGender !== 'mixed' && state.gender !== 'mixed' && state.gender !== cGender) return false;
+        if(state.hasFamily) return false; // Prevent Vol/Trainee mixing with Family
+        if(state.gender !== 'empty' && cGender !== 'empty' && state.gender !== cGender) return false;
+        
+        // "There must never be a room that only has trainees."
+        if(!hasVol && !state.hasVolunteer) return false;
+        
         return true;
     });
-
+    
     if (bestRoom) {
         cluster.forEach(p => {
             bestRoom.occupants.push(p.nric);
@@ -677,7 +679,6 @@ pairClusters.forEach(cluster => {
         queueRoomUpdate(bestRoom.id);
     }
 });
-
 renderRooms();
 if (placedCount > 0) {
     showToast(`Auto-assigned ${placedCount} participants.`);
@@ -1085,7 +1086,7 @@ function renderGroups() {
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
                 <div class="flex items-center gap-2">
                     <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Group ${gName}</span>
-                    <button onclick="removeGroupList('${gName}')" class="text-gray-400 hover:text-red-500 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    <button onclick="removeGroupList('${gName}')" class="text-red-500 hover:text-red-600 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
                 </div>
                 <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${groupMap[gName].length} Pax</span>
             </div>
@@ -1164,7 +1165,7 @@ function renderBuses() {
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
                 <div class="flex items-center gap-2">
                     <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Bus ${bName}</span>
-                    <button onclick="removeBusList('${bName}')" class="text-gray-400 hover:text-red-500 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    <button onclick="removeBusList('${bName}')" class="text-red-500 hover:text-red-600 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
                 </div>
                 <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${busMap[bName].length} Pax</span>
             </div>
@@ -1654,7 +1655,7 @@ roomsToRender.forEach(room => {
             <div class="flex items-center gap-1 shrink-0 w-full lg:w-auto justify-end">
                 <button onclick="openRoomAddSheet('${room.id}')" class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 font-bold px-1.5 py-0.5 rounded hover:bg-blue-100 transition focus:outline-none" ${isFull ? 'disabled style="opacity:0.5;"' : ''}>+ Add</button>
                 <button onclick="promptEditRoom('${room.id}')" class="text-gray-400 hover:text-primary transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                <button onclick="deleteRoom('${room.id}')" class="text-gray-400 hover:text-red-500 transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                <button onclick="deleteRoom('${room.id}')" class="text-red-500 hover:text-red-600 transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
             </div>
         </div>
         <div class="p-1.5 min-h-[40px] flex flex-col pointer-events-auto bg-transparent gap-1.5 w-full">
@@ -1901,7 +1902,7 @@ function renderGroupBusOptions() {
         html += `
         <div class="sheet-list-item p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between transition hover:bg-gray-50 dark:hover:bg-gray-750" data-name="${item.toLowerCase()}">
             <div class="cursor-pointer flex-1 font-bold text-gray-900 dark:text-white text-sm" onclick="selectGroupBusOption('${item}')">${activeAssignType === 'group' ? 'Group ' : 'Bus '}${item}</div>
-            <button onclick="removeGroupBusFromPopup('${item}')" class="text-gray-400 hover:text-red-500 p-2 -mr-2"><i class="fa-solid fa-trash text-xs"></i></button>
+            <button onclick="removeGroupBusFromPopup('${item}')" class="text-red-500 hover:text-red-600 p-2 -mr-2"><i class="fa-solid fa-trash text-xs"></i></button>
         </div>`;
     });
     

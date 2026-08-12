@@ -63,3 +63,14 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="number"]
     user-select: none;
     -webkit-touch-callout: none;
 }
+
+@media (min-width: 768px) {
+  html {
+    font-size: 110%; /* Increase base font size by 10% on desktop */
+  }
+}
+@media (min-width: 1280px) {
+  html {
+    font-size: 115%; /* Increase even more on large desktop */
+  }
+}
