@@ -1,8 +1,8 @@
-let medicalRosterData = [];
-let medicalSearchQuery = '';
+let dietRosterData = [];
+let dietSearchQuery = '';
 
-let medSortRules = JSON.parse(localStorage.getItem('dietSortRules_v2')) || [{ col: 'fullName', asc: true }];
-let medCols = JSON.parse(localStorage.getItem('dietCols_v2')) || [
+let dietSortRules = JSON.parse(localStorage.getItem('dietSortRules_v2')) || [{ col: 'fullName', asc: true }];
+let dietCols = JSON.parse(localStorage.getItem('dietCols_v2')) || [
 { id: 'diet', label: 'Dietary Restrictions', width: 300, visible: true },
 { id: 'otherPoints', label: 'Other Notes', width: 220, visible: true }
 ];
@@ -10,62 +10,73 @@ let medCols = JSON.parse(localStorage.getItem('dietCols_v2')) || [
 
 let traineeShortNames = {};
 
-function buildMedicalUI() {
-document.getElementById('tab-medical').innerHTML = `
+function buildDietUI() {
+document.getElementById('tab-diet').innerHTML = `
 <div class="flex flex-col h-full w-full relative bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-   <div class="p-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center gap-2 shrink-0">
-       <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg flex items-center gap-2">
-           <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zM12 9v6m-3-3h6" /></svg>
-           Dietary Requirements
-       </h3>
-       <button onclick="loadMedicalData()" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none shadow-sm" title="Refresh">
-           <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-       </button>
-   </div>
-   
-   <div class="p-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center gap-2">
-       <div class="relative w-full flex-1">
-           <input type="text" id="medicalSearch" oninput="handleMedicalSearch()" placeholder="Search by name, diet, or medical notes..." class="w-full p-2 pl-9 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
-           <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-           <button onclick="clearSearch('medicalSearch', 'handleMedicalSearch')" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+   <div class="py-1.5 px-2 md:px-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center gap-2 shrink-0">
+       <div class="flex items-center gap-2">
+           <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg flex items-center gap-2">
+               <svg class="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>
+               Dietary Restrictions
+           </h3>
+       </div>
+       <div class="flex items-center gap-2">
+           <select onchange="if(this.value) window.location.href=this.value" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer shrink-0">
+               <option value="" disabled>Custom Views</option>
+               <option value="medical.html">Medical</option>
+               <option value="diet.html" selected>Dietary</option>
+               <option value="expired.html">Expired Passports</option>
+               <option value="other.html">Other Notes</option>
+           </select>
+           <button onclick="loadDietData()" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none shadow-sm" title="Refresh">
+               <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+           </button>
        </div>
    </div>
    
-   <div class="flex-1 overflow-auto custom-scrollbar relative" id="medicalTableContainer">
-       <table class="table-fixed-layout text-left border-collapse border-b border-gray-200 dark:border-gray-800">
-           <thead id="medicalTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-10 shadow-sm border-b border-gray-200 dark:border-gray-700">
+   <div class="py-1 px-2 md:px-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center gap-2">
+       <div class="relative w-full flex-1">
+           <input type="text" id="dietSearch" oninput="handleDietSearch()" placeholder="Search by name, diet, or medical notes..." class="w-full p-2 pl-9 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
+           <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+           <button onclick="clearSearch(\'dietSearch\', 'handleDietSearch')" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+       </div>
+   </div>
+   
+   <div class="flex-1 min-h-0 overflow-auto custom-scrollbar relative" id="dietTableContainer">
+       <table class="w-full table-fixed text-left border-collapse border-b border-gray-200 dark:border-gray-800">
+           <thead id="dietTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-10 shadow-sm border-b border-gray-200 dark:border-gray-700">
            </thead>
-           <tbody id="medicalTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+           <tbody id="dietTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
            </tbody>
        </table>
        
-       <div id="medicalLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col justify-center items-center z-20">
+       <div id="dietLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col justify-center items-center z-20">
            <div class="loader !w-8 !h-8 border-primary mb-2"></div>
            <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading Data...</span>
        </div>
    </div>
 </div>
 `;
-loadMedicalData();
+loadDietData();
 }
 
-async function loadMedicalData() {
-const loader = document.getElementById('medicalLoading');
+async function loadDietData() {
+const loader = document.getElementById('dietLoading');
 if(loader) loader.classList.remove('hidden-force');
 
 try {
    const res = await apiCall('fetchAdminRoster');
-   medicalRosterData = res.roster || [];
-   if (typeof applyCaregiverLabels === "function") applyCaregiverLabels(medicalRosterData);
+   dietRosterData = res.roster || [];
+   if (typeof applyCaregiverLabels === "function") applyCaregiverLabels(dietRosterData);
 
    traineeShortNames = {};
-   medicalRosterData.forEach(p => {
+   dietRosterData.forEach(p => {
        if(p.role === 'TRAINEE' && p.fullName) {
            traineeShortNames[String(p.fullName || '').trim().toUpperCase()] = String(p.shortName || p.fullName || '').trim().toUpperCase();
        }
    });
 
-   renderMedicalTable();
+   renderDietTable();
 } catch(e) {
    showToast("Failed to load medical data.", true);
 } finally {
@@ -73,26 +84,26 @@ try {
 }
 }
 
-function handleMedicalSearch() {
-medicalSearchQuery = document.getElementById('medicalSearch').value.toLowerCase().trim();
-renderMedicalTable();
+function handleDietSearch() {
+dietSearchQuery = document.getElementById('dietSearch').value.toLowerCase().trim();
+renderDietTable();
 }
 
 let mResizingCol = null;
 let mStartX = 0;
 let mStartWidth = 0;
 
-function initMedResize(e, colId) {
+function initDietResize(e, colId) {
 e.stopPropagation();
 mResizingCol = colId;
 mStartX = e.clientX;
-const colDef = colId === 'fullName' ? {width: 250} : medCols.find(c => c.id === colId);
+const colDef = colId === 'fullName' ? {width: 250} : dietCols.find(c => c.id === colId);
 mStartWidth = colDef.width || 150;
-document.addEventListener('mousemove', onMedMouseMove);
-document.addEventListener('mouseup', onMedMouseUp);
+document.addEventListener('mousemove', onDietMouseMove);
+document.addEventListener('mouseup', onDietMouseUp);
 }
 
-function onMedMouseMove(e) {
+function onDietMouseMove(e) {
 if (!mResizingCol) return;
 const diff = e.clientX - mStartX;
 let newWidth = Math.max(50, mStartWidth + diff);
@@ -101,7 +112,7 @@ if (mResizingCol === 'fullName') {
    const cells = document.querySelectorAll(`.med-col-fullName`);
    cells.forEach(c => { c.style.width = newWidth + 'px'; c.style.minWidth = newWidth + 'px'; c.style.maxWidth = newWidth + 'px'; });
 } else {
-   const cDef = medCols.find(c => c.id === mResizingCol);
+   const cDef = dietCols.find(c => c.id === mResizingCol);
    if (cDef) {
        cDef.width = newWidth;
        const cells = document.querySelectorAll(`.med-col-${mResizingCol}`);
@@ -110,62 +121,67 @@ if (mResizingCol === 'fullName') {
 }
 }
 
-function onMedMouseUp() {
+function onDietMouseUp() {
 if (mResizingCol && mResizingCol !== 'fullName') {
-   localStorage.setItem('dietCols_v2', JSON.stringify(medCols));
+   localStorage.setItem('dietCols_v2', JSON.stringify(dietCols));
 }
 mResizingCol = null;
-document.removeEventListener('mousemove', onMedMouseMove);
-document.removeEventListener('mouseup', onMedMouseUp);
+document.removeEventListener('mousemove', onDietMouseMove);
+document.removeEventListener('mouseup', onDietMouseUp);
 }
 
-let medDraggedColId = null;
-window.onMedColDragStart = function(e, colId) {
-medDraggedColId = colId;
+let dietDraggedColId = null;
+window.onDietColDragStart = function(e, colId) {
+dietDraggedColId = colId;
 e.dataTransfer.effectAllowed = "move";
 e.target.classList.add('opacity-50');
 }
-window.onMedColDragEnd = function(e) {
+window.onDietColDragEnd = function(e) {
 e.target.classList.remove('opacity-50');
 document.querySelectorAll('th').forEach(th => th.classList.remove('bg-gray-200', 'dark:bg-gray-700'));
 }
-window.onMedColDragOver = function(e) {
+window.onDietColDragOver = function(e) {
 e.preventDefault();
 e.dataTransfer.dropEffect = "move";
 const th = e.target.closest('th');
-if(th && th.dataset.colId !== medDraggedColId && th.dataset.colId !== 'fullName') {
+if(th && th.dataset.colId !== dietDraggedColId && th.dataset.colId !== 'fullName') {
    th.classList.add('bg-gray-200', 'dark:bg-gray-700');
 }
 }
-window.onMedColDragLeave = function(e) {
+window.onDietColDragLeave = function(e) {
 const th = e.target.closest('th');
 if(th) th.classList.remove('bg-gray-200', 'dark:bg-gray-700');
 }
-window.onMedColDrop = function(e, targetColId) {
+window.onDietColDrop = function(e, targetColId) {
 e.preventDefault();
 const th = e.target.closest('th');
 if(th) th.classList.remove('bg-gray-200', 'dark:bg-gray-700');
 
-if (!medDraggedColId || medDraggedColId === targetColId || targetColId === 'fullName' || medDraggedColId === 'fullName') return;
+if (!dietDraggedColId || dietDraggedColId === targetColId || targetColId === 'fullName' || dietDraggedColId === 'fullName') return;
 
-const fromIdx = medCols.findIndex(c => c.id === medDraggedColId);
-const toIdx = medCols.findIndex(c => c.id === targetColId);
+const fromIdx = dietCols.findIndex(c => c.id === dietDraggedColId);
+const toIdx = dietCols.findIndex(c => c.id === targetColId);
 if(fromIdx > -1 && toIdx > -1) {
-   const [moved] = medCols.splice(fromIdx, 1);
-   medCols.splice(toIdx, 0, moved);
-   localStorage.setItem('dietCols_v2', JSON.stringify(medCols));
-   renderMedicalTable();
+   const [moved] = dietCols.splice(fromIdx, 1);
+   dietCols.splice(toIdx, 0, moved);
+   localStorage.setItem('dietCols_v2', JSON.stringify(dietCols));
+   renderDietTable();
 }
 }
 
-function renderMedicalTable() {
-let data = medicalRosterData.filter(p => p.diet || p.otherPoints);
-if (medicalSearchQuery) {
+function renderDietTable() {
+let data = dietRosterData.filter(p => {
+    if (!p.diet) return false;
+    const diet = p.diet.trim().toLowerCase();
+    if (diet === '' || diet === '-' || diet === 'nil' || diet === 'na' || diet === 'n/a' || diet === 'none' || diet === 'no' || diet === 'normal') return false;
+    return true;
+});
+if (dietSearchQuery) {
    data = data.filter(p => {
-       return (p.fullName && p.fullName.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.shortName && p.shortName.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.diet && p.diet.toLowerCase().includes(medicalSearchQuery)) ||
-              (p.otherPoints && p.otherPoints.toLowerCase().includes(medicalSearchQuery));
+       return (p.fullName && p.fullName.toLowerCase().includes(dietSearchQuery)) ||
+              (p.shortName && p.shortName.toLowerCase().includes(dietSearchQuery)) ||
+              (p.diet && p.diet.toLowerCase().includes(dietSearchQuery)) ||
+              (p.otherPoints && p.otherPoints.toLowerCase().includes(dietSearchQuery));
    });
 }
 data.sort((a, b) => {
@@ -176,18 +192,18 @@ data.sort((a, b) => {
    return 0;
 });
 
-const thead = document.getElementById('medicalTableHead');
+const thead = document.getElementById('dietTableHead');
 let headHtml = `<tr>
-   <th class="p-3 bg-gray-100 dark:bg-gray-800 align-top sticky left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-sm w-[35%] text-left">
+   <th class="py-1.5 px-2 bg-gray-100 dark:bg-gray-800 align-top sticky top-0 left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-sm w-[35%] text-left">
        <div class="font-bold text-gray-700 dark:text-gray-300">Participant</div>
    </th>
-   <th class="p-3 bg-gray-100 dark:bg-gray-800 align-top w-[65%] text-left">
-       <div class="font-bold text-gray-700 dark:text-gray-300">Dietary & Other Notes</div>
+   <th class="py-1.5 px-2 bg-gray-100 dark:bg-gray-800 align-top sticky top-0 z-10 w-[65%] text-left">
+       <div class="font-bold text-gray-700 dark:text-gray-300">Dietary Restrictions</div>
    </th>
 </tr>`;
 thead.innerHTML = headHtml;
 
-const tbody = document.getElementById('medicalTableBody');
+const tbody = document.getElementById('dietTableBody');
 let html = '';
 data.forEach(p => {
    const roleStr = p.role.substring(0, 3).toUpperCase();
@@ -197,7 +213,7 @@ data.forEach(p => {
    const nameClass = 'font-bold text-gray-900 dark:text-gray-100';
    
    html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
-       <td class="p-3 align-top sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm w-[35%]">
+       <td class="py-1.5 px-2 align-top sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm w-[35%]">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
            ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">
@@ -206,7 +222,7 @@ data.forEach(p => {
            </div>
            ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-[10px]">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
        </td>
-       <td class="p-3 align-top w-[65%] text-xs leading-relaxed whitespace-normal break-words border-l border-gray-100 dark:border-gray-800/50">
+       <td class="py-1.5 px-2 align-top w-[65%] text-xs leading-relaxed whitespace-normal break-words border-l border-gray-100 dark:border-gray-800/50">
            <div class="flex flex-col gap-3">`;
 
    const hasDiet = p.diet && p.diet.trim() && p.diet.trim().toLowerCase() !== 'nil' && p.diet.trim().toLowerCase() !== 'none';
@@ -214,10 +230,7 @@ data.forEach(p => {
        html += `<div><span class="font-bold text-gray-500 uppercase text-[10px] block mb-0.5">Dietary Restrictions:</span> <span class="text-red-700 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap">${p.diet}</span></div>`;
    }
    
-   const hasNotes = p.otherPoints && p.otherPoints.trim() && p.otherPoints.trim().toLowerCase() !== 'nil' && p.otherPoints.trim().toLowerCase() !== 'none';
-   if (hasNotes) {
-       html += `<div><span class="font-bold text-gray-500 uppercase text-[10px] block mb-0.5">Other Notes:</span> <span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap block">${p.otherPoints}</span></div>`;
-   }
+   
    
    html += `</div></td></tr>`;
 });

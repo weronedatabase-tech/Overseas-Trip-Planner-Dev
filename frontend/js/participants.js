@@ -59,19 +59,22 @@ let traineeShortNames = {};
 function buildParticipantsUI() {
 document.getElementById('tab-participants').innerHTML = `
 <div class="flex flex-col h-full w-full relative bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-   <div class="p-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center gap-2 shrink-0">
-       <div class="flex items-center gap-2">
-       <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg">Participant Roster <span id="rosterTotalCount" class="text-gray-500 font-bold text-sm">(0)</span></h3>
-       <button onclick="showRosterBreakdownModal()" class="text-gray-400 hover:text-primary focus:outline-none transition bg-gray-100 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-900/30 rounded-full p-1" title="View Breakdown">
-           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-       </button>
+   <div class="py-1.5 px-2 md:px-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center gap-2 shrink-0">
+       <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap min-w-0">
+           <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg truncate shrink-0"><span class="hidden md:inline">Participant </span>Roster</h3>
+           <span id="rosterTotalCount" class="text-gray-500 font-black text-[11px] md:text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 shrink-0">(0)</span>
+           <button onclick="showRosterBreakdownModal()" class="flex items-center justify-center bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 focus:outline-none transition rounded-lg px-2 py-1 md:px-2.5 md:py-1.5 shadow-sm border border-blue-200 dark:border-blue-800 shrink-0 ml-1" title="View Roster Breakdown">
+               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+               <span class="text-[10px] md:text-xs font-black ml-1.5 uppercase tracking-wider hidden md:inline">Breakdown</span>
+           </button>
        </div>
        <div class="flex items-center gap-2">
            <select onchange="if(this.value) window.location.href=this.value" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer shrink-0">
                <option value="" disabled selected>Custom Views</option>
                <option value="medical.html">Medical</option>
                <option value="diet.html">Dietary</option>
-               <option value="expired.html">Passports</option>
+               <option value="expired.html">Expired Passports</option>
+               <option value="other.html">Other Notes</option>
            </select>
            <button onclick="loadParticipantsData()" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none shadow-sm" title="Refresh Roster">
                <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -79,7 +82,7 @@ document.getElementById('tab-participants').innerHTML = `
        </div>
    </div>
    
-   <div class="p-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center gap-2">
+   <div class="py-1 px-2 md:px-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center gap-2">
        <div class="relative w-full flex-1">
            <input type="text" id="rosterSearch" oninput="handleRosterSearch()" placeholder="Fuzzy search across all fields..." class="w-full p-2 pl-9 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm transition">
            <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -111,7 +114,7 @@ document.getElementById('tab-participants').innerHTML = `
        </div>
    </div>
    
-   <div class="flex-1 overflow-auto custom-scrollbar relative" id="rosterTableContainer">
+   <div class="flex-1 min-h-0 overflow-auto custom-scrollbar relative" id="rosterTableContainer">
        <table class="table-fixed-layout text-left border-collapse border-b border-gray-200 dark:border-gray-800">
            <thead id="rosterTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-20 shadow-sm border-b border-gray-200 dark:border-gray-700">
            </thead>
@@ -151,8 +154,7 @@ if(c) c.visible = isVisible;
 localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
 renderRosterTable();
 
-   const countEl = document.getElementById('rosterTotalCount');
-   if(countEl) countEl.innerText = `(${adminRosterData.length})`;
+   
 
 }
 
@@ -433,6 +435,7 @@ if(fromIdx > -1 && toIdx > -1) {
 function renderRosterTable() {
 let data = [...adminRosterData];
 
+
 if (rosterSearchQuery) {
    data = data.filter(p => {
        return Object.values(p).some(val => 
@@ -469,6 +472,9 @@ if (rosterSortRules.some(r => r.col === 'specialSort')) {
    });
 }
 
+
+    const countEl = document.getElementById('rosterTotalCount');
+    if (countEl) countEl.innerText = `(${data.length})`;
 data.sort((a, b) => {
    for (let rule of rosterSortRules) {
        if (rule.col === 'specialSort') {
@@ -513,7 +519,7 @@ data.sort((a, b) => {
 
 const thead = document.getElementById('rosterTableHead');
 let headHtml = `<tr>
-   <th class="p-3 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top sticky left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;" data-col-id="fullName">
+   <th class="py-1.5 px-2 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top sticky left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;" data-col-id="fullName">
        <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('fullName')">Full Name <span class="text-[8px]">↕</span></div>
        <div class="resize-handle" onmousedown="initResize(event, 'fullName')" ontouchstart="initResize(event, 'fullName')"></div>
    </th>`;
@@ -521,7 +527,7 @@ let headHtml = `<tr>
 rosterCols.forEach(c => {
    if (c.visible) {
        headHtml += `
-       <th class="p-3 relative bg-gray-100 dark:bg-gray-800 roster-col-${c.id} align-top" 
+       <th class="py-1.5 px-2 relative bg-gray-100 dark:bg-gray-800 roster-col-${c.id} align-top" 
            style="width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px;" 
            data-col-id="${c.id}" draggable="true" 
            ondragstart="onColDragStart(event, '${c.id}')" ondragend="onColDragEnd(event)"
@@ -578,7 +584,7 @@ data.forEach(p => {
    const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
     
     html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
-       <td class="p-3 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
+       <td class="py-1.5 px-2 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
            ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">

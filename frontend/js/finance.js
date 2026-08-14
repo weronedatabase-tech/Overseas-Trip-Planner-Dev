@@ -435,10 +435,10 @@ opt.fields.forEach(f => {
 
     rowsHtml += `
     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-        <td class="p-3 text-sm font-bold text-gray-900 dark:text-gray-100">${f.name}</td>
-        <td class="p-3 text-xs font-semibold text-gray-600 dark:text-gray-400 text-right whitespace-nowrap">SGD ${plannedSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-        <td class="p-3 text-xs font-bold text-blue-700 dark:text-blue-400 text-right whitespace-nowrap">SGD ${actualSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-        <td class="p-3 text-xs font-black ${diffClass} text-right whitespace-nowrap">${diff > 0 ? '+' : ''}${diff.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+        <td class="py-1.5 px-2 text-sm font-bold text-gray-900 dark:text-gray-100">${f.name}</td>
+        <td class="py-1.5 px-2 text-xs font-semibold text-gray-600 dark:text-gray-400 text-right whitespace-nowrap">SGD ${plannedSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+        <td class="py-1.5 px-2 text-xs font-bold text-blue-700 dark:text-blue-400 text-right whitespace-nowrap">SGD ${actualSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+        <td class="py-1.5 px-2 text-xs font-black ${diffClass} text-right whitespace-nowrap">${diff > 0 ? '+' : ''}${diff.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
     </tr>`;
 });
 
@@ -477,10 +477,10 @@ cont.innerHTML = `
         <table class="w-full text-left border-collapse min-w-[600px]">
             <thead class="bg-gray-100 dark:bg-gray-800 text-[10px] uppercase font-black text-gray-500 dark:text-gray-400 tracking-wider">
                 <tr>
-                    <th class="p-3">Category</th>
-                    <th class="p-3 text-right">Planned (SGD)</th>
-                    <th class="p-3 text-right">Actual (SGD)</th>
-                    <th class="p-3 text-right">Variance</th>
+                    <th class="py-1.5 px-2">Category</th>
+                    <th class="py-1.5 px-2 text-right">Planned (SGD)</th>
+                    <th class="py-1.5 px-2 text-right">Actual (SGD)</th>
+                    <th class="py-1.5 px-2 text-right">Variance</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
@@ -901,33 +901,35 @@ activeReceipts.forEach(r => {
     if(globalLogistics && globalLogistics.participants) {
         const up = globalLogistics.participants.find(x => x.nric === r.uploaderNric);
         if(up) uploaderName = up.shortName || up.name;
+        else if (r.uploaderName) uploaderName = r.uploaderName;
         
         const pp = globalLogistics.participants.find(x => x.nric === payerName);
-        if(pp) payerName = pp.shortName || pp.name;
+       if(pp) payerName = pp.shortName || pp.name;
+       else if (r.uploaderName && payerName === r.uploaderNric) payerName = r.uploaderName;
     }
 
     const isReimClass = r.isReimbursed ? 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-800 shadow-sm' : 'text-gray-500 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700';
 
     rowsHtml += `
     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-        <td class="p-3 text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">${dateStr}</td>
-        <td class="p-3 text-xs leading-tight">
+        <td class="py-1.5 px-2 text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">${dateStr}</td>
+        <td class="py-1.5 px-2 text-xs leading-tight">
            <div class="font-bold text-gray-800 dark:text-gray-200">Up: ${uploaderName}</div>
            <div class="font-black text-blue-600 dark:text-blue-400 text-[10px] uppercase mt-0.5">Paid: ${payerName}</div>
         </td>
-        <td class="p-3 text-xs font-bold text-primary max-w-[150px] truncate" title="${catName}">${catName}</td>
-        <td class="p-3 text-xs font-bold text-gray-800 dark:text-gray-200 text-right whitespace-nowrap">${r.currency} ${r.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-        <td class="p-3 text-[11px] font-black text-purple-600 dark:text-purple-400 text-right whitespace-nowrap">SGD ${r.sgdAmount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-        <td class="p-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="${r.remarks}">${r.remarks || '-'}</td>
-        <td class="p-3 text-center">
+        <td class="py-1.5 px-2 text-xs font-bold text-primary max-w-[150px] truncate" title="${catName}">${catName}</td>
+        <td class="py-1.5 px-2 text-xs font-bold text-gray-800 dark:text-gray-200 text-right whitespace-nowrap">${r.currency} ${r.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+        <td class="py-1.5 px-2 text-[11px] font-black text-purple-600 dark:text-purple-400 text-right whitespace-nowrap">SGD ${r.sgdAmount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+        <td class="py-1.5 px-2 text-[10px] font-medium text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="${r.remarks}">${r.remarks || '-'}</td>
+        <td class="py-1.5 px-2 text-center">
             <button onclick="toggleReceiptReimbursed('${r.id}', ${!r.isReimbursed})" class="text-[10px] font-bold px-2 py-1 rounded border transition focus:outline-none uppercase tracking-wider whitespace-nowrap ${isReimClass}">
                 ${r.isReimbursed ? 'Reimbursed' : 'Pending'}
             </button>
         </td>
-        <td class="p-3 text-xs text-center">
+        <td class="py-1.5 px-2 text-xs text-center">
             ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 font-bold underline px-2">View</a>` : '-'}
         </td>
-        <td class="p-3 text-center">
+        <td class="py-1.5 px-2 text-center">
             <button onclick="deleteReceipt('${r.id}')" class="text-red-500 hover:text-red-600 transition p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
         </td>
     </tr>`;
@@ -939,15 +941,15 @@ cont.innerHTML = `
         <table class="w-full text-left border-collapse min-w-[800px]">
             <thead class="bg-gray-100 dark:bg-gray-800 text-[10px] uppercase font-black text-gray-500 dark:text-gray-400 tracking-wider border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                    <th class="p-3">Date</th>
-                    <th class="p-3">Users</th>
-                    <th class="p-3">Category</th>
-                    <th class="p-3 text-right">Orig Amount</th>
-                    <th class="p-3 text-right">SGD Value</th>
-                    <th class="p-3">Remarks</th>
-                    <th class="p-3 text-center">Status</th>
-                    <th class="p-3 text-center">File</th>
-                    <th class="p-3 text-center">Action</th>
+                    <th class="py-1.5 px-2">Date</th>
+                    <th class="py-1.5 px-2">Users</th>
+                    <th class="py-1.5 px-2">Category</th>
+                    <th class="py-1.5 px-2 text-right">Orig Amount</th>
+                    <th class="py-1.5 px-2 text-right">SGD Value</th>
+                    <th class="py-1.5 px-2">Remarks</th>
+                    <th class="py-1.5 px-2 text-center">Status</th>
+                    <th class="py-1.5 px-2 text-center">File</th>
+                    <th class="py-1.5 px-2 text-center">Action</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">

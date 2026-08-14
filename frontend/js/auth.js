@@ -98,6 +98,8 @@ async function submitLandingReceipt(e) {
     succ.classList.add('hidden-force');
     
     const nric = document.getElementById('landingRecNric').value.trim().toUpperCase();
+    const nameField = document.getElementById('landingRecName');
+    const uploaderName = nameField ? nameField.value.trim() : '';
     const amount = parseFloat(document.getElementById('landingRecAmount').value) || 0;
     const category = document.getElementById('landingRecCategory').value.trim();
     const remarks = document.getElementById('landingRecRemarks').value.trim();
@@ -116,6 +118,7 @@ async function submitLandingReceipt(e) {
         const base64 = await toBase64(file);
         const payload = {
             uploaderNric: nric,
+            uploaderName: uploaderName,
             currency: document.getElementById('landingRecCurrency').value,
             amount: amount,
             rate: parseFloat(document.getElementById('landingRecRate').value) || 1,

@@ -968,7 +968,8 @@ receipts.push({
   remarks: String(data[i][9] || ''),
   isDeleted: String(data[i][10]).toUpperCase() === 'TRUE',
   paidByNric: String(data[i][11] || ''),
-  isReimbursed: String(data[i][12]).toUpperCase() === 'TRUE'
+  isReimbursed: String(data[i][12]).toUpperCase() === 'TRUE',
+  uploaderName: String(data[i][13] || '')
 });
 }
 const res = { status: 'success', receipts };
@@ -1047,6 +1048,7 @@ if (existingMap[u.id] !== undefined) {
     data[rowIndex][10] = isDel;
     data[rowIndex][11] = u.paidByNric || u.uploaderNric;
     data[rowIndex][12] = isReim;
+    data[rowIndex][13] = u.uploaderName || '';
     dataChanged = true;
   }
 }

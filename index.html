@@ -17,7 +17,7 @@
 <div id="viewLoading" class="fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-gray-950"><div class="loader w-10 h-10"></div></div>
 
 <div id="unauthLayout" class="flex-1 flex flex-col w-full relative overflow-y-auto">
-<header class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 shadow-sm">
+<header class="flex items-center justify-between px-5 py-1 border-b border-gray-200 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 shadow-sm">
 <div class="flex flex-col">
   <h1 class="font-black text-xl text-primary tracking-tight leading-tight">Overseas Trip</h1>
   <span id="unauthTripName" class="text-[10px] font-bold text-gray-500 uppercase tracking-wider hidden-force"></span>
@@ -78,6 +78,10 @@
             <div>
                 <label class="block text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Uploader NRIC</label>
                 <input type="text" id="landingRecNric" required class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-xl uppercase font-bold bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20" placeholder="S1234567A">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name (Optional)</label>
+                <input type="text" id="landingRecName" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-xl font-bold bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20" placeholder="John Doe">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
