@@ -689,6 +689,10 @@ return res;
 function syncRoomUpdates(updates, takenBy) {
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Rooms");
+if (!sheet) {
+  sheet = ss.insertSheet("Rooms");
+  sheet.appendRow(["Room ID", "Name", "Occupants NRICs (Comma separated)", "Timestamp", "Updated By"]);
+}
 
 const lock = LockService.getScriptLock();
 try {
@@ -980,6 +984,10 @@ return res;
 function uploadReceipt(payload) {
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Receipts");
+if (!sheet) {
+  sheet = ss.insertSheet("Receipts");
+  sheet.appendRow(["Receipt ID", "Timestamp", "Uploader NRIC", "Currency", "Amount", "Rate", "SGD Amount", "Category ID", "File URL", "Remarks", "Is Deleted", "Paid By", "Is Reimbursed"]);
+}
 
 const tripFolder = getTripFolder();
 let receiptsFolder;
@@ -1016,6 +1024,10 @@ finally { lock.releaseLock(); }
 function syncReceipts(updates) {
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Receipts");
+if (!sheet) {
+  sheet = ss.insertSheet("Receipts");
+  sheet.appendRow(["Receipt ID", "Timestamp", "Uploader NRIC", "Currency", "Amount", "Rate", "SGD Amount", "Category ID", "File URL", "Remarks", "Is Deleted", "Paid By", "Is Reimbursed"]);
+}
 
 const lock = LockService.getScriptLock();
 try {
@@ -1090,6 +1102,10 @@ return res;
 function syncMinutes(updates, takenBy) {
 const ss = getDatabase();
 let sheet = ss.getSheetByName("Minutes");
+if (!sheet) {
+  sheet = ss.insertSheet("Minutes");
+  sheet.appendRow(["Note ID", "Date", "Content", "Assigned To", "Timestamp", "Updated By", "Is Deleted"]);
+}
 
 const lock = LockService.getScriptLock();
 try {

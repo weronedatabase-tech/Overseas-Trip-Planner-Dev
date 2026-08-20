@@ -129,7 +129,7 @@ async function submitLandingReceipt(e) {
             mimeType: file.type,
             fileData: base64.split(',')[1]
         };
-        const res = await apiCall('uploadReceipt', payload);
+        const res = await apiCall('uploadReceipt', { payload: payload });
         succ.textContent = "Receipt uploaded successfully!";
         succ.classList.remove('hidden-force');
         document.getElementById('landingReceiptForm').reset();
