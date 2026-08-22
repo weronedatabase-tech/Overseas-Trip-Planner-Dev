@@ -130,6 +130,10 @@
 <script src="frontend/js/auth.js"></script>
 <script>
  window.initPage = () => {
+   if(currentUser && currentUser.role === 'admin') {
+     window.location.href = 'roster.html';
+     return;
+   }
    loadProfileData();
  };
 </script>
