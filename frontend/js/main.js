@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
 if ('serviceWorker' in navigator) {
- navigator.serviceWorker.register('sw.js').catch(err => console.warn(err));
+ navigator.serviceWorker.getRegistrations().then(regs => {
+   for (let r of regs) r.unregister();
+ });
 }
 
 const savedSession = localStorage.getItem('userSession');
