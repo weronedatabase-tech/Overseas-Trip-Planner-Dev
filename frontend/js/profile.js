@@ -227,7 +227,7 @@ if (familyArr.length > 0) {
 
 let receiptsHtml = `
 <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-   <h3 class="text-sm font-black text-gray-900 dark:text-white tracking-tight border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">My Receipts History</h3>
+   <h3 class="text-sm font-black text-gray-900 dark:text-white tracking-tight border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">Trip Fees Payment Confirmation</h3>
    <div id="myReceiptsContainer" class="overflow-x-auto">
        ${generateMyReceiptsHtml()}
    </div>
@@ -419,68 +419,31 @@ if(cont) cont.innerHTML = generateMyReceiptsHtml();
 }
 
 function generateMyReceiptsHtml() {
-if (myReceipts.length === 0) {
-   return `<div class="p-6 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No receipts uploaded yet.</div>`;
+const feeReceipts = myReceipts.filter(r => !r.isDeleted && r.categoryId === "Fees Payment Screenshot").sort((a, b) => b.ts - a.ts);
+
+if (feeReceipts.length === 0) {
+   return `<div class="p-6 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Trip Fees Payment Confirmation Screenshot NOT Uploaded</div>`;
 }
 
-let html = `
-<table class="w-full text-left border-collapse">
-   <thead class="bg-gray-100 dark:bg-gray-800 text-[10px] uppercase font-black text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 tracking-wider">
-       <tr>
-           <th class="p-2">Date</th>
-           <th class="p-2">Category</th>
-           <th class="p-2">Paid By</th>
-           <th class="p-2 text-right">Amount</th>
-           <th class="p-2 text-right">SGD</th>
-           <th class="p-2 text-center">Status</th>
-           <th class="p-2">Remarks</th>
-           <th class="p-2 text-center">File</th>
-       </tr>
-   </thead>
-   <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-`;
+const feeReceipt = feeReceipts[0];
+const dateStr = new Date(feeReceipt.ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-myReceipts.sort((a,b) => b.ts - a.ts).forEach(r => {
-   let catName = 'Unknown';
-   if (finConfig.finalOptionId) {
-       const opt = finOptions.find(o => o.id === finConfig.finalOptionId);
-       if (opt) {
-           const f = opt.fields.find(field => field.id === r.categoryId);
-           if (f) catName = f.name;
+return `
+   <div class="flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800 text-center">
+       <svg class="w-12 h-12 text-green-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg>
+       <h4 class="text-lg font-black text-gray-900 dark:text-white mb-1">Screenshot Uploaded</h4>
+       <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Uploaded on ${dateStr}</p>
+       ${feeReceipt.fileUrl ? 
+           `<a href="${feeReceipt.fileUrl}" target="_blank" class="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition">
+               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+               View Uploaded Screenshot
+           </a>`
+           : `<span class="text-xs font-bold text-red-500">Link unavailable</span>`
        }
-   }
-   
-   let payerName = r.paidByNric || r.uploaderNric;
-   if(globalLogistics && globalLogistics.participants) {
-       const pp = globalLogistics.participants.find(x => x.nric === payerName);
-       if(pp) payerName = pp.shortName || pp.name;
-   }
-   
-   const dateStr = new Date(r.ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-   const isReimClass = r.isReimbursed ? 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-800 shadow-sm' : 'text-gray-500 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600';
-   
-   html += `
-   <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-       <td class="p-2 text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">${dateStr}</td>
-       <td class="p-2 text-xs font-bold text-primary max-w-[120px] truncate" title="${catName}">${catName}</td>
-       <td class="p-2 text-xs font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">${payerName}</td>
-       <td class="p-2 text-xs font-bold text-gray-800 dark:text-gray-200 text-right whitespace-nowrap">${r.currency} ${r.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-       <td class="p-2 text-[11px] font-black text-purple-600 dark:text-purple-400 text-right whitespace-nowrap">SGD ${r.sgdAmount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-       <td class="p-2 text-center">
-           <span class="text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider whitespace-nowrap ${isReimClass}">
-               ${r.isReimbursed ? 'Reimbursed' : 'Pending'}
-           </span>
-       </td>
-       <td class="p-2 text-[10px] font-medium text-gray-600 dark:text-gray-400 max-w-[100px] truncate" title="${r.remarks}">${r.remarks || '-'}</td>
-       <td class="p-2 text-xs text-center">
-           ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="text-green-500 hover:text-green-700 font-bold underline">View</a>` : '-'}
-       </td>
-   </tr>
-   `;
-});
-
-html += `</tbody></table>`;
-return html;
+   </div>
+`;
 }
 
 function enableEditMode(i) { 

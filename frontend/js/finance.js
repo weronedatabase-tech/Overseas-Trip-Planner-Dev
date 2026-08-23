@@ -877,7 +877,7 @@ function renderReceiptsBrowser() {
 const cont = document.getElementById('fin-tab-receipts');
 if(!cont || cont.classList.contains('hidden-force')) return;
 
-const activeReceipts = globalReceipts.filter(r => !r.isDeleted).sort((a,b) => b.ts - a.ts);
+const activeReceipts = globalReceipts.filter(r => !r.isDeleted && r.categoryId !== "Fees Payment Screenshot").sort((a,b) => b.ts - a.ts);
 
 if(activeReceipts.length === 0) {
     cont.innerHTML = `<div class="w-full py-10 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg><p class="text-xs font-bold uppercase tracking-widest">No receipts uploaded.</p></div>`;
@@ -1083,6 +1083,21 @@ cardsData.forEach(c => {
                 </div>
             </button>
         </div>
+        
+        ${(() => {
+            const feeReceipts = globalReceipts.filter(r => !r.isDeleted && r.categoryId === "Fees Payment Screenshot" && (r.uploaderNric === c.poc || r.paidByNric === c.poc)).sort((a,b) => b.ts - a.ts);
+            if (feeReceipts.length > 0 && feeReceipts[0].fileUrl) {
+                return `
+                <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <a href="${feeReceipts[0].fileUrl}" target="_blank" class="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 w-max">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                        View Uploaded Screenshot
+                    </a>
+                </div>
+                `;
+            }
+            return '';
+        })()}
 
         <div class="grid grid-cols-2 gap-2 p-2 bg-gray-50/50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800 mt-auto">
             <div>

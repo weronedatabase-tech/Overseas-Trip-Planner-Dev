@@ -990,18 +990,19 @@ if (!sheet) {
 }
 
 const tripFolder = getTripFolder();
-let receiptsFolder;
-const folders = tripFolder.getFoldersByName("Receipts");
-if (folders.hasNext()) receiptsFolder = folders.next();
+const folderName = payload.categoryId === "Fees Payment Screenshot" ? "Trip Fees Payment Confirmation" : "Receipts";
+let targetFolder;
+const folders = tripFolder.getFoldersByName(folderName);
+if (folders.hasNext()) targetFolder = folders.next();
 else {
-  try { receiptsFolder = tripFolder.createFolder("Receipts"); }
-  catch(e) { receiptsFolder = tripFolder.getFoldersByName("Receipts").next(); }
+  try { targetFolder = tripFolder.createFolder(folderName); }
+  catch(e) { targetFolder = tripFolder.getFoldersByName(folderName).next(); }
 }
 
 let fileUrl = "";
 if (payload.fileData) {
 const blob = Utilities.newBlob(Utilities.base64Decode(payload.fileData), payload.mimeType, payload.fileName);
-const file = receiptsFolder.createFile(blob);
+const file = targetFolder.createFile(blob);
 fileUrl = file.getUrl();
 }
 
