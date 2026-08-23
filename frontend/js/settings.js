@@ -62,7 +62,7 @@ function buildSettingsUI() {
         <input type="date" id="tripEndDate" value="${appSettings.tripEndDate || ''}" class="w-full p-1.5 border border-gray-300 dark:border-gray-700 rounded-md text-[11px] font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white [color-scheme:light] dark:[color-scheme:dark]">
       </div>
     </div>
-    <button onclick="saveTripConfiguration(this)" class="w-full px-2 py-1.5 text-[11px] bg-primary text-white font-bold rounded-md shadow-sm transition flex justify-center items-center hover:bg-blue-600 focus:outline-none"><span class="btn-text">Save Dates</span><div class="btn-spinner spinner-white hidden-force ml-1.5 !w-3 !h-3 border-2"></div></button>
+    <button onclick="saveTripConfiguration(this)" class="w-full px-2 py-1.5 text-[11px] bg-primary text-white font-bold rounded-md shadow-sm transition flex justify-center items-center hover:bg-green-600 focus:outline-none"><span class="btn-text">Save Dates</span><div class="btn-spinner spinner-white hidden-force ml-1.5 !w-3 !h-3 border-2"></div></button>
    </div>
 
   </div>
@@ -131,12 +131,12 @@ function buildSettingsUI() {
   <div class="flex flex-col md:flex-row gap-3 justify-between items-center w-full mt-1">
     <div class="flex items-center gap-2 w-full md:w-auto flex-1">
       <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Access Role:</label>
-      <select id="newDriveRole" class="p-2 w-full md:w-48 border-2 border-primary/60 dark:border-primary/50 rounded-md text-xs font-extrabold bg-blue-50/50 dark:bg-blue-900/30 text-primary dark:text-blue-400 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm cursor-pointer transition">
+      <select id="newDriveRole" class="p-2 w-full md:w-48 border-2 border-primary/60 dark:border-primary/50 rounded-md text-xs font-extrabold bg-green-50/50 dark:bg-green-900/30 text-primary dark:text-green-400 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm cursor-pointer transition">
         <option value="viewer">Viewer</option>
         <option value="editor">Editor</option>
       </select>
     </div>
-    <button onclick="massAddDriveAccessBtn(this)" class="bg-primary text-white px-6 py-2.5 text-xs rounded-md font-bold flex items-center justify-center shadow-sm w-full md:w-auto shrink-0 hover:bg-blue-600 transition"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-1.5 !w-3 !h-3 border-2"></div></button>
+    <button onclick="massAddDriveAccessBtn(this)" class="bg-primary text-white px-6 py-2.5 text-xs rounded-md font-bold flex items-center justify-center shadow-sm w-full md:w-auto shrink-0 hover:bg-green-600 transition"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-1.5 !w-3 !h-3 border-2"></div></button>
   </div>
   </div>
   <ul id="driveAccessList" class="space-y-1.5"></ul>
@@ -403,7 +403,7 @@ function renderDriveAccessList(listObj) {
 
   emails.forEach(email => {
     const role = listObj[email];
-    const badgeClass = role === 'editor' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800' : 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800';
+    const badgeClass = role === 'editor' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800' : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
     ul.innerHTML += `<li class="flex justify-between items-center bg-gray-50/50 dark:bg-gray-950/50 p-2 md:p-2.5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden gap-2">
     <div class="flex items-center min-w-0">
       <span class="font-bold text-xs text-gray-900 dark:text-white truncate" title="${email}">${email}</span>
@@ -456,7 +456,7 @@ function renderJunctureList(list) {
   ul.innerHTML = (!list || list.length === 0) ? '<li class="text-[10px] font-bold text-gray-500 dark:text-gray-400 px-1">No junctures defined yet.</li>' : ''; 
   if(list) list.forEach(j => { 
     const safeName = j.replace(/'/g, "\\'"); 
-    ul.innerHTML += `<li class="flex justify-between items-center bg-gray-50/50 dark:bg-gray-950/50 p-2 md:p-2.5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm"><span class="font-bold text-xs text-gray-900 dark:text-white truncate mr-2">${j}</span><div class="flex space-x-1.5 shrink-0"><button onclick="editJuncture('${safeName}')" class="text-blue-600 dark:text-blue-400 text-[10px] md:text-xs font-bold px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm focus:outline-none hover:bg-blue-50 dark:hover:bg-gray-700">Edit</button><button onclick="removeJuncture('${safeName}', this)" class="text-red-600 dark:text-red-400 text-[10px] md:text-xs font-bold px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm flex items-center hover:bg-red-50 dark:hover:bg-gray-700 transition focus:outline-none"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-1.5 !w-3 !h-3 border-2"></div></button></div></li>`; 
+    ul.innerHTML += `<li class="flex justify-between items-center bg-gray-50/50 dark:bg-gray-950/50 p-2 md:p-2.5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm"><span class="font-bold text-xs text-gray-900 dark:text-white truncate mr-2">${j}</span><div class="flex space-x-1.5 shrink-0"><button onclick="editJuncture('${safeName}')" class="text-green-600 dark:text-green-400 text-[10px] md:text-xs font-bold px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm focus:outline-none hover:bg-green-50 dark:hover:bg-gray-700">Edit</button><button onclick="removeJuncture('${safeName}', this)" class="text-red-600 dark:text-red-400 text-[10px] md:text-xs font-bold px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm flex items-center hover:bg-red-50 dark:hover:bg-gray-700 transition focus:outline-none"><span class="btn-text">Remove</span><div class="btn-spinner spinner-red hidden-force ml-1.5 !w-3 !h-3 border-2"></div></button></div></li>`; 
   }); 
 }
 

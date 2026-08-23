@@ -61,7 +61,7 @@ const headerBtn = `<button type="button" onclick="this.closest('.member-block').
 
 const headerHtml = `
  ${headerBtn}
- <h4 class="font-bold text-lg mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 text-primary dark:text-blue-400">Person ${idx + 1}</h4>
+ <h4 class="font-bold text-lg mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 text-primary dark:text-green-400">Person ${idx + 1}</h4>
 `;
 
 const personalInfoHtml = `
@@ -87,7 +87,7 @@ const personalInfoHtml = `
 `;
 
 const caregiverHtml = `
- <div class="trainee-div hidden-force bg-blue-50/50 dark:bg-gray-800 p-4 rounded-xl mb-4 border border-blue-100 dark:border-gray-700">
+ <div class="trainee-div hidden-force bg-green-50/50 dark:bg-gray-800 p-4 rounded-xl mb-4 border border-green-100 dark:border-gray-700">
    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
      <div class="relative">
          <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name <span class="text-red-500">*</span></label>
@@ -100,7 +100,7 @@ const caregiverHtml = `
 `;
 
 const identityHtml = `
- <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-blue-400">Identification</h4>
+ <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-green-400">Identification</h4>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Full NRIC / FIN <span class="text-red-500">*</span></label><input required type="text" class="reg-f-nric w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg uppercase bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Nationality <span class="text-red-500">*</span></label><input required type="text" class="reg-f-nat w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
@@ -110,21 +110,21 @@ const identityHtml = `
 `;
 
 const medicalHtml = `
- <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-blue-400">Dietary</h4>
+ <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-green-400">Dietary</h4>
  <div class="mb-4">
    <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Dietary Restrictions <span class="text-red-500">*</span></label>
    <input required type="text" class="reg-f-diet w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Nil if none">
  </div>
  
  <div class="medical-div hidden-force">
-   <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-blue-400">Medical</h4>
+   <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-green-400">Medical</h4>
    <div class="mb-4">
      <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Medical Conditions and Medications to take note of <span class="text-red-500">*</span></label>
      <textarea required class="reg-f-medical w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" rows="2" placeholder="Nil if none"></textarea>
    </div>
  </div>
 
- <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-blue-400">Emergency Contact</h4>
+ <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-green-400">Emergency Contact</h4>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Emergency Contact Name <span class="text-red-500">*</span></label><input required type="text" class="reg-f-emname w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Emergency Contact Number (8-digit) <span class="text-red-500">*</span></label><input required type="tel" pattern="[0-9]{8}" class="reg-f-emcontact w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
@@ -133,7 +133,7 @@ const medicalHtml = `
 `;
 
 const remarksHtml = `
- <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-blue-400">Remarks</h4>
+ <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-green-400">Remarks</h4>
  <div class="space-y-4">
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Sleeping Arrangement Request</label><textarea class="reg-f-sleep w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" rows="2"></textarea></div>
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Other Points to Note</label><textarea class="reg-f-other w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" rows="2"></textarea></div>

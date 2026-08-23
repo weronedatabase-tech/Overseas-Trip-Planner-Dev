@@ -45,7 +45,7 @@ const projectColorPalette =[
  'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900 dark:border-teal-600 dark:text-teal-100',
  'bg-cyan-100 border-cyan-400 text-cyan-900 dark:bg-cyan-900 dark:border-cyan-600 dark:text-cyan-100',
  'bg-sky-100 border-sky-400 text-sky-900 dark:bg-sky-900 dark:border-sky-600 dark:text-sky-100',
- 'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-100',
+ 'bg-green-100 border-green-400 text-green-900 dark:bg-green-900 dark:border-green-600 dark:text-green-100',
  'bg-indigo-100 border-indigo-400 text-indigo-900 dark:bg-indigo-900 dark:border-indigo-600 dark:text-indigo-100',
  'bg-violet-100 border-violet-400 text-violet-900 dark:bg-violet-900 dark:border-violet-600 dark:text-violet-100',
  'bg-purple-100 border-purple-400 text-purple-900 dark:bg-purple-900 dark:border-purple-600 dark:text-purple-100',
@@ -247,12 +247,13 @@ window.applyCaregiverLabels = function(participants) {
     const traineeMap = {};
     participants.forEach(p => {
         if (p.role === 'TRAINEE') {
+            const nameToUse = p.shortName || p.fullName || p.name;
             const searchKey = String(p.nric || '').toLowerCase();
-            const searchKey2 = String(p.name || '').toLowerCase();
+            const searchKey2 = String(p.fullName || p.name || '').toLowerCase();
             const searchKey3 = String(p.shortName || '').toLowerCase();
-            traineeMap[searchKey] = p.shortName || p.name;
-            traineeMap[searchKey2] = p.shortName || p.name;
-            traineeMap[searchKey3] = p.shortName || p.name;
+            traineeMap[searchKey] = nameToUse;
+            traineeMap[searchKey2] = nameToUse;
+            traineeMap[searchKey3] = nameToUse;
         }
     });
 
@@ -273,4 +274,58 @@ window.formatDDMmmYYYY = function(dateStr) {
     const day = String(d.getDate()).padStart(2, '0');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
+};
+
+window.sortParticipantsSpecial = function(arr, allParticipants) {
+    if (!arr || !allParticipants) return;
+    const famMap = {};
+    allParticipants.forEach(x => {
+        const poc = x.pocNric || x.nric;
+        if(!famMap[poc]) famMap[poc] = { count: 0, hasCaregiver: false };
+        famMap[poc].count++;
+        if(x.role === 'CAREGIVER') famMap[poc].hasCaregiver = true;
+    });
+
+    const specialSortMap = new Map();
+    arr.forEach(p => {
+        const poc = p.pocNric || p.nric;
+        const info = famMap[poc];
+        const isFamily = info ? (info.count > 1 || info.hasCaregiver) : false;
+        let catScore = 4;
+        if (isFamily) catScore = 1;
+        else if (p.role === 'TRAINEE') catScore = 2;
+        else if (p.role === 'VOLUNTEER') catScore = 3;
+        let roleScore = p.role === 'TRAINEE' ? 1 : (p.role === 'CAREGIVER' ? 2 : 3);
+        specialSortMap.set(p.nric, {
+            group: (p.group || '').toLowerCase(),
+            catScore,
+            poc: poc.toLowerCase(),
+            roleScore,
+            name: (p.fullName || p.name || '').toLowerCase()
+        });
+    });
+
+    arr.sort((a, b) => {
+        let keyA = specialSortMap.get(a.nric);
+        let keyB = specialSortMap.get(b.nric);
+        if (!keyA || !keyB) return 0;
+
+        if (keyA.group < keyB.group) return -1;
+        if (keyA.group > keyB.group) return 1;
+        
+        if (keyA.catScore < keyB.catScore) return -1;
+        if (keyA.catScore > keyB.catScore) return 1;
+        
+        if (keyA.catScore === 1) {
+            if (keyA.poc < keyB.poc) return -1;
+            if (keyA.poc > keyB.poc) return 1;
+        }
+        
+        if (keyA.roleScore < keyB.roleScore) return -1;
+        if (keyA.roleScore > keyB.roleScore) return 1;
+        
+        if (keyA.name < keyB.name) return -1;
+        if (keyA.name > keyB.name) return 1;
+        return 0;
+    });
 };

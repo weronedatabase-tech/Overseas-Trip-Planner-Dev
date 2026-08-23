@@ -63,7 +63,7 @@ document.getElementById('tab-participants').innerHTML = `
        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap min-w-0">
            <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg truncate shrink-0"><span class="hidden md:inline">Participant </span>Roster</h3>
            <span id="rosterTotalCount" class="text-gray-500 font-black text-[11px] md:text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 shrink-0">(0)</span>
-           <button onclick="showRosterBreakdownModal()" class="flex items-center justify-center bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 focus:outline-none transition rounded-lg px-2 py-1 md:px-2.5 md:py-1.5 shadow-sm border border-blue-200 dark:border-blue-800 shrink-0 ml-1" title="View Roster Breakdown">
+           <button onclick="showRosterBreakdownModal()" class="flex items-center justify-center bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/60 focus:outline-none transition rounded-lg px-2 py-1 md:px-2.5 md:py-1.5 shadow-sm border border-green-200 dark:border-green-800 shrink-0 ml-1" title="View Roster Breakdown">
                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                <span class="text-[10px] md:text-xs font-black ml-1.5 uppercase tracking-wider hidden md:inline">Breakdown</span>
            </button>
@@ -95,8 +95,8 @@ document.getElementById('tab-participants').innerHTML = `
            <div id="sortSelector" class="hidden-force fixed left-4 right-4 top-24 md:absolute md:left-auto md:right-0 md:top-auto md:mt-2 md:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-[60] p-4 max-h-[80vh] overflow-y-auto">
               <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Advanced Sort</h4>
               <div id="sortRulesContainer" class="space-y-2 mb-3"></div>
-              <button onclick="addSortRule()" class="w-full text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-700 rounded py-1 mb-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Level</button>
-              <button onclick="applySortRules(); toggleSortSelector();" class="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg shadow-sm hover:bg-blue-600 transition">Apply Sort</button>
+              <button onclick="addSortRule()" class="w-full text-[10px] font-bold text-green-600 dark:text-green-400 border border-dashed border-green-300 dark:border-green-700 rounded py-1 mb-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition">+ Add Level</button>
+              <button onclick="applySortRules(); toggleSortSelector();" class="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg shadow-sm hover:bg-green-600 transition">Apply Sort</button>
            </div>
        </div>
        <div class="relative">
@@ -124,7 +124,7 @@ document.getElementById('tab-participants').innerHTML = `
        
        <div id="rosterLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col justify-center items-center z-30">
            <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-           <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Fetching Directory...</span>
+           <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Fetching Directory...</span>
        </div>
    </div>
 </div>
@@ -160,6 +160,11 @@ renderRosterTable();
 
 window.showRosterBreakdownModal = function() {
     let breakdown = {};
+    let totalTrainee = 0;
+    let totalVolunteer = 0;
+    let totalCaregiver = 0;
+    let grandTotal = 0;
+
     adminRosterData.forEach(p => {
         const role = p.role || 'UNKNOWN';
         const project = (p.group || 'None').toUpperCase();
@@ -167,7 +172,23 @@ window.showRosterBreakdownModal = function() {
         if(breakdown[project][role] !== undefined) breakdown[project][role]++;
         else breakdown[project][role] = 1;
         breakdown[project].total++;
+        
+        if (role === 'TRAINEE') totalTrainee++;
+        else if (role === 'VOLUNTEER') totalVolunteer++;
+        else if (role === 'CAREGIVER') totalCaregiver++;
+        grandTotal++;
     });
+
+    let totalsHtml = `
+    <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-lg mb-4">
+        <h4 class="font-black text-sm text-gray-900 dark:text-white mb-2 flex items-center justify-between">Total Participants <span class="bg-primary text-white px-2 py-0.5 rounded text-xs font-bold shadow-sm">${grandTotal}</span></h4>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 p-1.5 rounded font-bold border border-green-200 dark:border-green-800 shadow-sm">TRN: ${totalTrainee}</div>
+            <div class="bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 p-1.5 rounded font-bold border border-orange-200 dark:border-orange-800 shadow-sm">VOL: ${totalVolunteer}</div>
+            <div class="bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 p-1.5 rounded font-bold border border-purple-200 dark:border-purple-800 shadow-sm">CGV: ${totalCaregiver}</div>
+        </div>
+    </div>`;
+
     
     let html = '<div class="space-y-4">';
     const projKeys = Object.keys(breakdown).sort((a,b) => a.localeCompare(b));
@@ -176,8 +197,8 @@ window.showRosterBreakdownModal = function() {
         html += `<div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
             <h4 class="font-black text-sm text-gray-900 dark:text-white mb-2">${proj} <span class="text-gray-500 font-medium">(${bd.total})</span></h4>
             <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                <div class="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 p-1.5 rounded font-bold border border-blue-200 dark:border-blue-800">TRN: ${bd.TRAINEE}</div>
-                <div class="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 p-1.5 rounded font-bold border border-green-200 dark:border-green-800">VOL: ${bd.VOLUNTEER}</div>
+                <div class="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 p-1.5 rounded font-bold border border-green-200 dark:border-green-800">TRN: ${bd.TRAINEE}</div>
+                <div class="bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 p-1.5 rounded font-bold border border-orange-200 dark:border-orange-800">VOL: ${bd.VOLUNTEER}</div>
                 <div class="bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 p-1.5 rounded font-bold border border-purple-200 dark:border-purple-800">CGV: ${bd.CAREGIVER}</div>
             </div>
         </div>`;
@@ -195,6 +216,7 @@ window.showRosterBreakdownModal = function() {
                 <button type="button" onclick="document.getElementById('rosterBreakdownModal').remove()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-1 focus:outline-none">&times;</button>
             </div>
             <div class="p-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                ${totalsHtml}
                 ${html}
             </div>
         </div>
@@ -581,15 +603,15 @@ data.forEach(p => {
        : 'text-gray-800 dark:text-gray-200 whitespace-nowrap text-xs font-medium';
    
    const roleStr = p.role.substring(0, 3).toUpperCase();
-   const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+   const roleColor = p.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
     
     html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
        <td class="py-1.5 px-2 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
            ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">
-               <span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span>
-               <span class="px-1.5 py-0.5 rounded border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span>
+               <span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span>
+               <span class="px-1 py-[1px] leading-tight rounded-sm border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block" title="${(p.group || 'None').toUpperCase()}">${getProjectAbbreviation(p.group || 'None')}</span>
            </div>
            ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-[10px]">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
        </td>`;
@@ -600,7 +622,7 @@ data.forEach(p => {
            const baseClass = `p-3 align-top roster-col-${c.id} text-xs font-medium text-gray-800 dark:text-gray-200 whitespace-normal break-words`;
            
            if (c.id === 'role') {
-               html += `<td class="${baseClass}" ${styleStr}><span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span></td>`;
+               html += `<td class="${baseClass}" ${styleStr}><span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span></td>`;
            } else if (c.id === 'group') {
                html += `<td class="${baseClass}" ${styleStr}><span class="px-2 py-0.5 rounded border shadow-sm text-[10px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span></td>`;
            } else if (c.id === 'nric') {

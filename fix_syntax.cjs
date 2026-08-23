@@ -1,22 +1,17 @@
 const fs = require('fs');
 
-function fixSyntax(filepath) {
-    let code = fs.readFileSync(filepath, 'utf8');
-    // We want to remove the extra bracket before "} else {"
-    code = code.replace(/}\s*}\s*} else {/g, '}\n           } else {'); 
-    // wait, what did my bad sed do? It did: 
-    // code = code.replace(/} else {/g, 'else {');
-    // then I reverted: code.replace(/else {/g, '} else {');
-    // So "else {" became "} else {".
-    // Let's just do a smart regex:
-    // look for `           }\n           } else {`
-    // and replace with `           } else {`
+function fixSyntax(file) {
+    let content = fs.readFileSync(file, 'utf8');
+    content = content.replace(/return \\`<div/g, 'return `<div');
+    content = content.replace(/<\/div>\\`;/g, '</div>`;');
     
-    code = code.replace(/           }\n           } else {/g, '           } else {');
+    // Also, inside that string, we need to make sure ${fRoleColor} is not escaped inside a template literal, unless it's supposed to be literally `${fRoleColor}` which it shouldn't. Wait, we want it evaluated!
+    // In my patch I did \\\${fRoleColor} which became \${fRoleColor} in the file.
+    // If it's inside `return \`...\``, it should be `${fRoleColor}`!
+    content = content.replace(/\\\$\{/g, '${');
     
-    fs.writeFileSync(filepath, code);
+    fs.writeFileSync(file, content, 'utf8');
 }
 
-fixSyntax('frontend/js/diet.js');
-fixSyntax('frontend/js/medical.js');
-fixSyntax('frontend/js/expired.js');
+fixSyntax('frontend/js/main.js');
+fixSyntax('frontend/js/profile.js');

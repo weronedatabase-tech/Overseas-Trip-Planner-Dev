@@ -22,7 +22,7 @@ document.getElementById('tab-attendance').innerHTML = `
   <div class="grid grid-cols-2 gap-2">
      <div class="flex gap-1">
          <select id="attJunctureSelect" onchange="changeAttendanceContext()" class="w-full p-1.5 border border-gray-300 dark:border-gray-700 rounded-md font-bold text-xs bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm appearance-none truncate"></select>
-         <button onclick="promptNewJuncture()" class="p-1.5 bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 rounded-md shadow-sm hover:bg-blue-100 transition focus:outline-none shrink-0" title="Add Juncture">
+         <button onclick="promptNewJuncture()" class="p-1.5 bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 rounded-md shadow-sm hover:bg-green-100 transition focus:outline-none shrink-0" title="Add Juncture">
              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
          </button>
      </div>
@@ -43,7 +43,7 @@ document.getElementById('tab-attendance').innerHTML = `
   
   <div id="attLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-10 hidden-force flex flex-col justify-center items-center">
       <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-      <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
+      <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
   </div>
   
   <div class="flex-1 min-w-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-red-50/30 dark:bg-red-900/10">
@@ -214,7 +214,7 @@ document.getElementById('attCheckedCount').textContent = checkedCount;
 
 function generateAttCard(p, isChecked) {
 const dynColor = getProjectColor(p.group);
-const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+const roleColor = p.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
 const roleShort = p.role.substring(0,3).toUpperCase();
 const dName = p.displayName || p.name;
 

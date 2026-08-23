@@ -54,7 +54,7 @@ document.getElementById('tab-medical').innerHTML = `
        
        <div id="medicalLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col justify-center items-center z-20">
            <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-           <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading Data...</span>
+           <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading Data...</span>
        </div>
    </div>
 </div>
@@ -210,7 +210,7 @@ const tbody = document.getElementById('medicalTableBody');
 let html = '';
 data.forEach(p => {
    const roleStr = p.role.substring(0, 3).toUpperCase();
-   const roleColor = p.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+   const roleColor = p.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
    const fullNameUpper = (p.fullName || '').toUpperCase();
    const shortNameUpper = (p.shortName || '').toUpperCase();
    const nameClass = 'font-bold text-gray-900 dark:text-gray-100';
@@ -220,8 +220,8 @@ data.forEach(p => {
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
            ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">
-               <span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider">${roleStr}</span>
-               <span class="px-1.5 py-0.5 rounded border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span>
+               <span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span>
+               <span class="px-1 py-[1px] leading-tight rounded-sm border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block" title="${(p.group || 'None').toUpperCase()}">${getProjectAbbreviation(p.group || 'None')}</span>
            </div>
            ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-[10px]">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
        </td>
@@ -239,7 +239,7 @@ data.forEach(p => {
        html += `<div class="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
            <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold mb-1">Emergency Contact</div>
            <div class="font-bold text-gray-800 dark:text-gray-200">${(p.emergencyName || '-').toUpperCase()} ${p.emergencyRelation ? `(${p.emergencyRelation.toUpperCase()})` : ''}</div>
-           <div class="font-mono text-blue-600 dark:text-blue-400 font-bold mt-0.5">${p.emergencyContact || '-'}</div>
+           <div class="font-mono text-green-600 dark:text-green-400 font-bold mt-0.5">${p.emergencyContact || '-'}</div>
        </div>`;
    }
 

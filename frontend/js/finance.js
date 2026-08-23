@@ -80,7 +80,7 @@ document.getElementById('tab-finance').innerHTML = `
 
 <div id="finLoadingOverlay" class="absolute inset-0 top-[50px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 flex flex-col justify-center items-center hidden-force">
     <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-    <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading Planner...</span>
+    <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading Planner...</span>
 </div>
 
 <div id="fin-tab-finalized" class="flex-1 w-full p-2 md:p-4 overflow-y-auto custom-scrollbar relative"></div>
@@ -392,7 +392,7 @@ if(!cont || cont.classList.contains('hidden-force')) return;
 if(!financeConfig.finalOptionId) {
     cont.innerHTML = `
     <div class="flex flex-col items-center justify-center p-12 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <svg class="w-16 h-16 mb-4 opacity-50 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg class="w-16 h-16 mb-4 opacity-50 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         <p class="font-bold text-base text-gray-700 dark:text-gray-300">No Finalized Option Selected</p>
         <p class="text-xs mt-2 text-center max-w-sm">Navigate to the <b>Trip Options</b> tab and click "Mark as Finalized" on the budget option you want to proceed with.</p>
     </div>`;
@@ -403,7 +403,7 @@ const opt = financeOptions.find(o => o.id === financeConfig.finalOptionId && !o.
 if(!opt) {
     cont.innerHTML = `
     <div class="flex flex-col items-center justify-center p-12 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <svg class="w-16 h-16 mb-4 opacity-50 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg class="w-16 h-16 mb-4 opacity-50 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         <p class="font-bold text-base text-gray-700 dark:text-gray-300">No Finalized Option Selected</p>
         <p class="text-xs mt-2 text-center max-w-sm">Navigate to the <b>Trip Options</b> tab and click "Mark as Finalized" on the budget option you want to proceed with.</p>
     </div>`;
@@ -437,20 +437,20 @@ opt.fields.forEach(f => {
     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
         <td class="py-1.5 px-2 text-sm font-bold text-gray-900 dark:text-gray-100">${f.name}</td>
         <td class="py-1.5 px-2 text-xs font-semibold text-gray-600 dark:text-gray-400 text-right whitespace-nowrap">SGD ${plannedSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-        <td class="py-1.5 px-2 text-xs font-bold text-blue-700 dark:text-blue-400 text-right whitespace-nowrap">SGD ${actualSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+        <td class="py-1.5 px-2 text-xs font-bold text-green-700 dark:text-green-400 text-right whitespace-nowrap">SGD ${actualSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
         <td class="py-1.5 px-2 text-xs font-black ${diffClass} text-right whitespace-nowrap">${diff > 0 ? '+' : ''}${diff.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
     </tr>`;
 });
 
 cont.innerHTML = `
 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 border-b border-blue-100 dark:border-blue-800 flex justify-between items-center">
+    <div class="bg-green-50 dark:bg-green-900/20 p-4 border-b border-green-100 dark:border-green-800 flex justify-between items-center">
         <div>
-            <h3 class="font-black text-lg text-blue-800 dark:text-blue-300 tracking-tight flex items-center gap-2">
-                <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <h3 class="font-black text-lg text-green-800 dark:text-green-300 tracking-tight flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Finalized Budget: ${opt.title}
             </h3>
-            <p class="text-xs font-bold text-blue-600/80 dark:text-blue-400 mt-1 uppercase tracking-widest">Active Pax: ${pax} | Currency: SGD</p>
+            <p class="text-xs font-bold text-green-600/80 dark:text-green-400 mt-1 uppercase tracking-widest">Active Pax: ${pax} | Currency: SGD</p>
         </div>
     </div>
     
@@ -460,8 +460,8 @@ cont.innerHTML = `
             <span class="text-lg font-black text-gray-800 dark:text-gray-200">SGD ${grandPlannedSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
         </div>
         <div class="p-4 text-center flex flex-col">
-            <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1">Total Actual</span>
-            <span class="text-lg font-black text-blue-700 dark:text-blue-400">SGD ${grandActualSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+            <span class="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-1">Total Actual</span>
+            <span class="text-lg font-black text-green-700 dark:text-green-400">SGD ${grandActualSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
         </div>
         <div class="p-4 text-center flex flex-col">
             <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Variance</span>
@@ -518,12 +518,12 @@ let globalSettingsHtml = `
         </div>
         <div class="flex items-center gap-1.5 ${financeConfig.globalPaxMode !== 'auto' ? 'hidden-force' : ''}">
             <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Active Pax:</label>
-            <span class="text-xs font-black text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 shadow-sm">${autoPax}</span>
+            <span class="text-xs font-black text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded border border-green-200 dark:border-green-800 shadow-sm">${autoPax}</span>
         </div>
     </div>
     <div class="flex items-center gap-2">
-        <button onclick="addFinanceOption()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[10px] md:text-xs font-bold px-2 py-1.5 rounded-md hover:bg-blue-100 transition shadow-sm focus:outline-none shrink-0">+ Add Option</button>
-        <button onclick="openFinanceRatesModal()" class="text-[10px] md:text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none flex items-center gap-1">
+        <button onclick="addFinanceOption()" class="bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 text-[10px] md:text-xs font-bold px-2 py-1.5 rounded-md hover:bg-green-100 transition shadow-sm focus:outline-none shrink-0">+ Add Option</button>
+        <button onclick="openFinanceRatesModal()" class="text-[10px] md:text-xs font-bold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Rates
         </button>
         <button onclick="toggleFinanceCollapse()" class="text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none">
@@ -577,7 +577,7 @@ if (activeOptions.length === 0) {
                     <button onclick="toggleIndividualFinanceCollapse('${opt.id}')" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 md:p-1.5 rounded transition bg-gray-100/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:outline-none shadow-sm" title="Collapse/Expand">
                         <svg class="w-4 h-4 md:w-5 md:h-5 transform transition-transform ${isLocalCollapsed ? '' : 'rotate-180'}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
                     </button>
-                    <button onclick="duplicateFinanceOption('${opt.id}')" class="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 p-1.5 rounded transition"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
+                    <button onclick="duplicateFinanceOption('${opt.id}')" class="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 p-1.5 rounded transition"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
                     <button onclick="removeFinanceOption('${opt.id}')" class="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 p-1.5 rounded transition"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 </div>
             </div>
@@ -609,19 +609,19 @@ if (activeOptions.length === 0) {
                         </div>`;
                     }).join('')}
                     <div class="pt-2 px-1">
-                        <button onclick="addFinanceCategory('${opt.id}')" class="w-full py-2 border border-dashed border-blue-300 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">+ Add Custom Category</button>
+                        <button onclick="addFinanceCategory('${opt.id}')" class="w-full py-2 border border-dashed border-green-300 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-xs font-bold hover:bg-green-50 dark:hover:bg-green-900/20 transition">+ Add Custom Category</button>
                     </div>
                 </div>
             </div>
             
-            <div class="p-2 md:p-3 bg-blue-50/80 dark:bg-blue-900/20 shrink-0 flex flex-col gap-1.5 ${isLocalCollapsed ? 'border-t border-gray-200 dark:border-gray-700' : 'border-t border-blue-100 dark:border-blue-900/50'}">
-                <div class="${isLocalCollapsed ? 'hidden-force' : 'flex'} justify-between items-center pb-2 border-b border-blue-200/50 dark:border-blue-800/50 mb-1">
-                    <span class="font-bold text-[10px] md:text-[11px] text-blue-800 dark:text-blue-300 uppercase tracking-widest">Currency for Totals</span>
-                    <select onchange="updateFinanceOption('${opt.id}', 'displayCurrency', this.value)" class="w-[90px] text-xs font-bold px-2 py-1 bg-white dark:bg-gray-950 border border-blue-300 dark:border-blue-700 rounded focus:outline-none cursor-pointer shadow-sm text-blue-900 dark:text-blue-100">${getCurrencyOptions(opt.displayCurrency)}</select>
+            <div class="p-2 md:p-3 bg-green-50/80 dark:bg-green-900/20 shrink-0 flex flex-col gap-1.5 ${isLocalCollapsed ? 'border-t border-gray-200 dark:border-gray-700' : 'border-t border-green-100 dark:border-green-900/50'}">
+                <div class="${isLocalCollapsed ? 'hidden-force' : 'flex'} justify-between items-center pb-2 border-b border-green-200/50 dark:border-green-800/50 mb-1">
+                    <span class="font-bold text-[10px] md:text-[11px] text-green-800 dark:text-green-300 uppercase tracking-widest">Currency for Totals</span>
+                    <select onchange="updateFinanceOption('${opt.id}', 'displayCurrency', this.value)" class="w-[90px] text-xs font-bold px-2 py-1 bg-white dark:bg-gray-950 border border-green-300 dark:border-green-700 rounded focus:outline-none cursor-pointer shadow-sm text-green-900 dark:text-green-100">${getCurrencyOptions(opt.displayCurrency)}</select>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="font-black text-xs md:text-sm text-blue-800 dark:text-blue-300 uppercase tracking-widest">Total Estimated</span>
-                    <span id="total_${opt.id}" class="font-black text-base md:text-lg text-blue-700 dark:text-blue-400 bg-white dark:bg-gray-900 px-2 py-1 rounded border border-blue-200 dark:border-blue-800 shadow-sm leading-none">${opt.displayCurrency} ${totalDisp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <span class="font-black text-xs md:text-sm text-green-800 dark:text-green-300 uppercase tracking-widest">Total Estimated</span>
+                    <span id="total_${opt.id}" class="font-black text-base md:text-lg text-green-700 dark:text-green-400 bg-white dark:bg-gray-900 px-2 py-1 rounded border border-green-200 dark:border-green-800 shadow-sm leading-none">${opt.displayCurrency} ${totalDisp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="font-black text-xs md:text-sm text-emerald-800 dark:text-emerald-400 uppercase tracking-widest">Cost Per Pax</span>
@@ -811,7 +811,7 @@ finDndState = {
     yOffset: clientY - rect.top, xOffset: clientX - rect.left,
     placeholder: document.createElement('div')
 };
-finDndState.placeholder.className = 'fin-cat-placeholder bg-blue-50/50 dark:bg-blue-900/20 border-2 border-dashed border-primary/50 rounded-lg my-1 transition-all';
+finDndState.placeholder.className = 'fin-cat-placeholder bg-green-50/50 dark:bg-green-900/20 border-2 border-dashed border-primary/50 rounded-lg my-1 transition-all';
 finDndState.placeholder.style.height = rect.height + 'px';
 row.parentNode.insertBefore(finDndState.placeholder, row);
 row.style.position = 'fixed'; row.style.zIndex = '9999'; row.style.width = rect.width + 'px';
@@ -915,7 +915,7 @@ activeReceipts.forEach(r => {
         <td class="py-1.5 px-2 text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">${dateStr}</td>
         <td class="py-1.5 px-2 text-xs leading-tight">
            <div class="font-bold text-gray-800 dark:text-gray-200">Up: ${uploaderName}</div>
-           <div class="font-black text-blue-600 dark:text-blue-400 text-[10px] uppercase mt-0.5">Paid: ${payerName}</div>
+           <div class="font-black text-green-600 dark:text-green-400 text-[10px] uppercase mt-0.5">Paid: ${payerName}</div>
         </td>
         <td class="py-1.5 px-2 text-xs font-bold text-primary max-w-[150px] truncate" title="${catName}">${catName}</td>
         <td class="py-1.5 px-2 text-xs font-bold text-gray-800 dark:text-gray-200 text-right whitespace-nowrap">${r.currency} ${r.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
@@ -927,7 +927,7 @@ activeReceipts.forEach(r => {
             </button>
         </td>
         <td class="py-1.5 px-2 text-xs text-center">
-            ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 font-bold underline px-2">View</a>` : '-'}
+            ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="text-green-500 hover:text-green-700 font-bold underline px-2">View</a>` : '-'}
         </td>
         <td class="py-1.5 px-2 text-center">
             <button onclick="deleteReceipt('${r.id}')" class="text-red-500 hover:text-red-600 transition p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
@@ -1048,7 +1048,7 @@ cardsData.sort((a,b) => {
 let cardsHtml = '';
 cardsData.forEach(c => {
     let membersHtml = c.members.map(m => {
-        const roleColor = m.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+        const roleColor = m.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
         return `<span class="inline-block mr-1.5"><span class="${roleColor} font-black text-[9px] mr-0.5 border border-current px-0.5 rounded">${m.role.substring(0,3)}</span><span class="font-bold text-xs text-gray-800 dark:text-gray-200">${m.shortName || m.name}</span></span>`;
     }).join('');
 
@@ -1080,7 +1080,7 @@ cardsData.forEach(c => {
             </div>
             <div>
                 <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Expected (SGD)</label>
-                <div class="w-full px-2 py-1 text-sm font-black text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800 shadow-sm text-right flex items-center justify-end h-[28px]">
+                <div class="w-full px-2 py-1 text-sm font-black text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800 shadow-sm text-right flex items-center justify-end h-[28px]">
                     ${c.finalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}
                 </div>
             </div>
@@ -1117,7 +1117,7 @@ cont.innerHTML = `
             <div class="w-px h-5 bg-gray-300 dark:bg-gray-700 hidden md:block"></div>
             <div class="text-right md:text-left">
                 <span class="block text-[8px] uppercase font-bold text-gray-400 tracking-widest leading-none mb-0.5">Expected Total</span>
-                <span class="text-xs font-black text-blue-700 dark:text-blue-400 leading-none">SGD ${totalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+                <span class="text-xs font-black text-green-700 dark:text-green-400 leading-none">SGD ${totalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
             </div>
         </div>
     </div>

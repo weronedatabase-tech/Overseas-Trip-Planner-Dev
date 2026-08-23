@@ -157,27 +157,27 @@ function moveDrag(e, clientX, clientY, isTouch) {
             const activeDz = elAtPoint ? elAtPoint.closest('.dnd-dropzone') : null;
             document.querySelectorAll('.dnd-dropzone').forEach(dz => {
                 if (dz === activeDz && dz.dataset.role !== dndState.el.dataset.role) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         } else if (dndState.type === 'grouping') {
             const activeGroup = elAtPoint ? elAtPoint.closest('.dnd-group-dropzone') : null;
             document.querySelectorAll('.dnd-group-dropzone').forEach(dz => {
                 if (dz === activeGroup) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         } else if (dndState.type === 'busing') {
             const activeBus = elAtPoint ? elAtPoint.closest('.dnd-bus-dropzone') : null;
             document.querySelectorAll('.dnd-bus-dropzone').forEach(dz => {
                 if (dz === activeBus) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         }
@@ -185,9 +185,9 @@ function moveDrag(e, clientX, clientY, isTouch) {
             const activeRoom = elAtPoint ? elAtPoint.closest('.dnd-room-dropzone') : null;
             document.querySelectorAll('.dnd-room-dropzone').forEach(dz => {
                 if (dz === activeRoom) {
-                    dz.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.add('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 } else {
-                    dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
+                    dz.classList.remove('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary');
                 }
             });
         }
@@ -202,7 +202,7 @@ function endDrag(e, clientX, clientY) {
         dndState.clone = null; 
         dndState.isDragging = false;
 
-        document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone, .dnd-group-dropzone, .dnd-bus-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/30', 'dark:border-primary', 'ring-1', 'ring-primary'));
+        document.querySelectorAll('.dnd-dropzone, .dnd-room-dropzone, .dnd-group-dropzone, .dnd-bus-dropzone').forEach(dz => dz.classList.remove('border-primary', 'bg-green-50', 'dark:bg-green-900/30', 'dark:border-primary', 'ring-1', 'ring-primary'));
 
         const elAtPoint = document.elementFromPoint(clientX, clientY);
 
@@ -863,7 +863,7 @@ document.getElementById('tab-logistics').innerHTML = `
 <div id="log-pairings" class="flex-1 flex flex-col min-h-0 w-full relative">
     <div id="logLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 hidden-force flex flex-col justify-center items-center">
         <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-        <span class="text-primary dark:text-blue-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
+        <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
     </div>
     <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-1 shadow-sm sticky top-0 z-30">
         <div class="flex justify-between items-center px-1">
@@ -910,7 +910,7 @@ document.getElementById('tab-logistics').innerHTML = `
                     <svg class="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     <span class="whitespace-nowrap">Rooms</span>
                 </button>
-                <button onclick="autoAssignRooms()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none whitespace-nowrap">Auto-Room</button>
+                <button onclick="autoAssignRooms()" class="bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-green-100 transition focus:outline-none whitespace-nowrap">Auto-Room</button>
                 <button onclick="addRoom()" class="bg-gray-100 dark:bg-gray-800 p-1 md:p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm shrink-0" title="Add Room(s)">
                     <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                 </button>
@@ -949,7 +949,7 @@ document.getElementById('tab-logistics').innerHTML = `
         <div class="flex justify-between items-center px-1">
             <div class="flex flex-wrap items-center gap-1 md:gap-1.5">
                 <h3 class="text-xs md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1 shrink-0">Groups</h3>
-                <button onclick="autoGroup()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Auto Group">
+                <button onclick="autoGroup()" class="bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-green-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Auto Group">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span class="whitespace-nowrap">Auto Group</span>
                 </button>
@@ -989,7 +989,7 @@ document.getElementById('tab-logistics').innerHTML = `
         <div class="flex justify-between items-center px-1">
             <div class="flex flex-wrap items-center gap-1 md:gap-1.5">
                 <h3 class="text-xs md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1 shrink-0">Buses</h3>
-                <button onclick="autoBus()" class="bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-blue-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Auto Bus">
+                <button onclick="autoBus()" class="bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 text-[9px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-green-100 transition focus:outline-none flex items-center gap-0.5 md:gap-1" title="Auto Bus">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span class="whitespace-nowrap">Auto Bus</span>
                 </button>
@@ -1068,7 +1068,8 @@ function renderGroups() {
     });
 
     document.getElementById('groupUnassignedCount').innerText = unassigned.length;
-    let unHtml = '';
+if (window.sortParticipantsSpecial) window.sortParticipantsSpecial(unassigned, globalLogistics.participants);
+let unHtml = '';
     unassigned.forEach(item => {
         unHtml += generateGroupCardHtml(item);
     });
@@ -1102,7 +1103,7 @@ function renderGroups() {
 function generateGroupCardHtml(item) {
     const dynColor = getProjectColor(item.group);
     const dName = item.displayName || item.name;
-    const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+    const roleColor = item.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
     const roleShort = item.role.substring(0,3).toUpperCase();
     return `
     <div class="dnd-group-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" onclick="openGroupAssignSheet('${item.nric}')">
@@ -1147,7 +1148,8 @@ function renderBuses() {
     });
 
     document.getElementById('busUnassignedCount').innerText = unassigned.length;
-    let unHtml = '';
+if (window.sortParticipantsSpecial) window.sortParticipantsSpecial(unassigned, globalLogistics.participants);
+let unHtml = '';
     unassigned.forEach(item => {
         unHtml += generateBusCardHtml(item);
     });
@@ -1181,7 +1183,7 @@ function renderBuses() {
 function generateBusCardHtml(item) {
     const dynColor = getProjectColor(item.group);
     const dName = item.displayName || item.name;
-    const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+    const roleColor = item.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
     const roleShort = item.role.substring(0,3).toUpperCase();
     return `
     <div class="dnd-bus-draggable bg-white dark:bg-gray-800 p-1 md:p-1.5 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-primary transition select-none flex flex-col gap-1" data-nric="${item.nric}" onclick="openBusAssignSheet('${item.nric}')">
@@ -1490,7 +1492,7 @@ return `
             <span class="break-words whitespace-normal min-w-0 text-left">${displayName}</span>
             ${famBadge}
         </div>
-        <button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-1 rounded border border-blue-200 dark:border-gray-600 hover:bg-blue-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
+        <button onclick="openPairingSheet('${item.nric}', '${item.role}')" class="text-[9px] md:text-[10px] bg-green-50 dark:bg-gray-700 text-green-600 dark:text-green-400 font-bold px-1.5 py-1 rounded border border-green-200 dark:border-gray-600 hover:bg-green-100 transition whitespace-nowrap focus:outline-none shrink-0 pointer-events-auto shadow-sm">${btnLabel}</button>
     </div>
     <div class="flex flex-col pointer-events-auto bg-gray-50/50 dark:bg-gray-900/50 p-1.5 rounded min-h-[36px] border border-dashed border-gray-200 dark:border-gray-700 mt-1 w-full gap-1.5">
         ${pairedPills || '<span class="text-[9px] md:text-[10px] font-medium text-gray-400 dark:text-gray-500 mt-0.5 pointer-events-none text-center w-full py-1">Drop pair here</span>'}
@@ -1527,12 +1529,12 @@ if (query) {
 }
 
 const volColClass = "bg-green-50/30 dark:bg-green-900/10";
-const traineeColClass = "bg-blue-50/30 dark:bg-blue-900/10";
+const traineeColClass = "bg-green-50/30 dark:bg-green-900/10";
 const sourceColClass = isSourceVol ? volColClass : traineeColClass;
 const targetColClass = isSourceVol ? traineeColClass : volColClass;
 
 const volTitleClass = "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-b border-green-200 dark:border-green-800";
-const traineeTitleClass = "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 border-b border-blue-200 dark:border-blue-800";
+const traineeTitleClass = "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-b border-green-200 dark:border-green-800";
 
 const sourceCol = document.getElementById('dnd-source-col');
 const targetCol = document.getElementById('dnd-target-col');
@@ -1576,12 +1578,12 @@ if (query) {
 }
 
 document.getElementById('unassignedCount').innerText = filteredUnassigned.length;
-
+if (window.sortParticipantsSpecial) window.sortParticipantsSpecial(filteredUnassigned, globalLogistics.participants);
 let unHtml = '';
 filteredUnassigned.forEach(item => {
     const dynColor = getProjectColor(item.group);
     const dName = item.displayName || item.name;
-    const roleColor = item.role === 'TRAINEE' ? 'text-blue-600 dark:text-blue-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400');
+    const roleColor = item.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (item.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
     const roleShort = item.role.substring(0,3).toUpperCase();
 
     const sleepingTooltip = item.sleeping ? `Request: ${item.sleeping.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}` : '';
@@ -1653,7 +1655,7 @@ roomsToRender.forEach(room => {
                 <span class="text-[9px] bg-gray-200/50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shrink-0 mt-0.5">${occDisplay}</span>
             </div>
             <div class="flex items-center gap-1 shrink-0 w-full lg:w-auto justify-end">
-                <button onclick="openRoomAddSheet('${room.id}')" class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 font-bold px-1.5 py-0.5 rounded hover:bg-blue-100 transition focus:outline-none" ${isFull ? 'disabled style="opacity:0.5;"' : ''}>+ Add</button>
+                <button onclick="openRoomAddSheet('${room.id}')" class="text-[9px] bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 font-bold px-1.5 py-0.5 rounded hover:bg-green-100 transition focus:outline-none" ${isFull ? 'disabled style="opacity:0.5;"' : ''}>+ Add</button>
                 <button onclick="promptEditRoom('${room.id}')" class="text-gray-400 hover:text-primary transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
                 <button onclick="deleteRoom('${room.id}')" class="text-red-500 hover:text-red-600 transition p-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
             </div>
@@ -1724,7 +1726,7 @@ targets.forEach(t => {
 
     const tDynColor = getProjectColor(t.group);
     const roleLabel = t.role === 'VOLUNTEER' ? 'Volunteer' : 'Trainee';
-    const roleColor = t.role === 'VOLUNTEER' ? 'text-green-700 bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800' : 'text-blue-700 bg-blue-100 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800';
+    const roleColor = t.role === 'VOLUNTEER' ? 'text-orange-700 bg-orange-100 dark:bg-orange-900/50 border-orange-200 dark:border-orange-800' : 'text-green-700 bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800';
     const dName = t.displayName || t.name;
 
     html += `<div onclick="confirmPairing('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">
@@ -1756,7 +1758,7 @@ let html = '';
 
 unassignedArr.forEach(t => {
     const tDynColor = getProjectColor(t.group);
-    const roleColor = t.role === 'TRAINEE' ? 'text-blue-700 bg-blue-100 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800' : (t.role === 'CAREGIVER' ? 'text-purple-700 bg-purple-100 dark:bg-purple-900/50 border-purple-200 dark:border-purple-800' : 'text-green-700 bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800');
+    const roleColor = t.role === 'TRAINEE' ? 'text-green-700 bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800' : (t.role === 'CAREGIVER' ? 'text-purple-700 bg-purple-100 dark:bg-purple-900/50 border-purple-200 dark:border-purple-800' : 'text-orange-700 bg-orange-100 dark:bg-orange-900/50 border-orange-200 dark:border-orange-800');
     const dName = t.displayName || t.name;
 
     html += `<div onclick="confirmRoomAdd('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">

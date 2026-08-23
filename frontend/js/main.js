@@ -153,8 +153,9 @@ async function showParticipantSummaryModal(nric) {
   const cont = document.getElementById('gpm-content');
   cont.innerHTML = `<div class="flex justify-center py-6"><div class="loader !w-8 !h-8 border-primary"></div></div>`;
 
-  try {
+    try {
     let m = null;
+    let familyArr = [];
     if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) {
         m = adminRosterData.find(f => f.nric.toUpperCase() === nric.toUpperCase());
     } else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) {
@@ -164,19 +165,70 @@ async function showParticipantSummaryModal(nric) {
     if (!m) {
         const res = await apiCall('getProfile', { nric: nric });
         if(res.status === 'error') throw new Error(res.message);
-        m = res.family.find(f => f.nric.toUpperCase() === nric.toUpperCase());
+        if(res.family) {
+            m = res.family.find(f => f.nric.toUpperCase() === nric.toUpperCase());
+            if (m) {
+                familyArr = res.family.filter(f => f.nric !== m.nric);
+            }
+        }
     }
+    
     if(!m) throw new Error("Participant not found");
 
+    if (m && familyArr.length === 0) {
+        let tName = null;
+        if (m.role === 'TRAINEE') tName = m.shortName || m.fullName || m.name;
+        else if (m.role === 'CAREGIVER') tName = m.caregiverFor || m.relatedTrainee;
+        
+        if (tName) {
+            let tNameL = (tName || '').toLowerCase();
+            let sourceArr = [];
+            if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) sourceArr = adminRosterData;
+            else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) sourceArr = loadedFamily;
+            
+            familyArr = sourceArr.filter(f => {
+                if (f.nric === m.nric) return false;
+                let fName = (f.shortName || f.fullName || f.name || '').toLowerCase();
+                if (f.role === 'TRAINEE' && fName === tNameL) return true;
+                if (f.role === 'CAREGIVER' && (f.caregiverFor || f.relatedTrainee || '').toLowerCase() === tNameL) return true;
+                return false;
+            });
+        }
+    }
+
     let groupOpts = `<option value="">Select...</option>`;
-    if(appSettings.projectGroups) { 
-      appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; }); 
-    }
-    if(m.group && (!appSettings.projectGroups || !appSettings.projectGroups.includes(m.group))) { 
-      groupOpts += `<option value="${m.group}" selected>${m.group} (Archived)</option>`; 
-    }
+    if(appSettings.projectGroups) {
+       appSettings.projectGroups.forEach(g => { groupOpts += `<option value="${g}" ${m.group === g ? 'selected' : ''}>${g}</option>`; });
+     }
+    if(m.group && (!appSettings.projectGroups || !appSettings.projectGroups.includes(m.group))) {
+       groupOpts += `<option value="${m.group}" selected>${m.group} (Archived)</option>`;
+     }
     const dynColor = getProjectColor(m.group);
 
+    let familyHtml = '';
+    if (familyArr.length > 0) {
+        familyHtml = `
+        <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-3 mt-1">
+            <p class="font-bold text-gray-500 dark:text-gray-400 text-[9px] uppercase tracking-wider mb-2">Family Members</p>
+            <div class="flex flex-col gap-2">
+                ${familyArr.map(f => {
+                     const fRoleColor = f.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (f.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
+                     return `<div class="flex flex-col md:flex-row md:items-center justify-between bg-gray-50 dark:bg-gray-800/50 p-2 rounded border border-gray-200 dark:border-gray-700">
+                         <div class="flex items-center gap-2 mb-1 md:mb-0">
+                            <span class="text-[8px] font-black ${fRoleColor} bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider shrink-0">${f.role.substring(0,3)}</span>
+                            <span class="font-bold text-xs text-gray-800 dark:text-gray-200">${f.fullName}</span>
+                         </div>
+                         <div class="text-[11px] font-mono text-gray-600 dark:text-gray-400 font-semibold bg-white dark:bg-gray-900 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+                            ${f.contact || 'No Contact'}
+                         </div>
+                     </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+    }
+
+
+    const mRoleColor = m.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
     window._currentModalParticipant = m;
 
     cont.innerHTML = `
@@ -184,10 +236,10 @@ async function showParticipantSummaryModal(nric) {
         <div class="flex justify-between items-start border-b border-gray-100 dark:border-gray-800 pb-2 mb-3">
           <div class="flex items-center flex-wrap gap-1.5">
             <span class="font-extrabold text-[13px] md:text-sm px-2 py-0.5 rounded shadow-sm border ${dynColor} leading-tight">${m.fullName}</span> 
-            <span class="text-[9px] font-black text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded uppercase tracking-wider">${m.role}</span>
+            <span class="text-[9px] font-black ${mRoleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${m.role}</span>
           </div>
           <div class="flex gap-2">
-            <button onclick="document.getElementById('gpm-view').classList.add('hidden-force'); document.getElementById('gpm-edit').classList.remove('hidden-force');" class="text-primary dark:text-blue-400 text-xs font-bold hover:bg-blue-50 dark:hover:bg-gray-800 px-2 py-1 rounded transition focus:outline-none border border-transparent hover:border-blue-200 dark:hover:border-gray-700 shadow-sm">Edit</button>
+            <button onclick="document.getElementById('gpm-view').classList.add('hidden-force'); document.getElementById('gpm-edit').classList.remove('hidden-force');" class="text-primary dark:text-green-400 text-xs font-bold hover:bg-green-50 dark:hover:bg-gray-800 px-2 py-1 rounded transition focus:outline-none border border-transparent hover:border-green-200 dark:hover:border-gray-700 shadow-sm">Edit</button>
             <button onclick="deleteParticipant('${m.nric}')" class="text-red-600 dark:text-red-400 text-xs font-bold hover:bg-red-50 dark:hover:bg-gray-800 px-2 py-1 rounded transition focus:outline-none border border-transparent hover:border-red-200 dark:hover:border-gray-700 shadow-sm">Delete</button>
           </div>
         </div>
@@ -203,10 +255,11 @@ async function showParticipantSummaryModal(nric) {
           <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Passport Expiry</p><p class="font-semibold">${m.passportExpiry ? formatDDMmmYYYY(m.passportExpiry) : '-'}</p></div>
           <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Emerg. Contact</p><p class="font-semibold">${m.emergencyName} (${m.emergencyRelation}) - <span class="font-mono">${m.emergencyContact}</span></p></div>
           <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Dietary Needs</p><p class="font-semibold text-red-600 dark:text-red-400">${m.diet || 'None'}</p></div>
-          <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Sleeping Arrangement</p><p class="font-semibold text-blue-600 dark:text-blue-400">${m.sleeping || 'No special request'}</p></div>
+          <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Sleeping Arrangement</p><p class="font-semibold text-green-600 dark:text-green-400">${m.sleeping || 'No special request'}</p></div>
           <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Other Points to Note</p><p class="font-semibold">${m.otherPoints || 'None'}</p></div>
           <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Medical Conditions and Medications to take note of</p><p class="font-semibold">${m.medical || 'None'}</p></div>
-          ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Caregiver For</p><p class="font-semibold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''}
+          ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Caregiver For</p><p class="font-semibold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''} 
+          ${familyHtml}
         </div>
       </div>
       
@@ -220,10 +273,10 @@ async function showParticipantSummaryModal(nric) {
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Role</label><select id="gpmRole" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Gender</label><select id="gpmGender" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"><option ${m.gender==='Male'?'selected':''}>Male</option><option ${m.gender==='Female'?'selected':''}>Female</option></select></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Project</label><select id="gpmGroup" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white">${groupOpts}</select></div>
-          <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Date of Birth</label><input type="text" id="gpmDob" value="${m.dob}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="DD Mmm YYYY"></div>
+          <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Date of Birth</label><input type="text" id="gpmDob" value="${formatDDMmmYYYY(m.dob)}" readonly onclick="openDatePicker('gpmDob', 'dob')" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs text-center font-semibold cursor-pointer bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" placeholder="DD Mmm YYYY"></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Nationality</label><input type="text" id="gpmNat" value="${m.nationality}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Passport No</label><input type="text" id="gpmPass" value="${m.passportNo}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white uppercase"></div>
-          <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Passport Expiry</label><input type="text" id="gpmExp" value="${m.passportExpiry}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="DD Mmm YYYY"></div>
+          <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Passport Expiry</label><input type="text" id="gpmExp" value="${m.passportExpiry ? formatDDMmmYYYY(m.passportExpiry) : ''}" readonly onclick="openDatePicker('gpmExp', 'exp')" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs text-center font-semibold cursor-pointer bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" placeholder="DD Mmm YYYY"></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Dietary</label><input type="text" id="gpmDiet" value="${m.diet}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
           <div class="md:col-span-2"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Home Address</label><textarea id="gpmAddress" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white" rows="2">${m.address}</textarea></div>
           <div class="md:col-span-2"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Other Points</label><textarea id="gpmOther" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white" rows="2">${m.otherPoints || ''}</textarea></div>
@@ -232,12 +285,12 @@ async function showParticipantSummaryModal(nric) {
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Emerg. Contact</label><input type="text" id="gpmEmContact" value="${m.emergencyContact}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Emerg. Relation</label><input type="text" id="gpmEmRel" value="${m.emergencyRelation}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Sleeping</label><input type="text" id="gpmSleep" value="${m.sleeping}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
-          <div class="${m.role==='CAREGIVER'?'block':'hidden-force'}"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Caregiver For</label><input type="text" id="gpmRelated" value="${m.relatedTrainee || ''}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
+          <div class="${m.role==='CAREGIVER'?'block':'hidden-force'} relative"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Caregiver For</label><input type="text" id="gpmRelated" value="${m.relatedTrainee || ''}" autocomplete="off" oninput="handleGpmRelatedSearch(this.value)" onfocus="handleGpmRelatedSearch(this.value)" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"><div id="gpmRelatedDropdown" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl mt-1 hidden-force max-h-48 overflow-y-auto"></div></div>
           <div class="${m.role==='CAREGIVER'?'block':'hidden-force'}"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Relationship</label><input type="text" id="gpmRelation" value="${m.relationship || ''}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
         </div>
         <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           <button type="button" onclick="document.getElementById('gpm-edit').classList.add('hidden-force'); document.getElementById('gpm-view').classList.remove('hidden-force');" class="px-4 py-2 text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
-          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-blue-600 transition shadow-sm flex items-center">
+          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-green-600 transition shadow-sm flex items-center">
              <span class="btn-text">Save Changes</span>
              <div class="btn-spinner spinner-white hidden-force ml-2 !w-3 !h-3"></div>
           </button>
@@ -254,6 +307,21 @@ async function submitAdminProfileEdit(btn) {
   setBtnLoading(btn, true);
   try {
     const p = window._currentModalParticipant;
+    const roleVal = document.getElementById('gpmRole').value;
+    const relatedVal = document.getElementById('gpmRelated') ? document.getElementById('gpmRelated').value.trim() : '';
+    
+    if (roleVal === 'CAREGIVER' && relatedVal) {
+        let allP = [];
+        if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) allP = adminRosterData;
+        else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) allP = loadedFamily;
+        
+        const match = allP.find(x => x.role === 'TRAINEE' && (x.fullName || '').toLowerCase() === relatedVal.toLowerCase());
+        if(!match) {
+            showToast("Caregiver For field must match exactly with an existing Trainee's Full Name.", true);
+            setBtnLoading(btn, false);
+            return;
+        }
+    }
     const upd = {
       nric: p.nric,
       fullName: document.getElementById('gpmName').value,
@@ -467,3 +535,45 @@ async function deleteAdminParticipant(nric) {
         showToast("Failed to delete.", true);
     }
 }
+
+
+window.handleGpmRelatedSearch = function(query) {
+    const dd = document.getElementById('gpmRelatedDropdown');
+    if(!dd) return;
+    if(!query || !query.trim()) { dd.classList.add('hidden-force'); return; }
+    
+    let allP = [];
+    if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) {
+        allP = adminRosterData;
+    } else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) {
+        allP = loadedFamily;
+    }
+    
+    const trainees = allP.filter(p => p.role === 'TRAINEE');
+    const q = query.toLowerCase().trim();
+    const results = trainees.filter(t => (t.fullName || '').toLowerCase().includes(q) || (t.shortName || '').toLowerCase().includes(q));
+    
+    if(results.length === 0) {
+        dd.innerHTML = '<div class="p-2 text-xs text-gray-500 text-center">No trainees found.</div>';
+    } else {
+        dd.innerHTML = results.map(t => {
+            const escName = (t.fullName || '').replace(/'/g, "\\'");
+            return '<div class="p-2 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" onclick="selectGpmRelatedTrainee(\'' + escName + '\')"><div class="font-bold text-xs text-gray-800 dark:text-gray-200">' + t.fullName + '</div><div class="text-[10px] text-gray-500">' + (t.shortName || '-') + '</div></div>';
+        }).join('');
+    }
+    dd.classList.remove('hidden-force');
+};
+
+window.selectGpmRelatedTrainee = function(name) {
+    const inp = document.getElementById('gpmRelated');
+    if(inp) inp.value = name;
+    const dd = document.getElementById('gpmRelatedDropdown');
+    if(dd) dd.classList.add('hidden-force');
+};
+
+document.addEventListener('click', function(e) {
+    const dd = document.getElementById('gpmRelatedDropdown');
+    if(dd && !e.target.closest('#gpmRelated') && !e.target.closest('#gpmRelatedDropdown')) {
+        dd.classList.add('hidden-force');
+    }
+});
