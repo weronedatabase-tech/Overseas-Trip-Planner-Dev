@@ -367,9 +367,23 @@ async function submitReceipt(e) {
        const recNricInput = document.getElementById('recNric');
        const recNameInput = document.getElementById('recName');
        const recCatInput = document.getElementById('recCategory');
+       
+       const finalUploaderNric = recNricInput ? recNricInput.value.trim() : currentUser.nric;
+       const finalUploaderName = recNameInput ? recNameInput.value.trim() : '';
+       
+       const familyMember = loadedFamily.find(m => m.nric === finalUploaderNric);
+       let shortName = finalUploaderName;
+       if (!shortName) {
+           shortName = familyMember?.shortName || familyMember?.fullName || currentUser.name || finalUploaderNric;
+       }
+
+       const ext = file.name.split('.').pop() || 'png';
+       const receiptNo = `${finalUploaderNric.slice(-4)}${Date.now().toString().slice(-4)}`;
+       const finalFileName = `${shortName} - ${receiptNo}.${ext}`;
+
        const payload = {
-           uploaderNric: recNricInput ? recNricInput.value.trim() : currentUser.nric,
-           uploaderName: recNameInput ? recNameInput.value.trim() : '',
+           uploaderNric: finalUploaderNric,
+           uploaderName: finalUploaderName,
            categoryId: recCatInput ? recCatInput.value : "Fees Payment Screenshot",
            currency: document.getElementById('recCurrency') ? document.getElementById('recCurrency').value : 'SGD',
            amount: document.getElementById('recAmount') ? parseFloat(document.getElementById('recAmount').value) : finalExpected,
@@ -378,7 +392,7 @@ async function submitReceipt(e) {
            // categoryId is already set above
            paidByNric: recNricInput ? recNricInput.value.trim() : currentUser.nric,
            remarks: remarks,
-           fileName: file.name,
+           fileName: finalFileName,
            mimeType: file.type,
            fileData: base64.split(',')[1]
        };

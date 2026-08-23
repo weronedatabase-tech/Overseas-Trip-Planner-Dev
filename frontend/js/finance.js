@@ -431,7 +431,7 @@ opt.fields.forEach(f => {
     grandActualSgd += actualSgd;
 
     const diff = plannedSgd - actualSgd;
-    const diffClass = diff < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
+    const diffClass = diff < 0 ? 'text-rose-600 dark:text-rose-500' : 'text-purple-600 dark:text-purple-400';
 
     rowsHtml += `
     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
@@ -465,7 +465,7 @@ cont.innerHTML = `
         </div>
         <div class="p-4 text-center flex flex-col">
             <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Variance</span>
-            <span class="text-lg font-black ${grandPlannedSgd - grandActualSgd < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${grandPlannedSgd - grandActualSgd > 0 ? '+' : ''}${(grandPlannedSgd - grandActualSgd).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+            <span class="text-lg font-black ${grandPlannedSgd - grandActualSgd < 0 ? 'text-rose-600 dark:text-rose-500' : 'text-purple-600 dark:text-purple-400'}">${grandPlannedSgd - grandActualSgd > 0 ? '+' : ''}${(grandPlannedSgd - grandActualSgd).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
         </div>
         <div class="p-4 text-center flex flex-col">
             <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Actual Per Pax</span>
@@ -1087,12 +1087,15 @@ cardsData.forEach(c => {
         <div class="grid grid-cols-2 gap-2 p-2 bg-gray-50/50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800 mt-auto">
             <div>
                 <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Deviation (+/- SGD)</label>
-                <input type="number" step="0.01" value="${c.dev}" oninput="formatMoneyInput(this, false); if(!financeConfig.feeDeviations['${c.poc}']) financeConfig.feeDeviations['${c.poc}'] = {}; financeConfig.feeDeviations['${c.poc}'].amount = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFeeDeviation('${c.poc}', 'amount', this.value)" class="w-full px-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary shadow-sm text-right h-[28px]" ${c.isPaid ? 'disabled opacity-70' : ''}>
+                <div class="relative flex items-center">
+                    <span class="absolute left-2 text-xs font-bold text-gray-400">$</span>
+                    <input type="text" id="dev-input-${c.poc}" value="${c.dev ? parseFloat(c.dev).toLocaleString('en-US', {minimumFractionDigits:2}) : '0.00'}" oninput="formatMoneyInput(this, false); updateDeviationLocal('${c.poc}', ${c.size}); if(!financeConfig.feeDeviations['${c.poc}']) financeConfig.feeDeviations['${c.poc}'] = {}; financeConfig.feeDeviations['${c.poc}'].amount = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFeeDeviation('${c.poc}', 'amount', this.value)" class="w-full pl-5 pr-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary shadow-sm text-right h-[28px]" ${c.isPaid ? 'disabled opacity-70' : ''}>
+                </div>
             </div>
             <div>
                 <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Expected (SGD)</label>
-                <div class="w-full px-2 py-1 text-sm font-black text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800 shadow-sm text-right flex items-center justify-end h-[28px]">
-                    ${c.finalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}
+                <div id="expected-display-${c.poc}" class="w-full px-2 py-1 text-sm font-black text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800 shadow-sm text-right flex items-center justify-between h-[28px]">
+                    <span class="text-xs opacity-50 font-bold mr-1">$</span><span>${c.finalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
                 </div>
             </div>
             <div class="col-span-2">
@@ -1108,27 +1111,30 @@ cont.innerHTML = `
         <div class="flex flex-wrap items-center gap-2 md:gap-3">
             <div class="flex items-center gap-1.5">
                 <label class="text-[9px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Per-Pax (SGD):</label>
-                <input type="number" step="0.01" value="${baseFee}" oninput="formatMoneyInput(this, false); financeConfig.perPersonFee = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-16 text-xs font-black border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
+                <div class="relative flex items-center">
+                    <span class="absolute left-1.5 text-[10px] font-bold text-gray-400">$</span>
+                    <input type="text" value="${baseFee ? parseFloat(baseFee).toLocaleString('en-US', {minimumFractionDigits:2}) : '0.00'}" oninput="formatMoneyInput(this, false); financeConfig.perPersonFee = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-[72px] text-xs font-black border border-gray-300 dark:border-gray-600 rounded pl-4 pr-1.5 py-1 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
+                </div>
             </div>
             <div class="flex items-center gap-1.5">
                 <label class="text-[9px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">PayNow:</label>
                 <input type="text" maxlength="8" value="${financeConfig.payNowNumber || ''}" onchange="updateFinanceConfig('payNowNumber', this.value.trim())" class="w-20 text-xs font-black border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-center">
             </div>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" ${financeConfig.showPaymentSection ? 'checked' : ''} onchange="updateFinanceConfig('showPaymentSection', this.checked)" class="w-3.5 h-3.5 text-primary focus:ring-primary border-gray-300 rounded">
-                <span class="text-[9px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Show Payment</span>
+            <label class="flex items-center gap-1.5 cursor-pointer bg-purple-50 dark:bg-purple-900/20 border ${financeConfig.showPaymentSection ? 'border-purple-500' : 'border-purple-200 dark:border-purple-800'} px-2.5 py-1 rounded-md transition-colors hover:bg-purple-100 dark:hover:bg-purple-900/40">
+                <input type="checkbox" ${financeConfig.showPaymentSection ? 'checked' : ''} onchange="updateFinanceConfig('showPaymentSection', this.checked)" class="w-3.5 h-3.5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                <span class="text-[9px] md:text-[10px] uppercase font-black ${financeConfig.showPaymentSection ? 'text-purple-700 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'} tracking-wider">SHOW PAYMENT QR CODE</span>
             </label>
         </div>
         
         <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-950 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 w-full md:w-auto justify-between md:justify-start">
             <div class="text-left">
                 <span class="block text-[8px] uppercase font-bold text-gray-400 tracking-widest leading-none mb-0.5">Collected</span>
-                <span class="text-xs font-black text-green-600 dark:text-green-400 leading-none">SGD ${totalCollected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+                <span class="text-xs font-black text-green-600 dark:text-green-400 leading-none">$ ${totalCollected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
             </div>
             <div class="w-px h-5 bg-gray-300 dark:bg-gray-700 hidden md:block"></div>
             <div class="text-right md:text-left">
                 <span class="block text-[8px] uppercase font-bold text-gray-400 tracking-widest leading-none mb-0.5">Expected Total</span>
-                <span class="text-xs font-black text-green-700 dark:text-green-400 leading-none">SGD ${totalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+                <span class="text-xs font-black text-green-700 dark:text-green-400 leading-none">$ ${totalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
             </div>
         </div>
     </div>
@@ -1144,6 +1150,16 @@ cont.innerHTML = `
     ${cardsHtml || '<div class="col-span-full text-center py-6 text-gray-400 text-xs font-bold uppercase tracking-widest">No families match search.</div>'}
 </div>
 `;
+}
+
+window.updateDeviationLocal = function(poc, size) {
+    const devInput = document.getElementById('dev-input-' + poc);
+    const expectedDisplay = document.getElementById('expected-display-' + poc);
+    if (!devInput || !expectedDisplay) return;
+    const baseFee = financeConfig.perPersonFee || 0;
+    const dev = parseFloat(devInput.value.replace(/,/g, '')) || 0;
+    const finalExpected = (size * baseFee) + dev;
+    expectedDisplay.innerHTML = `<span class="text-xs opacity-50 font-bold mr-1">$</span><span>${finalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>`;
 }
 
 function updateFeeDeviation(poc, field, value) {

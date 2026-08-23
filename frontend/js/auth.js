@@ -116,6 +116,11 @@ async function submitLandingReceipt(e) {
     setBtnLoading(btn, true);
     try {
         const base64 = await toBase64(file);
+        
+        const ext = file.name.split('.').pop() || 'png';
+        const receiptNo = `${nric.slice(-4)}${Date.now().toString().slice(-4)}`;
+        const finalFileName = `${uploaderName || nric} - ${receiptNo}.${ext}`;
+
         const payload = {
             uploaderNric: nric,
             uploaderName: uploaderName,
@@ -125,7 +130,7 @@ async function submitLandingReceipt(e) {
             sgdAmount: parseFloat(document.getElementById('landingRecSgd').value) || amount,
             categoryId: category,
             remarks: remarks,
-            fileName: file.name,
+            fileName: finalFileName,
             mimeType: file.type,
             fileData: base64.split(',')[1]
         };
