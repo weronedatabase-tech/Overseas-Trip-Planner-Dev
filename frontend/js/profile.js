@@ -22,7 +22,9 @@ try {
  finConfig = finRes.data?.config || {};
  finOptions = finRes.data?.options || [];
  globalFinanceRates = finRes.rates || { "SGD": 1 };
- myReceipts = (recRes.receipts || []).filter(r => r.uploaderNric === currentUser.nric && !r.isDeleted);
+ const familyNrics = loadedFamily.map(f => f.nric);
+ if(!familyNrics.includes(currentUser.nric)) familyNrics.push(currentUser.nric);
+ myReceipts = (recRes.receipts || []).filter(r => (familyNrics.includes(r.uploaderNric) || familyNrics.includes(r.paidByNric)) && !r.isDeleted);
  globalLogistics = logRes || null;
 
  renderProfileFullView();
@@ -401,7 +403,9 @@ async function submitReceipt(e) {
 
    const res = await apiCall('uploadReceipt', { payload: payload });
    if (res.receipts) {
-       myReceipts = res.receipts.filter(r => r.uploaderNric === currentUser.nric && !r.isDeleted);
+       const familyNrics = loadedFamily.map(f => f.nric);
+       if(!familyNrics.includes(currentUser.nric)) familyNrics.push(currentUser.nric);
+       myReceipts = res.receipts.filter(r => (familyNrics.includes(r.uploaderNric) || familyNrics.includes(r.paidByNric)) && !r.isDeleted);
        renderMyReceiptsContainer();
    }
    showToast("Receipt uploaded successfully!");
@@ -436,10 +440,9 @@ return `
        <h4 class="text-lg font-black text-gray-900 dark:text-white mb-1">Screenshot Uploaded</h4>
        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Uploaded on ${dateStr}</p>
        ${feeReceipt.fileUrl ? 
-           `<a href="${feeReceipt.fileUrl}" target="_blank" class="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition">
-               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-               View Uploaded Screenshot
-           </a>`
+           `<div class="mt-4 w-full max-w-lg mx-auto aspect-[3/4] relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-gray-900">
+               <iframe src="${feeReceipt.fileUrl.replace(/\/view.*/, '/preview')}" class="absolute top-0 left-0 w-full h-full border-0"></iframe>
+           </div>`
            : `<span class="text-xs font-bold text-red-500">Link unavailable</span>`
        }
    </div>

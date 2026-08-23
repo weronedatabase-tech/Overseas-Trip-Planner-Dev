@@ -174,6 +174,7 @@ case 'getProfile': result = getProfile(data.nric); break;
 case 'updateProfile': result = updateProfile(data.member); break;
 case 'submitRegistration': result = submitRegistration(data.payload); break;
 case 'getPublicTrainees': result = getPublicTrainees(); break;
+case 'checkDuplicateParticipant': result = checkDuplicateParticipant(data.nric, data.passport); break;
 case 'toggleRegistration': result = toggleRegistration(data.status, data.tripTitle, data.tripYear, data.tripStart, data.tripEnd); break;
 case 'toggleEdits': result = toggleEdits(data.status); break;
 case 'getCommittee': result = getCommitteeList(); break;
@@ -460,8 +461,10 @@ lock.waitLock(15000);
 
 const data = sheet.getDataRange().getValues();
 const existingNrics = new Set();
+const existingPassports = new Set();
 for (let i = 1; i < data.length; i++) {
   if (data[i][11]) existingNrics.add(String(data[i][11]).trim().toUpperCase());
+  if (data[i][12]) existingPassports.add(String(data[i][12]).trim().toUpperCase());
 }
 
 const pocNric = payloadArray[0].nric.toUpperCase();
@@ -469,8 +472,14 @@ const newRows = [];
 
 for (let p of payloadArray) {
   const pNric = String(p.nric).trim().toUpperCase();
-  if (existingNrics.has(pNric)) continue;
-  existingNrics.add(pNric);
+  const pPassport = String(p.passportNo || '').trim().toUpperCase();
+  if (existingNrics.has(pNric)) {
+    return { status: 'error', message: `NRIC/FIN ${pNric} already exists. If you have already registered, login to make changes.` };
+  }
+  if (pPassport && existingPassports.has(pPassport)) {
+    return { status: 'error', message: `Passport ${pPassport} already exists. If you have already registered, login to make changes.` };
+  }
+  existingNrics.add(pNric); if(pPassport) existingPassports.add(pPassport);
   newRows.push([
     new Date(), p.email||'', p.role||'', p.fullName||'', p.relatedTrainee||'', p.relationship||'', p.group||'', p.gender||'', p.contact||'', p.address||'', p.nationality||'',
     pNric, p.passportNo||'', p.passportExpiry ? "'" + p.passportExpiry : '', p.dob ? "'" + p.dob : '', p.diet||'',
@@ -1382,4 +1391,27 @@ return { status: 'success' };
 
 } catch(e) { return { status: 'error', message: e.message }; }
 finally { lock.releaseLock(); }
+}
+
+function checkDuplicateParticipant(nric, passport) {
+  const sheet = getDatabase().getSheetByName("Raw Data");
+  const data = sheet.getDataRange().getValues();
+  const existingNrics = new Set();
+  const existingPassports = new Set();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][11]) existingNrics.add(String(data[i][11]).trim().toUpperCase());
+    if (data[i][12]) existingPassports.add(String(data[i][12]).trim().toUpperCase());
+  }
+  
+  let conflictType = null;
+  if (nric && existingNrics.has(String(nric).trim().toUpperCase())) {
+    conflictType = 'NRIC';
+  } else if (passport && existingPassports.has(String(passport).trim().toUpperCase())) {
+    conflictType = 'Passport';
+  }
+  
+  if (conflictType) {
+    return { status: 'error', conflictType: conflictType, message: `This ${conflictType} already exists.` };
+  }
+  return { status: 'success' };
 }

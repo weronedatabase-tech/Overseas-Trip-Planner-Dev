@@ -547,7 +547,29 @@ function getRoomState(roomId) {
         if (p) {
             if (p.role === 'VOLUNTEER') hasVolunteer = true;
             if (p.role === 'CAREGIVER') hasFamily = true;
-            const targetPoc = p.pocNric || p.nric; const familyMembers = globalLogistics.participants.filter(x => (x.pocNric || x.nric) === targetPoc);
+            
+            let targetPoc = p.pocNric || p.nric;
+            if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
+                const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+                const match = globalLogistics.participants.find(x => x.role === 'TRAINEE' && rNames.includes((x.name || '').toLowerCase()));
+                if (match) targetPoc = match.pocNric || match.nric;
+            } else if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
+                const match = globalLogistics.participants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && x.relatedTrainee.toLowerCase().includes((p.name || '').toLowerCase()));
+                if (match) targetPoc = match.pocNric || match.nric;
+            }
+            const familyMembers = globalLogistics.participants.filter(x => {
+                let xTarget = x.pocNric || x.nric;
+                if (x.role === 'CAREGIVER' && x.relatedTrainee && (!x.pocNric || x.pocNric === x.nric)) {
+                    const rNames = x.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+                    const match = globalLogistics.participants.find(y => y.role === 'TRAINEE' && rNames.includes((y.name || '').toLowerCase()));
+                    if (match) xTarget = match.pocNric || match.nric;
+                } else if (x.role === 'TRAINEE' && (!x.pocNric || x.pocNric === x.nric)) {
+                    const match = globalLogistics.participants.find(y => y.role === 'CAREGIVER' && y.relatedTrainee && y.relatedTrainee.toLowerCase().includes((x.name || '').toLowerCase()));
+                    if (match) xTarget = match.pocNric || match.nric;
+                }
+                return xTarget === targetPoc;
+            });
+    
             if (familyMembers.some(x => x.role === 'CAREGIVER')) hasFamily = true;
             if (p.gender) genderSet.add(p.gender.toLowerCase());
         }
@@ -565,8 +587,18 @@ if(unassigned.length === 0) { showToast("Everyone is already assigned."); return
 
 const familyGroups = {};
 unassigned.forEach(p => {
-    if(!familyGroups[p.pocNric || p.nric]) familyGroups[p.pocNric || p.nric] = [];
-    familyGroups[p.pocNric || p.nric].push(p);
+    let targetPoc = p.pocNric || p.nric;
+    if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
+        const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+        const match = globalLogistics.participants.find(x => x.role === 'TRAINEE' && rNames.includes((x.name || '').toLowerCase()));
+        if (match) targetPoc = match.pocNric || match.nric;
+    } else if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
+        const match = globalLogistics.participants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && x.relatedTrainee.toLowerCase().includes((p.name || '').toLowerCase()));
+        if (match) targetPoc = match.pocNric || match.nric;
+    }
+    
+    if(!familyGroups[targetPoc]) familyGroups[targetPoc] = [];
+    familyGroups[targetPoc].push(p);
 });
 const families = [];
 const nonFamily = [];
@@ -1239,13 +1271,39 @@ function getConnectedParticipants(startNric) {
     const connected = new Set([startNric]);
     const queue = [startNric];
     const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status || p.status === 'ACTIVE'));
-
+    
     while(queue.length > 0) {
         const current = queue.shift();
         const p = globalLogistics.participants.find(x => x.nric === current);
         if (!p) continue;
+        
+        // Auto link related trainees/caregivers based on advanced pocNric matching
+        let pTarget = p.pocNric || p.nric;
+        if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
+            const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+            const match = globalLogistics.participants.find(x => x.role === 'TRAINEE' && rNames.includes((x.name || '').toLowerCase()));
+            if (match) pTarget = match.pocNric || match.nric;
+        } else if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
+            const match = globalLogistics.participants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && x.relatedTrainee.toLowerCase().includes((p.name || '').toLowerCase()));
+            if (match) pTarget = match.pocNric || match.nric;
+        }
 
-        // Auto link related trainees/caregivers
+        globalLogistics.participants.forEach(x => {
+            let xTarget = x.pocNric || x.nric;
+            if (x.role === 'CAREGIVER' && x.relatedTrainee && (!x.pocNric || x.pocNric === x.nric)) {
+                const rNames = x.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+                const match = globalLogistics.participants.find(y => y.role === 'TRAINEE' && rNames.includes((y.name || '').toLowerCase()));
+                if (match) xTarget = match.pocNric || match.nric;
+            } else if (x.role === 'TRAINEE' && (!x.pocNric || x.pocNric === x.nric)) {
+                const match = globalLogistics.participants.find(y => y.role === 'CAREGIVER' && y.relatedTrainee && y.relatedTrainee.toLowerCase().includes((x.name || '').toLowerCase()));
+                if (match) xTarget = match.pocNric || match.nric;
+            }
+            if (xTarget === pTarget && !connected.has(x.nric)) {
+                connected.add(x.nric);
+                queue.push(x.nric);
+            }
+        });
+
         if (p.role === 'CAREGIVER' && p.relatedTrainee) {
             const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
             const rels = globalLogistics.participants.filter(x => x.role === 'TRAINEE' && rNames.includes((x.name||'').toLowerCase()));

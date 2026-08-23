@@ -176,28 +176,37 @@ async function showParticipantSummaryModal(nric) {
     if(!m) throw new Error("Participant not found");
 
     if (m && familyArr.length === 0) {
-        let tName = null;
-        if (m.role === 'TRAINEE') tName = m.shortName || m.fullName || m.name;
-        else if (m.role === 'CAREGIVER') tName = m.caregiverFor || m.relatedTrainee;
+        let sourceArr = [];
+        if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) sourceArr = adminRosterData;
+        else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) sourceArr = loadedFamily;
         
-        if (tName) {
-            let tNames = tName.split(',').map(n => n.trim().toLowerCase());
-            let sourceArr = [];
-            if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) sourceArr = adminRosterData;
-            else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) sourceArr = loadedFamily;
-            
+        let targetPoc = m.pocNric || m.nric;
+        
+        // Advanced fallback mapping
+        if (m.role === 'CAREGIVER' && m.caregiverFor && (!m.pocNric || m.pocNric === m.nric)) {
+            const rNames = m.caregiverFor.split(',').map(n => n.trim().toLowerCase());
+            const matchTrainee = sourceArr.find(x => x.role === 'TRAINEE' && rNames.includes((x.fullName || '').toLowerCase()));
+            if (matchTrainee) targetPoc = matchTrainee.pocNric || matchTrainee.nric;
+        } else if (m.role === 'TRAINEE' && (!m.pocNric || m.pocNric === m.nric)) {
+            const matchCaregiver = sourceArr.find(x => x.role === 'CAREGIVER' && x.caregiverFor && x.caregiverFor.toLowerCase().includes((m.fullName || '').toLowerCase()));
+            if (matchCaregiver) targetPoc = matchCaregiver.pocNric || matchCaregiver.nric;
+        }
+
+        if (targetPoc) {
             familyArr = sourceArr.filter(f => {
                 if (f.nric === m.nric) return false;
-                let fName = (f.shortName || f.fullName || f.name || '').toLowerCase();
-                let fRelated = (f.caregiverFor || f.relatedTrainee || '').split(',').map(n => n.trim().toLowerCase());
                 
-                if (f.role === 'TRAINEE') {
-                    if (m.role === 'CAREGIVER' && tNames.includes(fName)) return true;
+                let fPoc = f.pocNric || f.nric;
+                if (f.role === 'CAREGIVER' && f.caregiverFor && (!f.pocNric || f.pocNric === f.nric)) {
+                    const rNames = f.caregiverFor.split(',').map(n => n.trim().toLowerCase());
+                    const matchT = sourceArr.find(x => x.role === 'TRAINEE' && rNames.includes((x.fullName || '').toLowerCase()));
+                    if (matchT) fPoc = matchT.pocNric || matchT.nric;
+                } else if (f.role === 'TRAINEE' && (!f.pocNric || f.pocNric === f.nric)) {
+                    const matchC = sourceArr.find(x => x.role === 'CAREGIVER' && x.caregiverFor && x.caregiverFor.toLowerCase().includes((f.fullName || '').toLowerCase()));
+                    if (matchC) fPoc = matchC.pocNric || matchC.nric;
                 }
-                if (f.role === 'CAREGIVER') {
-                    if (m.role === 'TRAINEE' && fRelated.some(r => tNames.includes(r))) return true;
-                    if (m.role === 'CAREGIVER' && fRelated.some(r => tNames.includes(r))) return true;
-                }
+                
+                if (fPoc === targetPoc) return true;
                 return false;
             });
         }
@@ -322,8 +331,14 @@ async function submitAdminProfileEdit(btn) {
         if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) allP = adminRosterData;
         else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) allP = loadedFamily;
         
-        const match = allP.find(x => x.role === 'TRAINEE' && (x.fullName || '').toLowerCase() === relatedVal.toLowerCase());
-        if(!match) {
+        const names = relatedVal.split(',').map(x => x.trim()).filter(x => x !== '');
+        let allValid = true;
+        names.forEach(n => {
+            const match = allP.find(x => x.role === 'TRAINEE' && (x.fullName || '').toLowerCase() === n.toLowerCase());
+            if(!match) allValid = false;
+        });
+
+        if(!allValid) {
             showToast("Caregiver For field must match exactly with an existing Trainees' Full Names.", true);
             setBtnLoading(btn, false);
             return;
