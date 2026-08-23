@@ -184,7 +184,7 @@ if (familyArr.length > 0) {
        <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Dietary Needs</p><p class="font-semibold text-red-600 dark:text-red-400">${m.diet || 'None'}</p></div>
        <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Sleeping Arrangement</p><p class="font-semibold text-green-600 dark:text-green-400">${m.sleeping || 'No special request'}</p></div>
        <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Other Points to Note</p><p class="font-semibold">${m.otherPoints || 'None'}</p></div>
-       <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Medical Conditions and Medications to take note of</p><p class="font-semibold">${m.medical || 'None'}</p></div>
+       ${m.role === 'TRAINEE' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Medical Conditions and Medications to take note of</p><p class="font-semibold">${m.medical || 'None'}</p></div>` : ''}
        ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Caregiver For</p><p class="font-semibold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''} 
        ${familyHtml}
      </div>
@@ -198,7 +198,7 @@ if (familyArr.length > 0) {
         <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Email</label><input type="text" id="edEmail_${i}" value="${m.email}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"></div>
         <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Contact</label><input type="tel" pattern="[0-9]{8}" id="edContact_${i}" value="${m.contact}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"></div>
         <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Gender</label><select id="edGender_${i}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"><option ${m.gender==='Male'?'selected':''}>Male</option><option ${m.gender==='Female'?'selected':''}>Female</option></select></div>
-        <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Role</label><select id="edRole_${i}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div>
+        <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Role</label><select id="edRole_${i}" onchange="document.getElementById('edRelated_${i}').closest('.relative').className = this.value === 'CAREGIVER' ? 'block relative' : 'hidden-force relative'; document.getElementById('edRelation_${i}').parentElement.className = this.value === 'CAREGIVER' ? 'block' : 'hidden-force'; document.getElementById('edMedical_${i}').parentElement.className = this.value === 'TRAINEE' ? 'md:col-span-2' : 'hidden-force';" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"><option ${m.role==='TRAINEE'?'selected':''}>TRAINEE</option><option ${m.role==='CAREGIVER'?'selected':''}>CAREGIVER</option><option ${m.role==='VOLUNTEER'?'selected':''}>VOLUNTEER</option></select></div>
         <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Project</label><select id="edGroup_${i}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">${groupOpts}</select></div>
         <div class="md:col-span-2"><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Address</label><textarea id="edAddress_${i}" rows="2" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">${m.address}</textarea></div>
         <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Nationality</label><input type="text" id="edNat_${i}" value="${m.nationality}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"></div>
@@ -210,7 +210,9 @@ if (familyArr.length > 0) {
         <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Emergency Relation</label><input type="text" id="edEmRel_${i}" value="${m.emergencyRelation}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"></div>
         <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Dietary Needs</label><input type="text" id="edDiet_${i}" value="${m.diet}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"></div>
         <div class="md:col-span-2"><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Sleeping Arrangement Request</label><textarea id="edSleep_${i}" rows="2" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">${m.sleeping}</textarea></div>
-        <div class="md:col-span-2"><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Medical Conditions and Medications to take note of</label><textarea id="edMedical_${i}" rows="2" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">${m.medical}</textarea></div>
+        <div class="${m.role === 'TRAINEE' ? 'md:col-span-2' : 'hidden-force'}"><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Medical Conditions and Medications to take note of</label><textarea id="edMedical_${i}" rows="2" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">${m.medical}</textarea></div>
+        <div class="${m.role==='CAREGIVER'?'block':'hidden-force'} relative"><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Caregiver For</label><input type="text" id="edRelated_${i}" placeholder="Comma-separated" value="${m.relatedTrainee || ''}" autocomplete="off" oninput="handleProfileRelatedSearch(${i}, this.value)" onfocus="handleProfileRelatedSearch(${i}, this.value)" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"><div id="edRelatedDropdown_${i}" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl mt-1 hidden-force max-h-48 overflow-y-auto"></div></div>
+        <div class="${m.role==='CAREGIVER'?'block':'hidden-force'}"><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Relationship</label><input type="text" id="edRelation_${i}" value="${m.relationship || ''}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"></div>
         <div class="md:col-span-2"><label class="text-[10px] font-bold mb-0.5 text-gray-500 dark:text-gray-400 block uppercase tracking-wider">Other Points to Note</label><textarea id="edOther_${i}" rows="2" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">${m.otherPoints}</textarea></div>
      </div>
      <div class="flex space-x-2 pt-1 mt-2 border-t border-gray-100 dark:border-gray-800">
@@ -493,6 +495,23 @@ document.getElementById(`profCard_${i}`).classList.remove('hidden-force');
 
 async function saveProfileEdit(i, btn) {
 setBtnLoading(btn, true);
+const roleVal = document.getElementById(`edRole_${i}`).value;
+const relatedVal = document.getElementById(`edRelated_${i}`) ? document.getElementById(`edRelated_${i}`).value.trim() : loadedFamily[i].relatedTrainee;
+
+if (roleVal === 'CAREGIVER' && relatedVal) {
+  const names = relatedVal.split(',').map(x => x.trim()).filter(x => x !== '');
+  let allValid = true;
+  names.forEach(n => {
+      const match = loadedFamily.find(x => x.role === 'TRAINEE' && (x.fullName || '').toLowerCase() === n.toLowerCase());
+      if (!match) allValid = false;
+  });
+  if (!allValid) {
+      showToast("Caregiver For field must match exactly with existing Trainees' Full Names in your family.", true);
+      setBtnLoading(btn, false);
+      return;
+  }
+}
+
 const updated = {
  nric: loadedFamily[i].nric, 
  fullName: document.getElementById(`edName_${i}`).value, 
@@ -514,8 +533,8 @@ const updated = {
  sleeping: document.getElementById(`edSleep_${i}`).value,
  otherPoints: document.getElementById(`edOther_${i}`).value, 
  medical: document.getElementById(`edMedical_${i}`).value,
- relatedTrainee: loadedFamily[i].relatedTrainee, 
- relationship: loadedFamily[i].relationship
+ relatedTrainee: document.getElementById(`edRelated_${i}`) ? document.getElementById(`edRelated_${i}`).value : loadedFamily[i].relatedTrainee, 
+ relationship: document.getElementById(`edRelation_${i}`) ? document.getElementById(`edRelation_${i}`).value : loadedFamily[i].relationship
 };
 
 try { 
@@ -528,3 +547,49 @@ try {
  setBtnLoading(btn, false); 
 }
 }
+
+window.handleProfileRelatedSearch = function(idx, fullQuery) {
+    const dd = document.getElementById('edRelatedDropdown_' + idx);
+    if(!dd) return;
+    
+    const parts = (fullQuery || '').split(',');
+    const query = parts[parts.length - 1].trim().toLowerCase();
+    
+    let allP = [];
+    if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) {
+        allP = loadedFamily; // Only family members in profile
+    }
+    
+    const trainees = allP.filter(p => p.role === 'TRAINEE');
+    const results = trainees.filter(t => (t.fullName || '').toLowerCase().includes(query) || (t.shortName || '').toLowerCase().includes(query));
+    
+    if(results.length === 0) {
+        dd.innerHTML = '<div class="p-2 text-xs text-gray-500 text-center">No family trainees found.</div>';
+    } else {
+        dd.innerHTML = results.map(t => {
+            const escName = (t.fullName || '').replace(/'/g, "\\'");
+            return '<div class="p-2 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" onclick="selectProfileRelatedTrainee(' + idx + ', \'' + escName + '\')"><div class="font-bold text-xs text-gray-800 dark:text-gray-200">' + t.fullName + '</div><div class="text-[10px] text-gray-500">' + (t.shortName || '-') + '</div></div>';
+        }).join('');
+    }
+    dd.classList.remove('hidden-force');
+};
+
+window.selectProfileRelatedTrainee = function(idx, name) {
+    const inp = document.getElementById('edRelated_' + idx);
+    if(inp) {
+        let parts = inp.value.split(',');
+        parts.pop();
+        parts.push(name);
+        inp.value = parts.join(', ') + ', ';
+    }
+    const dd = document.getElementById('edRelatedDropdown_' + idx);
+    if(dd) dd.classList.add('hidden-force');
+    setTimeout(() => { if(inp) inp.focus(); }, 10);
+};
+
+document.addEventListener('click', function(e) {
+    if(e.target.closest('[id^="edRelated_"]')) return;
+    if(e.target.closest('[id^="edRelatedDropdown_"]')) return;
+    const dds = document.querySelectorAll('[id^="edRelatedDropdown_"]');
+    dds.forEach(dd => dd.classList.add('hidden-force'));
+});

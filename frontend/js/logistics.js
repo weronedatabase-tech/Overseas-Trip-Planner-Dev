@@ -1247,18 +1247,24 @@ function getConnectedParticipants(startNric) {
 
         // Auto link related trainees/caregivers
         if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-            const rel = globalLogistics.participants.find(x => x.role === 'TRAINEE' && x.name === p.relatedTrainee);
-            if (rel && !connected.has(rel.nric)) {
-                connected.add(rel.nric);
-                queue.push(rel.nric);
-            }
+            const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+            const rels = globalLogistics.participants.filter(x => x.role === 'TRAINEE' && rNames.includes((x.name||'').toLowerCase()));
+            rels.forEach(rel => {
+                if (rel && !connected.has(rel.nric)) {
+                    connected.add(rel.nric);
+                    queue.push(rel.nric);
+                }
+            });
         }
         if (p.role === 'TRAINEE') {
             globalLogistics.participants.forEach(x => {
-                if (x.role === 'CAREGIVER' && x.relatedTrainee === p.name) {
-                    if (!connected.has(x.nric)) {
-                        connected.add(x.nric);
-                        queue.push(x.nric);
+                if (x.role === 'CAREGIVER' && x.relatedTrainee) {
+                    const rNames = x.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+                    if (rNames.includes((p.name||'').toLowerCase())) {
+                        if (!connected.has(x.nric)) {
+                            connected.add(x.nric);
+                            queue.push(x.nric);
+                        }
                     }
                 }
             });
@@ -1510,7 +1516,8 @@ const activePairings = (globalLogistics.pairings || []).filter(p => (!p.status |
 const traineesWithCaregivers = new Set();
 globalLogistics.participants.forEach(p => {
     if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-        traineesWithCaregivers.add(String(p.relatedTrainee || '').trim().toLowerCase());
+        const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+        rNames.forEach(n => traineesWithCaregivers.add(n));
     }
 });
 

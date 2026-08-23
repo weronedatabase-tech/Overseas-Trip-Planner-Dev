@@ -269,10 +269,13 @@ try {
        p.room = roomsMap[p.nric] || 'UNASSIGNED';
        let myPairings = pairingsMap[p.nric] ? [...pairingsMap[p.nric]] : [];
        if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-           const related = adminRosterData.find(x => (x.fullName||'').toLowerCase() === (p.relatedTrainee||'').toLowerCase() && x.role === 'TRAINEE');
-           if (related && pairingsMap[related.nric]) {
-               myPairings.push(...pairingsMap[related.nric]);
-           }
+           const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
+           const relatedList = adminRosterData.filter(x => rNames.includes((x.fullName||'').toLowerCase()) && x.role === 'TRAINEE');
+           relatedList.forEach(related => {
+               if (related && pairingsMap[related.nric]) {
+                   myPairings.push(...pairingsMap[related.nric]);
+               }
+           });
        }
        p.pairings = myPairings.length > 0 ? Array.from(new Set(myPairings)).join(', ') : 'NONE';
    });

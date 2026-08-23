@@ -35,7 +35,7 @@
 <div class="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-800 mb-4">
  <div>
    <h3 class="text-xl font-bold text-gray-900 dark:text-white">New Registration</h3>
-   <p class="text-xs font-bold text-red-500 dark:text-red-400 mt-1">If you are registering/adding a caregiver, pls ensure the related trainee has been added/registered first</p>
+   <p class="text-xs font-bold text-red-500 dark:text-red-400 mt-1">If you are registering/adding a caregiver, pls ensure the related trainee(s) has been added/registered first</p>
  </div>
  <button onclick="window.location.href='index.html'" class="text-sm font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm">Cancel</button>
 </div>
@@ -65,19 +65,19 @@
 <div id="caregiverPopupModal" class="fixed inset-0 bg-black/60 z-[100] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 dark:border-gray-700 animate-slide-up relative">
    <h3 class="text-lg font-black text-gray-900 dark:text-white mb-1">Caregiver Details</h3>
-   <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-5">Please specify the Trainee you are caring for.</p>
+   <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-5">Please specify the Trainee(s) you are caring for.</p>
    
    <div class="space-y-4">
        <div class="relative">
-           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name <span class="text-red-500">*</span></label>
+           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainees' Name <span class="text-red-500">*</span></label>
            <div class="relative">
-               <input type="text" id="cgPopupTraineeName" onclick="filterCgPopupDropdown()" onfocus="filterCgPopupDropdown()" oninput="filterCgPopupDropdown(); this.dataset.manual='true';" onblur="validateCgPopupTrainee()" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary pr-8" autocomplete="off" placeholder="Search trainee...">
+               <input type="text" id="cgPopupTraineeName" onclick="filterCgPopupDropdown()" onfocus="filterCgPopupDropdown()" oninput="filterCgPopupDropdown(); this.dataset.manual='true';" onblur="validateCgPopupTrainee()" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary pr-8" autocomplete="off" placeholder="Search trainee... (comma-separated)">
                <button type="button" onclick="document.getElementById('cgPopupTraineeName').value=''; filterCgPopupDropdown(); document.getElementById('cgPopupTraineeName').focus();" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
            </div>
            <ul id="cgPopupTraineeDropdown" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl mt-1 max-h-48 overflow-y-auto hidden-force custom-scrollbar"></ul>
        </div>
        <div>
-           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label>
+           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee(s) <span class="text-red-500">*</span></label>
            <input type="text" id="cgPopupRelation" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Mother, Sibling">
        </div>
    </div>

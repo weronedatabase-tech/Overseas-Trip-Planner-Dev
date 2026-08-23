@@ -90,11 +90,11 @@ const caregiverHtml = `
  <div class="trainee-div hidden-force bg-green-50/50 dark:bg-gray-800 p-4 rounded-xl mb-4 border border-green-100 dark:border-gray-700">
    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
      <div class="relative">
-         <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainee's Name <span class="text-red-500">*</span></label>
-         <input required disabled type="text" id="reg-f-related-${idx}" onclick="showTraineeDropdown(${idx})" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off">
+         <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainees' Name <span class="text-red-500">*</span></label>
+         <input required disabled type="text" id="reg-f-related-${idx}" onclick="showTraineeDropdown(${idx})" onfocus="showTraineeDropdown(${idx})" oninput="filterTraineeDropdown(${idx}); this.dataset.manual='true';" onblur="hideTraineeDropdown(${idx})" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off" placeholder="Comma-separated for multiple">
          <ul id="trainee-dropdown-${idx}" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl mt-1 max-h-48 overflow-y-auto hidden-force custom-scrollbar"></ul>
      </div>
-     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee <span class="text-red-500">*</span></label><input required disabled type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
+     <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee(s) <span class="text-red-500">*</span></label><input required disabled type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
    </div>
  </div>
 `;
@@ -203,7 +203,7 @@ const popupName = document.getElementById('cgPopupTraineeName');
 const popupRel = document.getElementById('cgPopupRelation');
 
 popupName.value = defaultName;
-popupName.dataset.manual = defaultName ? 'false' : 'true';
+popupName.dataset.manual = inlineName ? document.getElementById(`reg-f-related-${idx}`).dataset.manual : 'false';
 popupRel.value = inlineRel || '';
 
 document.getElementById('cgPopupTraineeDropdown').classList.add('hidden-force');
@@ -236,8 +236,14 @@ if (!nameVal || !relVal) {
    return;
 }
 
-if (!isValidTraineeName(nameVal)) {
-   alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
+let allValid = true;
+const names = nameVal.split(',').map(x => x.trim()).filter(x => x !== '');
+if (names.length === 0) allValid = false;
+names.forEach(val => {
+   if (!isValidTraineeName(val)) allValid = false;
+});
+if (!allValid) {
+   alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
    return;
 }
 
@@ -278,16 +284,27 @@ return inPublic || inForm;
 
 function validateCgPopupTrainee() {
 setTimeout(() => {
+   const input = document.getElementById('cgPopupTraineeName');
+   if(input && document.activeElement === input) return;
+   const modal = document.getElementById('caregiverPopupModal');
+   if(modal && modal.classList.contains('hidden-force')) return;
    const dd = document.getElementById('cgPopupTraineeDropdown');
    if(dd) dd.classList.add('hidden-force');
-
-   const input = document.getElementById('cgPopupTraineeName');
    if(input && input.value.trim() !== '') {
-       const val = input.value.trim();
-       if (!isValidTraineeName(val)) {
-           alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
-           input.value = '';
+       const names = input.value.split(',').map(x => x.trim()).filter(x => x !== '');
+       let allValid = true;
+       names.forEach(val => {
+           if (!isValidTraineeName(val)) allValid = false;
+       });
+       if (!allValid) {
+           alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
+           const validNames = names.filter(n => isValidTraineeName(n));
+           input.value = validNames.join(', ') + (validNames.length > 0 ? ', ' : '');
            input.dataset.manual = 'false';
+       } else {
+           if (!input.value.trim().endsWith(',')) {
+               input.value = names.join(', ');
+           }
        }
    }
 }, 250);
@@ -298,7 +315,8 @@ const input = document.getElementById('cgPopupTraineeName');
 const dd = document.getElementById('cgPopupTraineeDropdown');
 if(!input || !dd) return;
 
-const query = input.value.toLowerCase().trim();
+const parts = input.value.split(',');
+const query = parts[parts.length - 1].toLowerCase().trim();
 
 let localTrainees = [];
 const allBlocks = Array.from(document.getElementsByClassName('member-block'));
@@ -351,10 +369,14 @@ dd.classList.remove('hidden-force');
 function selectCgPopupTrainee(name) {
 const input = document.getElementById('cgPopupTraineeName');
 if(input) {
-   input.value = name;
+   let parts = input.value.split(',');
+   parts.pop();
+   parts.push(name);
+   input.value = parts.join(', ') + ', ';
    input.dataset.manual = 'true';
    const dd = document.getElementById('cgPopupTraineeDropdown');
    if(dd) dd.classList.add('hidden-force');
+   setTimeout(() => input.focus(), 10);
 }
 }
 
@@ -365,16 +387,26 @@ filterTraineeDropdown(idx);
 
 function hideTraineeDropdown(idx) {
 setTimeout(() => {
+  const input = document.getElementById(`reg-f-related-${idx}`);
+  if(input && document.activeElement === input) return;
   const dd = document.getElementById(`trainee-dropdown-${idx}`);
   if(dd) dd.classList.add('hidden-force');
 
-  const input = document.getElementById(`reg-f-related-${idx}`);
   if(input && input.value.trim() !== '') {
-      const val = input.value.trim();
-      if (!isValidTraineeName(val)) {
-          alert("Pls add/register the Trainee first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
-          input.value = '';
+      const names = input.value.split(',').map(x => x.trim()).filter(x => x !== '');
+      let allValid = true;
+      names.forEach(val => {
+          if (!isValidTraineeName(val)) allValid = false;
+      });
+      if (!allValid) {
+          alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
+          const validNames = names.filter(n => isValidTraineeName(n));
+          input.value = validNames.join(', ') + (validNames.length > 0 ? ', ' : '');
           input.dataset.manual = 'false';
+      } else {
+          if (!input.value.trim().endsWith(',')) {
+              input.value = names.join(', ');
+          }
       }
   }
 }, 250);
@@ -384,8 +416,8 @@ function filterTraineeDropdown(idx) {
 const input = document.getElementById(`reg-f-related-${idx}`);
 const dd = document.getElementById(`trainee-dropdown-${idx}`);
 if(!input || !dd) return;
-
-const query = input.value.toLowerCase().trim();
+const parts = input.value.split(',');
+const query = parts[parts.length - 1].toLowerCase().trim();
 
 let localTrainees = [];
 const allBlocks = Array.from(document.getElementsByClassName('member-block'));
@@ -438,10 +470,14 @@ dd.classList.remove('hidden-force');
 function selectTraineeDropdown(idx, name) {
 const input = document.getElementById(`reg-f-related-${idx}`);
 if(input) {
-  input.value = name;
+  let parts = input.value.split(',');
+  parts.pop();
+  parts.push(name);
+  input.value = parts.join(', ') + ', ';
   input.dataset.manual = 'true';
   const dd = document.getElementById(`trainee-dropdown-${idx}`);
   if(dd) dd.classList.add('hidden-force');
+  setTimeout(() => input.focus(), 10);
 }
 }
 

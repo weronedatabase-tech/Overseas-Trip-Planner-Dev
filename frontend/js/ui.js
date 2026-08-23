@@ -259,9 +259,13 @@ window.applyCaregiverLabels = function(participants) {
 
     participants.forEach(p => {
         if (p.role === 'CAREGIVER') {
-            let tName = p.relatedTrainee ? (traineeMap[String(p.relatedTrainee).toLowerCase()] || p.relatedTrainee) : '';
-            if (tName) {
-                p.caregiverFor = tName;
+            if (p.relatedTrainee) {
+                let parts = String(p.relatedTrainee).split(',');
+                let mapped = parts.map(n => {
+                    let k = n.trim().toLowerCase();
+                    return traineeMap[k] || n.trim();
+                });
+                p.caregiverFor = mapped.join(', ');
             }
         }
     });
