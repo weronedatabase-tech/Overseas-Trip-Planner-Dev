@@ -984,8 +984,18 @@ if(rec) {
 // TAB 4: TRIP FEES TRACKER
 // ==========================================
 function handleFeeSearch() {
-finSearchQuery = document.getElementById('feeSearchInput').value.toLowerCase().trim();
-renderFeeTracker();
+    const input = document.getElementById('feeSearchInput');
+    finSearchQuery = input.value;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    
+    renderFeeTracker();
+    
+    const newInput = document.getElementById('feeSearchInput');
+    if (newInput) {
+        newInput.focus();
+        try { newInput.setSelectionRange(start, end); } catch(e) {}
+    }
 }
 
 function renderFeeTracker() {
@@ -1030,10 +1040,11 @@ function processFeeCard(poc, members) {
     if (isPaid) totalCollected += finalExpected;
 
     let match = true;
-    if (finSearchQuery) {
+    const searchLower = finSearchQuery.toLowerCase().trim();
+    if (searchLower) {
         match = members.some(m => {
             const dName = (m.shortName || m.name).toLowerCase();
-            return dName.includes(finSearchQuery) || m.nric.toLowerCase().includes(finSearchQuery);
+            return dName.includes(searchLower) || m.nric.toLowerCase().includes(searchLower);
         });
     }
 
@@ -1123,7 +1134,7 @@ cont.innerHTML = `
     </div>
     
     <div class="relative">
-        <input type="text" id="feeSearchInput" oninput="handleFeeSearch()" value="${finSearchQuery}" placeholder="Fuzzy search families..." class="w-full py-1.5 pl-7 pr-7 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm transition">
+        <input type="text" id="feeSearchInput" oninput="handleFeeSearch()" value="${finSearchQuery.replace(/"/g, '&quot;')}" placeholder="Fuzzy search families..." class="w-full py-1.5 pl-7 pr-7 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm transition">
         <svg class="w-3.5 h-3.5 absolute left-2.5 top-2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         <button onclick="clearSearch('feeSearchInput', 'handleFeeSearch')" class="absolute right-1.5 top-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
     </div>
