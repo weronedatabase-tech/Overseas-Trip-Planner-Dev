@@ -83,12 +83,25 @@ function renderHeaderLegend() {
  if(mobCont) mobCont.innerHTML = html;
 }
 
+window.resolvePocNric = function(p, allParticipants) {
+    let targetPoc = p.pocNric || p.nric;
+    if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
+        const rNames = String(p.relatedTrainee).split(',').map(n => n.trim().toLowerCase());
+        const match = allParticipants.find(x => x.role === 'TRAINEE' && rNames.includes(String(x.fullName || x.name || '').toLowerCase()));
+        if (match) targetPoc = match.pocNric || match.nric;
+    } else if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
+        const match = allParticipants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && String(x.relatedTrainee).toLowerCase().includes(String(p.fullName || p.name || '').toLowerCase()));
+        if (match) targetPoc = match.pocNric || match.nric;
+    }
+    return targetPoc;
+};
+
 function applyGlobalSorting(participants) {
  if(!appSettings) return participants;
  const rules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
  const familyCounts = {};
  participants.forEach(p => { 
-    const poc = p.pocNric || p.nric;
+    const poc = window.resolvePocNric(p, participants);
     familyCounts[poc] = (familyCounts[poc] || 0) + 1; 
  });
 
@@ -102,11 +115,15 @@ function applyGlobalSorting(participants) {
            if (cmp !== 0) return cmp;
        }
        if (rule === 'family') {
-           const aPoc = a.pocNric || a.nric;
-           const bPoc = b.pocNric || b.nric;
+           const aPoc = window.resolvePocNric(a, participants);
+           const bPoc = window.resolvePocNric(b, participants);
            const aFam = familyCounts[aPoc] > 1 ? 1 : 0;
            const bFam = familyCounts[bPoc] > 1 ? 1 : 0;
            if (aFam !== bFam) return bFam - aFam;
+           if (aFam === 1 && bFam === 1) {
+               const cmp = aPoc.localeCompare(bPoc);
+               if (cmp !== 0) return cmp;
+           }
        }
        if (rule === 'role') {
            const rW = { 'CAREGIVER': 1, 'TRAINEE': 2, 'VOLUNTEER': 3 };
@@ -284,7 +301,7 @@ window.sortParticipantsSpecial = function(arr, allParticipants) {
     if (!arr || !allParticipants) return;
     const famMap = {};
     allParticipants.forEach(x => {
-        const poc = x.pocNric || x.nric;
+        const poc = window.resolvePocNric(x, allParticipants);
         if(!famMap[poc]) famMap[poc] = { count: 0, hasCaregiver: false };
         famMap[poc].count++;
         if(x.role === 'CAREGIVER') famMap[poc].hasCaregiver = true;
@@ -292,7 +309,7 @@ window.sortParticipantsSpecial = function(arr, allParticipants) {
 
     const specialSortMap = new Map();
     arr.forEach(p => {
-        const poc = p.pocNric || p.nric;
+        const poc = window.resolvePocNric(p, allParticipants);
         const info = famMap[poc];
         const isFamily = info ? (info.count > 1 || info.hasCaregiver) : false;
         let catScore = 4;

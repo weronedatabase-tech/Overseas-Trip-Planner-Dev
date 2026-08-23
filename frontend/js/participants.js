@@ -473,15 +473,15 @@ const specialSortMap = new Map();
 if (rosterSortRules.some(r => r.col === 'specialSort')) {
    const famMap = {};
    adminRosterData.forEach(x => {
-       const poc = x.pocNric || x.nric;
+       const poc = window.resolvePocNric ? window.resolvePocNric(x, adminRosterData) : (x.pocNric || x.nric);
        if(!famMap[poc]) famMap[poc] = { count: 0, hasCaregiver: false };
        famMap[poc].count++;
        if(x.role === 'CAREGIVER') famMap[poc].hasCaregiver = true;
    });
    data.forEach(p => {
-       const poc = p.pocNric || p.nric;
+       const poc = window.resolvePocNric ? window.resolvePocNric(p, adminRosterData) : (p.pocNric || p.nric);
        const info = famMap[poc];
-       const isFamily = info.count > 1 || info.hasCaregiver;
+       const isFamily = info ? (info.count > 1 || info.hasCaregiver) : false;
        let catScore = 4;
        if (isFamily) catScore = 1;
        else if (p.role === 'TRAINEE') catScore = 2;
