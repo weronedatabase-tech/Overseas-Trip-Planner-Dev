@@ -548,25 +548,9 @@ function getRoomState(roomId) {
             if (p.role === 'VOLUNTEER') hasVolunteer = true;
             if (p.role === 'CAREGIVER') hasFamily = true;
             
-            let targetPoc = p.pocNric || p.nric;
-            if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
-                const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-                const match = globalLogistics.participants.find(x => x.role === 'TRAINEE' && rNames.includes((x.name || '').toLowerCase()));
-                if (match) targetPoc = match.pocNric || match.nric;
-            } else if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
-                const match = globalLogistics.participants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && x.relatedTrainee.toLowerCase().includes((p.name || '').toLowerCase()));
-                if (match) targetPoc = match.pocNric || match.nric;
-            }
+            let targetPoc = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
             const familyMembers = globalLogistics.participants.filter(x => {
-                let xTarget = x.pocNric || x.nric;
-                if (x.role === 'CAREGIVER' && x.relatedTrainee && (!x.pocNric || x.pocNric === x.nric)) {
-                    const rNames = x.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-                    const match = globalLogistics.participants.find(y => y.role === 'TRAINEE' && rNames.includes((y.name || '').toLowerCase()));
-                    if (match) xTarget = match.pocNric || match.nric;
-                } else if (x.role === 'TRAINEE' && (!x.pocNric || x.pocNric === x.nric)) {
-                    const match = globalLogistics.participants.find(y => y.role === 'CAREGIVER' && y.relatedTrainee && y.relatedTrainee.toLowerCase().includes((x.name || '').toLowerCase()));
-                    if (match) xTarget = match.pocNric || match.nric;
-                }
+                let xTarget = window.resolvePocNric ? window.resolvePocNric(x, globalLogistics.participants) : (x.pocNric || x.nric);
                 return xTarget === targetPoc;
             });
     
@@ -587,16 +571,7 @@ if(unassigned.length === 0) { showToast("Everyone is already assigned."); return
 
 const familyGroups = {};
 unassigned.forEach(p => {
-    let targetPoc = p.pocNric || p.nric;
-    if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
-        const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-        const match = globalLogistics.participants.find(x => x.role === 'TRAINEE' && rNames.includes((x.name || '').toLowerCase()));
-        if (match) targetPoc = match.pocNric || match.nric;
-    } else if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
-        const match = globalLogistics.participants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && x.relatedTrainee.toLowerCase().includes((p.name || '').toLowerCase()));
-        if (match) targetPoc = match.pocNric || match.nric;
-    }
-    
+    let targetPoc = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
     if(!familyGroups[targetPoc]) familyGroups[targetPoc] = [];
     familyGroups[targetPoc].push(p);
 });
@@ -1278,26 +1253,10 @@ function getConnectedParticipants(startNric) {
         if (!p) continue;
         
         // Auto link related trainees/caregivers based on advanced pocNric matching
-        let pTarget = p.pocNric || p.nric;
-        if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
-            const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-            const match = globalLogistics.participants.find(x => x.role === 'TRAINEE' && rNames.includes((x.name || '').toLowerCase()));
-            if (match) pTarget = match.pocNric || match.nric;
-        } else if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
-            const match = globalLogistics.participants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && x.relatedTrainee.toLowerCase().includes((p.name || '').toLowerCase()));
-            if (match) pTarget = match.pocNric || match.nric;
-        }
+        let pTarget = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
 
         globalLogistics.participants.forEach(x => {
-            let xTarget = x.pocNric || x.nric;
-            if (x.role === 'CAREGIVER' && x.relatedTrainee && (!x.pocNric || x.pocNric === x.nric)) {
-                const rNames = x.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-                const match = globalLogistics.participants.find(y => y.role === 'TRAINEE' && rNames.includes((y.name || '').toLowerCase()));
-                if (match) xTarget = match.pocNric || match.nric;
-            } else if (x.role === 'TRAINEE' && (!x.pocNric || x.pocNric === x.nric)) {
-                const match = globalLogistics.participants.find(y => y.role === 'CAREGIVER' && y.relatedTrainee && y.relatedTrainee.toLowerCase().includes((x.name || '').toLowerCase()));
-                if (match) xTarget = match.pocNric || match.nric;
-            }
+            let xTarget = window.resolvePocNric ? window.resolvePocNric(x, globalLogistics.participants) : (x.pocNric || x.nric);
             if (xTarget === pTarget && !connected.has(x.nric)) {
                 connected.add(x.nric);
                 queue.push(x.nric);

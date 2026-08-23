@@ -33,15 +33,22 @@ function getFirstTraineeName() {
 }
 
 function syncTraineeName() {
-   const traineeName = getFirstTraineeName();
-   lastAddedTraineeName = traineeName; 
    const allBlocks = Array.from(document.getElementsByClassName('member-block'));
-   for (let b of allBlocks) {
+   for (let i = 0; i < allBlocks.length; i++) {
+       const b = allBlocks[i];
        const role = b.querySelector('.reg-f-role').value;
        if (role === 'CAREGIVER') {
            const relatedInput = b.querySelector('.reg-f-related');
            if (relatedInput && relatedInput.dataset.manual !== 'true') {
-               relatedInput.value = traineeName;
+               const traineesBefore = [];
+               for (let j = 0; j < i; j++) {
+                   const prevB = allBlocks[j];
+                   if (prevB.querySelector('.reg-f-role').value === 'TRAINEE') {
+                       const tName = prevB.querySelector('.reg-f-name').value.trim();
+                       if (tName) traineesBefore.push(tName);
+                   }
+               }
+               relatedInput.value = traineesBefore.join(', ');
            }
        }
    }
@@ -68,7 +75,7 @@ const personalInfoHtml = `
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
    <div class="md:col-span-2">
        <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Role <span class="text-red-500">*</span></label>
-       <select required class="reg-f-role w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" onchange="toggleTraineeFields(this, ${idx}); syncTraineeName();">
+       <select required class="reg-f-role w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" onchange="syncTraineeName(); toggleTraineeFields(this, ${idx});">
            <option value="" disabled selected>Select Role...</option>
            <option value="TRAINEE">Trainee</option>
            <option value="CAREGIVER">Caregiver</option>
@@ -299,12 +306,10 @@ setTimeout(() => {
        if (!allValid) {
            alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
            const validNames = names.filter(n => isValidTraineeName(n));
-           input.value = validNames.join(', ') + (validNames.length > 0 ? ', ' : '');
+           input.value = validNames.join(', ');
            input.dataset.manual = 'false';
        } else {
-           if (!input.value.trim().endsWith(',')) {
-               input.value = names.join(', ');
-           }
+           input.value = names.join(', ');
        }
    }
 }, 250);
@@ -401,12 +406,10 @@ setTimeout(() => {
       if (!allValid) {
           alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
           const validNames = names.filter(n => isValidTraineeName(n));
-          input.value = validNames.join(', ') + (validNames.length > 0 ? ', ' : '');
+          input.value = validNames.join(', ');
           input.dataset.manual = 'false';
       } else {
-          if (!input.value.trim().endsWith(',')) {
-              input.value = names.join(', ');
-          }
+          input.value = names.join(', ');
       }
   }
 }, 250);

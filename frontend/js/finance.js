@@ -1005,24 +1005,7 @@ if(!globalLogistics || !globalLogistics.participants) return;
 
 const groups = {};
 globalLogistics.participants.forEach(p => {
-    let targetPoc = p.pocNric || p.nric;
-    
-    // Fallback: If Caregiver has relatedTrainee, group them with the FIRST trainee they are related to
-    if (p.role === 'CAREGIVER' && p.relatedTrainee && (!p.pocNric || p.pocNric === p.nric)) {
-        const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-        const matchTrainee = globalLogistics.participants.find(x => x.role === 'TRAINEE' && rNames.includes((x.name || '').toLowerCase()));
-        if (matchTrainee) {
-            targetPoc = matchTrainee.pocNric || matchTrainee.nric;
-        }
-    }
-    
-    // Also fix Trainees who are related to a Caregiver but somehow have different pocNric
-    if (p.role === 'TRAINEE' && (!p.pocNric || p.pocNric === p.nric)) {
-        const matchCaregiver = globalLogistics.participants.find(x => x.role === 'CAREGIVER' && x.relatedTrainee && x.relatedTrainee.toLowerCase().includes((p.name || '').toLowerCase()));
-        if (matchCaregiver) {
-            targetPoc = matchCaregiver.pocNric || matchCaregiver.nric;
-        }
-    }
+    let targetPoc = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
 
     if(!groups[targetPoc]) groups[targetPoc] = [];
     groups[targetPoc].push(p);
