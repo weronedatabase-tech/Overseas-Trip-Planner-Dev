@@ -502,7 +502,7 @@ window.handleProfileRelatedSearch = function(idx, fullQuery) {
     const dd = document.getElementById('edRelatedDropdown_' + idx);
     if(!dd) return;
     
-    const parts = (fullQuery || '').split(',');
+    const parts = (fullQuery || '').split('|');
     const query = parts[parts.length - 1].trim().toLowerCase();
     
     let allP = [];
@@ -527,10 +527,10 @@ window.handleProfileRelatedSearch = function(idx, fullQuery) {
 window.selectProfileRelatedTrainee = function(idx, name) {
     const inp = document.getElementById('edRelated_' + idx);
     if(inp) {
-        let parts = inp.value.split(',');
+        let parts = inp.value.split('|');
         parts.pop();
         parts.push(name);
-        inp.value = parts.join(', ') + ', ';
+        inp.value = parts.join(' | ') + ' | ';
     }
     const dd = document.getElementById('edRelatedDropdown_' + idx);
     if(dd) dd.classList.add('hidden-force');

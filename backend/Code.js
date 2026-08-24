@@ -416,7 +416,31 @@ if (String(data[i][11]).trim().toUpperCase() === String(member.nric || '').trim(
 
   sheet.getRange(i+1, 1, 1, rData.length).setValues([rData]);
   
+  
   // Write-Through: Invalidate dependent caches
+  if (member.role === 'CAREGIVER') {
+      const desiredNames = (member.relatedTrainee || '').split('|').map(n => n.trim().toLowerCase()).filter(n => n);
+      const targetPoc = String(rData[21] || rData[11] || '').trim().toUpperCase();
+      
+      for (let j = 1; j < data.length; j++) {
+          if (String(data[j][2]).trim().toUpperCase() === 'TRAINEE') {
+              const jNric = String(data[j][11]).trim().toUpperCase();
+              const jPoc = String(data[j][21] || data[j][11] || '').trim().toUpperCase();
+              const jName = String(data[j][3]).trim().toLowerCase();
+              const jShort = String(data[j][22]).trim().toLowerCase();
+              
+              const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
+              
+              if (isDesired && jPoc !== targetPoc) {
+                  data[j][21] = targetPoc;
+                  sheet.getRange(j+1, 22).setValue(targetPoc);
+              } else if (!isDesired && jPoc === targetPoc) {
+                  data[j][21] = jNric;
+                  sheet.getRange(j+1, 22).setValue(jNric);
+              }
+          }
+      }
+  }
   CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
   CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
   precomputeAppCache(); 
@@ -472,8 +496,34 @@ for (let p of payloadArray) {
   ]);
 }
 
+
 if (newRows.length > 0) {
   sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, newRows[0].length).setValues(newRows);
+  
+  // Sync logic for Caregivers linking existing trainees during registration
+  const data = sheet.getDataRange().getValues();
+  for (let p of payloadArray) {
+      if (p.role === 'CAREGIVER' && p.relatedTrainee) {
+          const desiredNames = p.relatedTrainee.split('|').map(n => n.trim().toLowerCase()).filter(n => n);
+          const targetPoc = pocNric; // pocNric was defined above
+          
+          for (let j = 1; j < data.length; j++) {
+              if (String(data[j][2]).trim().toUpperCase() === 'TRAINEE') {
+                  const jNric = String(data[j][11]).trim().toUpperCase();
+                  const jPoc = String(data[j][21] || data[j][11] || '').trim().toUpperCase();
+                  const jName = String(data[j][3]).trim().toLowerCase();
+                  const jShort = String(data[j][22]).trim().toLowerCase();
+                  
+                  const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
+                  
+                  if (isDesired && jPoc !== targetPoc) {
+                      sheet.getRange(j+1, 22).setValue(targetPoc);
+                  }
+              }
+          }
+      }
+  }
+
   CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
   CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
 }
@@ -528,7 +578,36 @@ results.push({
 });
 }
 }
-const res = { status: 'success', roster: results };
+
+  // In-memory self-healing of pocNric based on 'relatedTrainee' column (index 4)
+  results.forEach(r => {
+      if (r.role === 'CAREGIVER' && r.relatedTrainee) {
+          const desiredNames = r.relatedTrainee.split(/[\|,]/).map(n => n.trim().toLowerCase()).filter(n => n);
+          
+          results.forEach(j => {
+              if (j.role === 'TRAINEE') {
+                  const jName = (j.fullName || '').toLowerCase();
+                  const jShort = (j.shortName || '').toLowerCase();
+                  const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
+                  
+                  if (isDesired) {
+                      j.pocNric = r.nric; // Override trainee's pocNric in memory
+                      r.pocNric = r.nric; // Ensure caregiver's pocNric is their own NRIC
+                  }
+              }
+          });
+      }
+  });
+
+  results.forEach(r => {
+      if (r.role === 'CAREGIVER') {
+          const dependents = results.filter(x => x.role === 'TRAINEE' && x.pocNric === r.pocNric);
+          r.relatedTrainee = dependents.map(d => `${d.fullName}${d.shortName ? ' (' + d.shortName + ')' : ''}`).join(' | ');
+      }
+  });
+
+
+  const res = { status: 'success', roster: results };
 putLargeCache(cacheKey, JSON.stringify(res));
 return res;
 }
@@ -536,6 +615,7 @@ return res;
 // ==========================================
 // LOGISTICS & SYNC ENGINE
 // ==========================================
+
 function fetchLogistics(forceRebuild = false) {
 const cacheKey = getCacheKey('LOGISTICS');
 if(!forceRebuild) {
@@ -543,28 +623,24 @@ const cached = getLargeCache(cacheKey);
 if(cached) return JSON.parse(cached);
 }
 
-const ss = getDatabase(); 
-const pData = ss.getSheetByName("Raw Data").getDataRange().getValues(); 
-const participants = [];
-for(let i=1; i<pData.length; i++) {
-if(pData[i][11]) {
-participants.push({ 
-  role: String(pData[i][2]).trim().toUpperCase(), 
-  name: String(pData[i][3]).trim().toUpperCase(), 
-  relatedTrainee: pData[i][4] ? String(pData[i][4]).trim().toUpperCase() : '',
-  shortName: pData[i][22] ? String(pData[i][22]).trim().toUpperCase() : '',
-  group: String(pData[i][6]).trim(), 
-  gender: String(pData[i][7]).trim(),
-  nric: String(pData[i][11]).trim().toUpperCase(),
-  pocNric: String(pData[i][21]||pData[i][11]||'').trim().toUpperCase(),
-  bus: String(pData[i][24]||'').trim(),
-  logisticsGroup: String(pData[i][25]||'').trim(),
-  sleeping: pData[i][19] ? String(pData[i][19]).trim() : ''
-});
-}
-}
+// Reuse the fully healed roster
+const rosterData = fetchAdminRoster(forceRebuild).roster;
+const participants = rosterData.map(p => ({
+  role: p.role,
+  name: p.fullName,
+  relatedTrainee: p.relatedTrainee,
+  shortName: p.shortName,
+  group: p.group,
+  gender: p.gender,
+  nric: p.nric,
+  pocNric: p.pocNric,
+  bus: p.bus,
+  logisticsGroup: p.logisticsGroup,
+  sleeping: p.sleeping
+}));
 
 const pairRes = fetchPairingsOnly(forceRebuild);
+
 const roomRes = fetchRoomsOnly(forceRebuild);
 
 const res = { status: 'success', participants, pairings: pairRes.pairings, rooms: roomRes.rooms, groups: [], buses:[] };
@@ -1399,4 +1475,44 @@ function checkDuplicateParticipant(nric, passport) {
     return { status: 'error', conflictType: conflictType, message: `This ${conflictType} already exists.` };
   }
   return { status: 'success' };
+}
+
+
+function forceMigratePocNric() {
+  const ss = getDatabase();
+  const sheet = ss.getSheetByName("Raw Data");
+  const data = sheet.getDataRange().getValues();
+  
+  // 1. Identify all caregivers and their related trainees
+  let changes = 0;
+  for (let i = 1; i < data.length; i++) {
+      if (String(data[i][2]).trim().toUpperCase() === 'CAREGIVER') {
+          const cgNric = String(data[i][11]).trim().toUpperCase();
+          const relatedStr = String(data[i][4] || '').trim(); // column E has the names
+          
+          if (relatedStr) {
+              const desiredNames = relatedStr.split(/[\|,]/).map(n => n.trim().toLowerCase()).filter(n => n);
+              
+              for (let j = 1; j < data.length; j++) {
+                  if (String(data[j][2]).trim().toUpperCase() === 'TRAINEE') {
+                      const jNric = String(data[j][11]).trim().toUpperCase();
+                      const jPoc = String(data[j][21] || '').trim().toUpperCase(); // Column V
+                      const jName = String(data[j][3]).trim().toLowerCase();
+                      const jShort = String(data[j][22]).trim().toLowerCase();
+                      
+                      const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
+                      
+                      if (isDesired && jPoc !== cgNric) {
+                          sheet.getRange(j+1, 22).setValue(cgNric); // set Trainee's pocNric to Caregiver's NRIC
+                          sheet.getRange(i+1, 22).setValue(cgNric); // set Caregiver's pocNric to Caregiver's NRIC
+                          changes++;
+                      }
+                  }
+              }
+          }
+      }
+  }
+  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
+  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+  return changes;
 }

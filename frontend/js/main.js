@@ -302,7 +302,7 @@ async function submitAdminProfileEdit(btn) {
         if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) allP = adminRosterData;
         else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) allP = loadedFamily;
         
-        const names = relatedVal.split(',').map(x => x.trim()).filter(x => x !== '');
+        const names = relatedVal.split('|').map(x => x.trim()).filter(x => x !== '');
         let allValid = true;
         names.forEach(n => {
             const match = allP.find(x => x.role === 'TRAINEE' && (x.fullName || '').toLowerCase() === n.toLowerCase());
@@ -534,7 +534,7 @@ window.handleGpmRelatedSearch = function(fullQuery) {
     const dd = document.getElementById('gpmRelatedDropdown');
     if(!dd) return;
     
-    const parts = (fullQuery || '').split(',');
+    const parts = (fullQuery || '').split('|');
     const query = parts[parts.length - 1].trim().toLowerCase();
     
     let allP = [];
@@ -567,10 +567,10 @@ window.handleGpmRelatedSearch = function(fullQuery) {
 window.selectGpmRelatedTrainee = function(name) {
     const inp = document.getElementById('gpmRelated');
     if(inp) {
-        let parts = inp.value.split(',');
+        let parts = inp.value.split('|');
         parts.pop();
         parts.push(name);
-        inp.value = parts.join(', ') + ', ';
+        inp.value = parts.join(' | ') + ' | ';
     }
     const dd = document.getElementById('gpmRelatedDropdown');
     if(dd) dd.classList.add('hidden-force');

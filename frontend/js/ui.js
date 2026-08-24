@@ -7,7 +7,7 @@ function showToast(msg, isError = false) {
  setTimeout(() => t.classList.add('opacity-0'), 4000);
 }
 
-window.cleanTrailingComma = function(input) { setTimeout(() => { if (document.activeElement === input) return; if (input && input.value) { const names = input.value.split(",").map(x => x.trim()).filter(x => x !== ""); input.value = names.join(", "); } }, 250); };
+window.cleanTrailingComma = function(input) { setTimeout(() => { if (document.activeElement === input) return; if (input && input.value) { const names = input.value.split("|").map(x => x.trim()).filter(x => x !== ""); input.value = names.join(" | "); } }, 250); };
 function setBtnLoading(btn, isLoading) {
  if (!btn) return;
  const spinner = btn.querySelector('.btn-spinner');
