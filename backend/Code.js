@@ -83,6 +83,20 @@ cache.putAll(dict, 21600);
 } catch(e) { console.error("Cache Put Error:", e); }
 }
 
+
+function removeLargeCache(cacheKey) {
+  const cache = CacheService.getScriptCache();
+  try {
+    cache.remove(cacheKey);
+    const countStr = cache.get(cacheKey + "_count");
+    if (countStr) {
+      const count = parseInt(countStr);
+      const keys = [cacheKey + "_count"];
+      for (let i = 0; i < count; i++) keys.push(cacheKey + "_" + i);
+      cache.removeAll(keys);
+    }
+  } catch(e) {}
+}
 function getLargeCache(cacheKey) {
 const cache = CacheService.getScriptCache();
 try {
@@ -426,8 +440,8 @@ if (String(data[i][11]).trim().toUpperCase() === String(member.nric || '').trim(
           if (String(data[j][2]).trim().toUpperCase() === 'TRAINEE') {
               const jNric = String(data[j][11]).trim().toUpperCase();
               const jPoc = String(data[j][21] || data[j][11] || '').trim().toUpperCase();
-              const jName = String(data[j][3]).trim().toLowerCase();
-              const jShort = String(data[j][22]).trim().toLowerCase();
+              const jName = String(data[j][3] || '').replace(/\s+/g, '').toLowerCase();
+              const jShort = String(data[j][22] || '').replace(/\s+/g, '').toLowerCase();
               
               const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
               
@@ -441,8 +455,8 @@ if (String(data[i][11]).trim().toUpperCase() === String(member.nric || '').trim(
           }
       }
   }
-  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
-  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+  removeLargeCache(getCacheKey('ROSTER'));
+  removeLargeCache(getCacheKey('LOGISTICS'));
   precomputeAppCache(); 
   return { status: 'success' };
 }
@@ -511,8 +525,8 @@ if (newRows.length > 0) {
               if (String(data[j][2]).trim().toUpperCase() === 'TRAINEE') {
                   const jNric = String(data[j][11]).trim().toUpperCase();
                   const jPoc = String(data[j][21] || data[j][11] || '').trim().toUpperCase();
-                  const jName = String(data[j][3]).trim().toLowerCase();
-                  const jShort = String(data[j][22]).trim().toLowerCase();
+                  const jName = String(data[j][3] || '').replace(/\s+/g, '').toLowerCase();
+                  const jShort = String(data[j][22] || '').replace(/\s+/g, '').toLowerCase();
                   
                   const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
                   
@@ -524,8 +538,8 @@ if (newRows.length > 0) {
       }
   }
 
-  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
-  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+  removeLargeCache(getCacheKey('ROSTER'));
+  removeLargeCache(getCacheKey('LOGISTICS'));
 }
 
 return { status: 'success' };
@@ -582,12 +596,12 @@ results.push({
   // In-memory self-healing of pocNric based on 'relatedTrainee' column (index 4)
   results.forEach(r => {
       if (r.role === 'CAREGIVER' && r.relatedTrainee) {
-          const desiredNames = r.relatedTrainee.split(/[\|,]/).map(n => n.trim().toLowerCase()).filter(n => n);
+          const desiredNames = r.relatedTrainee.split(/[\|,]/).map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
           
           results.forEach(j => {
               if (j.role === 'TRAINEE') {
-                  const jName = (j.fullName || '').toLowerCase();
-                  const jShort = (j.shortName || '').toLowerCase();
+                  const jName = (j.fullName || '').replace(/\s+/g, '').toLowerCase();
+                  const jShort = (j.shortName || '').replace(/\s+/g, '').toLowerCase();
                   const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
                   
                   if (isDesired) {
@@ -1392,7 +1406,7 @@ function deleteParticipant(nric) {
     archiveSheet.appendRow(rowData);
     sheet.deleteRow(rowIndex);
     
-    CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
+    removeLargeCache(getCacheKey('ROSTER'));
     return { status: 'success' };
   } catch(e) {
     return { status: 'error', message: e.message };
@@ -1444,8 +1458,8 @@ if (dataChanged) {
   }
   sheet.getRange(1, 1, data.length, targetLength).setValues(data);
   SpreadsheetApp.flush();
-  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
-  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+  removeLargeCache(getCacheKey('ROSTER'));
+  removeLargeCache(getCacheKey('LOGISTICS'));
   precomputeAppCache();
 }
 return { status: 'success' };
@@ -1497,8 +1511,8 @@ function forceMigratePocNric() {
                   if (String(data[j][2]).trim().toUpperCase() === 'TRAINEE') {
                       const jNric = String(data[j][11]).trim().toUpperCase();
                       const jPoc = String(data[j][21] || '').trim().toUpperCase(); // Column V
-                      const jName = String(data[j][3]).trim().toLowerCase();
-                      const jShort = String(data[j][22]).trim().toLowerCase();
+                      const jName = String(data[j][3] || '').replace(/\s+/g, '').toLowerCase();
+                      const jShort = String(data[j][22] || '').replace(/\s+/g, '').toLowerCase();
                       
                       const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
                       
@@ -1512,7 +1526,7 @@ function forceMigratePocNric() {
           }
       }
   }
-  CacheService.getScriptCache().remove(getCacheKey('ROSTER'));
-  CacheService.getScriptCache().remove(getCacheKey('LOGISTICS'));
+  removeLargeCache(getCacheKey('ROSTER'));
+  removeLargeCache(getCacheKey('LOGISTICS'));
   return changes;
 }
