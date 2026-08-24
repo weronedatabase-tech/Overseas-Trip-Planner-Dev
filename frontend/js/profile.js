@@ -130,28 +130,7 @@ loadedFamily.forEach((m, i) => {
  }
  const dynColor = getProjectColor(m.group);
 
-let familyArr = loadedFamily.filter(f => f.nric !== m.nric);
-let familyHtml = '';
-if (familyArr.length > 0) {
-    familyHtml = `
-    <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-3 mt-1">
-        <p class="font-bold text-gray-500 dark:text-gray-400 text-[9px] uppercase tracking-wider mb-2">Family Members</p>
-        <div class="flex flex-col gap-2">
-            ${familyArr.map(f => {
-                 const fRoleColor = f.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (f.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
-                 return `<div class="flex flex-col md:flex-row md:items-center justify-between bg-gray-50 dark:bg-gray-800/50 p-2 rounded border border-gray-200 dark:border-gray-700">
-                     <div class="flex items-center gap-2 mb-1 md:mb-0">
-                        <span class="text-[8px] font-black ${fRoleColor} bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 uppercase tracking-wider shrink-0">${f.role.substring(0,3)}</span>
-                        <span class="font-bold text-xs text-gray-800 dark:text-gray-200">${f.fullName}</span>
-                     </div>
-                     <div class="text-[11px] font-mono text-gray-600 dark:text-gray-400 font-semibold bg-white dark:bg-gray-900 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                        ${f.contact || 'No Contact'}
-                     </div>
-                 </div>`;
-            }).join('')}
-        </div>
-    </div>`;
-}
+
 
 
  let expiryHighlight = false;
@@ -163,8 +142,11 @@ if (familyArr.length > 0) {
  }
 
  const mRoleColor = m.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
+ let headerLabel = i === 0 ? '<span class="text-[10px] font-black bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-widest mb-2 inline-block shadow-sm">My Profile</span>' : '<span class="text-[10px] font-black bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 px-2 py-0.5 rounded-full uppercase tracking-widest mb-2 inline-block shadow-sm">Family Member</span>';
+
  profilesHtml += `
-   <div class="bg-white dark:bg-gray-900 p-3 md:p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm relative" id="profCard_${i}">
+   <div class="bg-white dark:bg-gray-900 p-3 md:p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm relative mb-4" id="profCard_${i}">
+     ${headerLabel}
      <div class="flex justify-between items-start border-b border-gray-100 dark:border-gray-800 pb-2 mb-3">
        <div class="flex items-center flex-wrap gap-1.5">
          <span class="font-extrabold text-[13px] md:text-sm px-2 py-0.5 rounded shadow-sm border ${dynColor} leading-tight">${m.fullName}</span> 
@@ -188,7 +170,6 @@ if (familyArr.length > 0) {
        <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Other Points to Note</p><p class="font-semibold">${m.otherPoints || 'None'}</p></div>
        ${m.role === 'TRAINEE' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Medical Conditions and Medications to take note of</p><p class="font-semibold">${m.medical || 'None'}</p></div>` : ''}
        ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Caregiver For</p><p class="font-semibold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''} 
-       ${familyHtml}
      </div>
    </div>
    
