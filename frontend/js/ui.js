@@ -375,3 +375,120 @@ window.sortParticipantsSpecial = function(arr, allParticipants) {
         return 0;
     });
 };
+
+window.setupTokenInput = function(inputId, getSuggestionsCallback) {
+    const originalInput = document.getElementById(inputId);
+    if (!originalInput || originalInput.dataset.tokenized) return;
+    originalInput.dataset.tokenized = "true";
+
+    // Hide original input but keep its functionality
+    originalInput.style.display = 'none';
+
+    // Create wrapper
+    const wrapper = document.createElement('div');
+    wrapper.className = "flex flex-wrap items-center gap-1.5 w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus-within:ring-1 focus-within:ring-primary cursor-text min-h-[42px]";
+    
+    const chipContainer = document.createElement('div');
+    chipContainer.className = "flex flex-wrap gap-1.5 items-center";
+    
+    const inputField = document.createElement('input');
+    inputField.type = "text";
+    inputField.className = "flex-1 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-semibold text-gray-900 dark:text-white min-w-[60px] p-0";
+    inputField.placeholder = "Search trainee...";
+    
+    const dropdown = document.createElement('div');
+    dropdown.className = "absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl mt-1 hidden-force max-h-48 overflow-y-auto";
+    
+    // Wrapper must be relative for dropdown
+    const outerWrapper = document.createElement('div');
+    outerWrapper.className = "relative w-full";
+    
+    originalInput.parentNode.insertBefore(outerWrapper, originalInput);
+    outerWrapper.appendChild(originalInput);
+    outerWrapper.appendChild(wrapper);
+    outerWrapper.appendChild(dropdown);
+    
+    wrapper.appendChild(chipContainer);
+    wrapper.appendChild(inputField);
+
+    let tokens = (originalInput.value || '').split(/[\|,]/).map(s => s.trim()).filter(Boolean);
+    
+    function renderTokens() {
+        chipContainer.innerHTML = '';
+        tokens.forEach((t, i) => {
+            const chip = document.createElement('span');
+            chip.className = "inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 uppercase tracking-widest";
+            chip.innerHTML = `
+                ${t}
+                <button type="button" class="ml-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 focus:outline-none flex-shrink-0" onclick="event.stopPropagation(); window.removeTokenFromInput('${inputId}', ${i})">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+            `;
+            chipContainer.appendChild(chip);
+        });
+        originalInput.value = tokens.join(' | ');
+        originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    if (!window._tokenInputs) window._tokenInputs = {};
+    window._tokenInputs[inputId] = {
+        tokens,
+        render: renderTokens
+    };
+    
+    window.removeTokenFromInput = function(id, index) {
+        if(window._tokenInputs[id]) {
+            window._tokenInputs[id].tokens.splice(index, 1);
+            window._tokenInputs[id].render();
+        }
+    };
+
+    renderTokens();
+
+    wrapper.addEventListener('click', () => {
+        inputField.focus();
+    });
+
+    inputField.addEventListener('input', () => {
+        const query = inputField.value.trim().toLowerCase();
+        if (query) {
+             const suggestions = getSuggestionsCallback(query);
+             renderDropdown(suggestions);
+        } else {
+             dropdown.classList.add('hidden-force');
+        }
+    });
+
+    function renderDropdown(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            dropdown.innerHTML = '<div class="p-2 text-xs text-gray-500 text-center italic pointer-events-none">No matches found</div>';
+        } else {
+            dropdown.innerHTML = '';
+            suggestions.forEach(s => {
+                const item = document.createElement('div');
+                item.className = "px-3 py-2 text-sm font-bold text-gray-800 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition border-b border-gray-100 dark:border-gray-700 last:border-0";
+                item.textContent = s.label;
+                item.addEventListener('mousedown', (e) => {
+                    e.preventDefault(); // prevent blur
+                    if (!tokens.includes(s.value)) {
+                        tokens.push(s.value);
+                    }
+                    inputField.value = '';
+                    dropdown.classList.add('hidden-force');
+                    renderTokens();
+                });
+                dropdown.appendChild(item);
+            });
+        }
+        dropdown.classList.remove('hidden-force');
+    }
+
+    inputField.addEventListener('focus', () => {
+         const suggestions = getSuggestionsCallback(inputField.value.trim().toLowerCase());
+         renderDropdown(suggestions);
+    });
+
+    inputField.addEventListener('blur', () => {
+        setTimeout(() => dropdown.classList.add('hidden-force'), 150);
+    });
+};

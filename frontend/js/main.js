@@ -245,7 +245,7 @@ async function showParticipantSummaryModal(nric) {
           <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Sleeping Arrangement</p><p class="font-semibold text-green-600 dark:text-green-400">${m.sleeping || 'No special request'}</p></div>
           <div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Other Points to Note</p><p class="font-semibold">${m.otherPoints || 'None'}</p></div>
           ${m.role === 'TRAINEE' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Medical Conditions and Medications to take note of</p><p class="font-semibold">${m.medical || 'None'}</p></div>` : ''}
-          ${m.role === 'CAREGIVER' ? `<div class="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[9px] uppercase tracking-wider mb-0.5">Caregiver For</p><p class="font-semibold">${m.relatedTrainee} (${m.relationship})</p></div>` : ''} 
+
           ${familyHtml}
         </div>
       </div>
@@ -272,8 +272,8 @@ async function showParticipantSummaryModal(nric) {
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Emerg. Contact</label><input type="text" id="gpmEmContact" value="${m.emergencyContact}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Emerg. Relation</label><input type="text" id="gpmEmRel" value="${m.emergencyRelation}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
           <div><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Sleeping</label><input type="text" id="gpmSleep" value="${m.sleeping}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
-          <div class="${m.role==='CAREGIVER'?'block':'hidden-force'} relative"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Caregiver For</label><input type="text" id="gpmRelated" placeholder="Comma-separated" value="${m.relatedTrainee || ''}" autocomplete="off" oninput="handleGpmRelatedSearch(this.value)" onfocus="handleGpmRelatedSearch(this.value)" onblur="cleanTrailingComma(this)" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"><div id="gpmRelatedDropdown" class="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl mt-1 hidden-force max-h-48 overflow-y-auto"></div></div>
-          <div class="${m.role==='CAREGIVER'?'block':'hidden-force'}"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Relationship</label><input type="text" id="gpmRelation" value="${m.relationship || ''}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
+          <div class="${m.role==='CAREGIVER'?'block':'hidden-force'} relative"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Related Trainees' Name</label><input type="text" id="gpmRelated" placeholder="Search trainee..." value="${m.relatedTrainee || ''}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"></div>
+          <div class="${m.role==='CAREGIVER'?'block':'hidden-force'}"><label class="text-[10px] font-bold mb-0.5 text-gray-500 block uppercase">Relationship to Trainee(s)</label><input type="text" id="gpmRelation" value="${m.relationship || ''}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"></div>
         </div>
         <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           <button type="button" onclick="document.getElementById('gpm-edit').classList.add('hidden-force'); document.getElementById('gpm-view').classList.remove('hidden-force');" class="px-4 py-2 text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
@@ -286,6 +286,24 @@ async function showParticipantSummaryModal(nric) {
     `;
   } catch(e) {
     cont.innerHTML = `<p class="text-xs font-bold text-red-500 text-center py-4">${e.message || 'Failed to load details.'}</p>`;
+  }
+  
+  if (typeof setupTokenInput === 'function') {
+      setTimeout(() => {
+          if(document.getElementById('gpmRelated')) {
+              setupTokenInput('gpmRelated', function(query) {
+                  let allP = [];
+                  if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) {
+                      allP = adminRosterData;
+                  } else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) {
+                      allP = loadedFamily;
+                  }
+                  const trainees = allP.filter(p => p.role === 'TRAINEE');
+                  const results = trainees.filter(t => (t.fullName || '').toLowerCase().includes(query) || (t.shortName || '').toLowerCase().includes(query));
+                  return results.map(t => ({ label: `${t.fullName} ${t.shortName ? '(' + t.shortName + ')' : ''}`, value: t.fullName }));
+              });
+          }
+      }, 50);
   }
 }
 
