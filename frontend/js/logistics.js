@@ -1252,9 +1252,7 @@ function getConnectedParticipants(startNric) {
         const p = globalLogistics.participants.find(x => x.nric === current);
         if (!p) continue;
         
-        // Auto link related trainees/caregivers based on advanced pocNric matching
         let pTarget = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
-
         globalLogistics.participants.forEach(x => {
             let xTarget = window.resolvePocNric ? window.resolvePocNric(x, globalLogistics.participants) : (x.pocNric || x.nric);
             if (xTarget === pTarget && !connected.has(x.nric)) {
@@ -1262,30 +1260,6 @@ function getConnectedParticipants(startNric) {
                 queue.push(x.nric);
             }
         });
-
-        if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-            const rNames = p.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-            const rels = globalLogistics.participants.filter(x => x.role === 'TRAINEE' && rNames.includes((x.name||'').toLowerCase()));
-            rels.forEach(rel => {
-                if (rel && !connected.has(rel.nric)) {
-                    connected.add(rel.nric);
-                    queue.push(rel.nric);
-                }
-            });
-        }
-        if (p.role === 'TRAINEE') {
-            globalLogistics.participants.forEach(x => {
-                if (x.role === 'CAREGIVER' && x.relatedTrainee) {
-                    const rNames = x.relatedTrainee.split(',').map(n => n.trim().toLowerCase());
-                    if (rNames.includes((p.name||'').toLowerCase())) {
-                        if (!connected.has(x.nric)) {
-                            connected.add(x.nric);
-                            queue.push(x.nric);
-                        }
-                    }
-                }
-            });
-        }
 
         // Auto link pairings
         activePairings.forEach(pair => {

@@ -340,27 +340,12 @@ const currentUserRecord = data.find(r => r.nric === nric);
 if (!currentUserRecord) return {status: 'error', message: 'Profile not found.'};
 
 let family = [];
-const userRole = currentUserRecord.role;
-const userName = currentUserRecord.fullName.toLowerCase();
-const userRelatedTrainee = (currentUserRecord.relatedTrainee || '').toLowerCase();
-
-let targetTraineeName = null;
-if (userRole === 'TRAINEE') targetTraineeName = userName;
-else if (userRole === 'CAREGIVER' && userRelatedTrainee) targetTraineeName = userRelatedTrainee;
+const targetPoc = currentUserRecord.pocNric || currentUserRecord.nric;
 
 data.forEach(row => {
- let isFamilyMember = false;
- const rowRole = row.role;
- const rowName = row.fullName.toLowerCase();
- const rowRelated = (row.relatedTrainee || '').toLowerCase();
+ const rowPoc = row.pocNric || row.nric;
 
- if (targetTraineeName) {
-     if (rowRole === 'TRAINEE' && rowName === targetTraineeName) isFamilyMember = true;
-     if (rowRole === 'CAREGIVER' && rowRelated === targetTraineeName) isFamilyMember = true;
- }
- if (row.nric === nric) isFamilyMember = true;
-
- if (isFamilyMember) {
+ if (rowPoc === targetPoc) {
      let expRaw = row.passportExpiry;
      let dobRaw = row.dob;
      

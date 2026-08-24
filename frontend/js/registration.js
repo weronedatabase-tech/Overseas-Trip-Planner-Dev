@@ -243,17 +243,6 @@ if (!nameVal || !relVal) {
    return;
 }
 
-let allValid = true;
-const names = nameVal.split(',').map(x => x.trim()).filter(x => x !== '');
-if (names.length === 0) allValid = false;
-names.forEach(val => {
-   if (!isValidTraineeName(val)) allValid = false;
-});
-if (!allValid) {
-   alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
-   return;
-}
-
 if (currentCaregiverIdx !== null) {
    const inlineName = document.getElementById(`reg-f-related-${currentCaregiverIdx}`);
    const block = document.querySelector(`.member-block[data-idx="${currentCaregiverIdx}"]`);
@@ -297,21 +286,6 @@ setTimeout(() => {
    if(modal && modal.classList.contains('hidden-force')) return;
    const dd = document.getElementById('cgPopupTraineeDropdown');
    if(dd) dd.classList.add('hidden-force');
-   if(input && input.value.trim() !== '') {
-       const names = input.value.split(',').map(x => x.trim()).filter(x => x !== '');
-       let allValid = true;
-       names.forEach(val => {
-           if (!isValidTraineeName(val)) allValid = false;
-       });
-       if (!allValid) {
-           alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
-           const validNames = names.filter(n => isValidTraineeName(n));
-           input.value = validNames.join(', ');
-           input.dataset.manual = 'false';
-       } else {
-           input.value = names.join(', ');
-       }
-   }
 }, 250);
 }
 
@@ -396,22 +370,6 @@ setTimeout(() => {
   if(input && document.activeElement === input) return;
   const dd = document.getElementById(`trainee-dropdown-${idx}`);
   if(dd) dd.classList.add('hidden-force');
-
-  if(input && input.value.trim() !== '') {
-      const names = input.value.split(',').map(x => x.trim()).filter(x => x !== '');
-      let allValid = true;
-      names.forEach(val => {
-          if (!isValidTraineeName(val)) allValid = false;
-      });
-      if (!allValid) {
-          alert("Pls add/register all Trainees first before adding yourself as the Caregiver. You can add the Trainee as Person 1, and add yourself as Person 2.");
-          const validNames = names.filter(n => isValidTraineeName(n));
-          input.value = validNames.join(', ');
-          input.dataset.manual = 'false';
-      } else {
-          input.value = names.join(', ');
-      }
-  }
 }, 250);
 }
 

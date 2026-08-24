@@ -85,38 +85,7 @@ function renderHeaderLegend() {
 }
 
 window.resolvePocNric = function(p, allParticipants) {
-    if (p.pocNric && p.pocNric !== p.nric) return p.pocNric;
-
-    if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-        const rNames = String(p.relatedTrainee).split(',').map(n => n.trim().toLowerCase());
-        const match = allParticipants.find(x => {
-            if (x.role !== 'TRAINEE') return false;
-            const tFull = String(x.fullName || x.name || '').toLowerCase();
-            const tShort = String(x.shortName || '').toLowerCase();
-            return rNames.includes(tFull) || (tShort && rNames.includes(tShort)) || rNames.some(r => tFull.includes(r) || (tShort && tShort.includes(r)));
-        });
-        if (match) return match.pocNric && match.pocNric !== match.nric ? match.pocNric : match.nric;
-    } else if (p.role === 'TRAINEE') {
-        const tFull = String(p.fullName || p.name || '').toLowerCase();
-        const tShort = String(p.shortName || '').toLowerCase();
-        const caregiver = allParticipants.find(x => {
-            if (x.role !== 'CAREGIVER' || !x.relatedTrainee) return false;
-            const rString = String(x.relatedTrainee).toLowerCase();
-            return rString.includes(tFull) || (tShort && rString.includes(tShort));
-        });
-        
-        if (caregiver) {
-            const rNames = String(caregiver.relatedTrainee).split(',').map(n => n.trim().toLowerCase());
-            const firstTrainee = allParticipants.find(x => {
-                if (x.role !== 'TRAINEE') return false;
-                const txFull = String(x.fullName || x.name || '').toLowerCase();
-                const txShort = String(x.shortName || '').toLowerCase();
-                return rNames.includes(txFull) || (txShort && rNames.includes(txShort)) || rNames.some(r => txFull.includes(r) || (txShort && txShort.includes(r)));
-            });
-            if (firstTrainee) return firstTrainee.pocNric && firstTrainee.pocNric !== firstTrainee.nric ? firstTrainee.pocNric : firstTrainee.nric;
-        }
-    }
-    return p.nric;
+    return p.pocNric || p.nric;
 };
 
 function applyGlobalSorting(participants) {
