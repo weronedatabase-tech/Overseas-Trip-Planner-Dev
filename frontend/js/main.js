@@ -168,7 +168,7 @@ async function showParticipantSummaryModal(nric) {
         if(res.family) {
             m = res.family.find(f => f.nric.toUpperCase() === nric.toUpperCase());
             if (m) {
-                familyArr = res.family.filter(f => f.nric !== m.nric);
+                familyArr = res.family.filter(f => f !== m);
             }
         }
     }
@@ -180,7 +180,7 @@ async function showParticipantSummaryModal(nric) {
         if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) sourceArr = adminRosterData;
         else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) sourceArr = loadedFamily;
         
-        familyArr = window.getFamilyMembers ? window.getFamilyMembers(m.nric, sourceArr).filter(f => f.nric !== m.nric) : [];
+        familyArr = window.getFamilyMembers ? window.getFamilyMembers(m.nric, sourceArr).filter(f => f !== m) : [];
     }
 
     let groupOpts = `<option value="">Select...</option>`;
