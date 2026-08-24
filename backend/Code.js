@@ -599,7 +599,7 @@ results.push({
           const desiredNames = r.relatedTrainee.split(/[\|,]/).map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
           
           results.forEach(j => {
-              if (j.role === 'TRAINEE') {
+              if (j !== r) {
                   const jName = (j.fullName || '').replace(/\s+/g, '').toLowerCase();
                   const jShort = (j.shortName || '').replace(/\s+/g, '').toLowerCase();
                   const isDesired = desiredNames.some(d => d.includes(jName) || jName.includes(d) || (jShort && d.includes(jShort)));
@@ -615,8 +615,10 @@ results.push({
 
   results.forEach(r => {
       if (r.role === 'CAREGIVER') {
-          const dependents = results.filter(x => x.role === 'TRAINEE' && x.pocNric === r.pocNric);
-          r.relatedTrainee = dependents.map(d => `${d.fullName}${d.shortName ? ' (' + d.shortName + ')' : ''}`).join(' | ');
+          const dependents = results.filter(x => x !== r && x.pocNric === r.pocNric);
+          if (dependents.length > 0) {
+              r.relatedTrainee = dependents.map(d => `${d.fullName}${d.shortName ? ' (' + d.shortName + ')' : ''}`).join(' | ');
+          }
       }
   });
 

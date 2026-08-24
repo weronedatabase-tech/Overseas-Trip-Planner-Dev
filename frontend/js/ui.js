@@ -86,8 +86,36 @@ function renderHeaderLegend() {
 
 window.getFamilyMembers = function(nric, allParticipants) {
     const target = allParticipants.find(p => p.nric === nric);
-    if (!target || !target.pocNric) return [];
-    return allParticipants.filter(p => p.pocNric === target.pocNric);
+    if (!target) return [];
+    const targetPoc = target.pocNric || target.nric;
+    
+    let myRelatedNames = [];
+    if (target.relatedTrainee) {
+        myRelatedNames = String(target.relatedTrainee).split(/[\|,]/).map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
+    }
+    let myName = (target.fullName || '').replace(/\s+/g, '').toLowerCase();
+    let myShortName = (target.shortName || '').replace(/\s+/g, '').toLowerCase();
+
+    return allParticipants.filter(p => {
+        if (p.pocNric === targetPoc && targetPoc) return true;
+        
+        let pName = (p.fullName || '').replace(/\s+/g, '').toLowerCase();
+        let pShortName = (p.shortName || '').replace(/\s+/g, '').toLowerCase();
+        
+        // Am I a Caregiver for them?
+        if (myRelatedNames.length > 0 && myRelatedNames.some(d => d.includes(pName) || pName.includes(d) || (pShortName && d.includes(pShortName)))) {
+            return true;
+        }
+        
+        // Are they a Caregiver for me?
+        if (p.role === 'CAREGIVER' && p.relatedTrainee) {
+            let theirRelated = String(p.relatedTrainee).split(/[\|,]/).map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
+            if (theirRelated.some(d => d.includes(myName) || myName.includes(d) || (myShortName && d.includes(myShortName)))) {
+                return true;
+            }
+        }
+        return false;
+    });
 };
 
 window.isFamily = function(nric, allParticipants) {
