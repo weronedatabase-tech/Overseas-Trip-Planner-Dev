@@ -548,13 +548,7 @@ function getRoomState(roomId) {
             if (p.role === 'VOLUNTEER') hasVolunteer = true;
             if (p.role === 'CAREGIVER') hasFamily = true;
             
-            let targetPoc = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
-            const familyMembers = globalLogistics.participants.filter(x => {
-                let xTarget = window.resolvePocNric ? window.resolvePocNric(x, globalLogistics.participants) : (x.pocNric || x.nric);
-                return xTarget === targetPoc;
-            });
-    
-            if (familyMembers.some(x => x.role === 'CAREGIVER')) hasFamily = true;
+            if (window.isFamily(p.nric, globalLogistics.participants)) hasFamily = true;
             if (p.gender) genderSet.add(p.gender.toLowerCase());
         }
     });
@@ -571,7 +565,7 @@ if(unassigned.length === 0) { showToast("Everyone is already assigned."); return
 
 const familyGroups = {};
 unassigned.forEach(p => {
-    let targetPoc = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
+    let targetPoc = p.pocNric;
     if(!familyGroups[targetPoc]) familyGroups[targetPoc] = [];
     familyGroups[targetPoc].push(p);
 });
@@ -579,7 +573,7 @@ const families = [];
 const nonFamily = [];
 Object.keys(familyGroups).forEach(poc => {
     const group = familyGroups[poc];
-    if(group.some(p => p.role === 'CAREGIVER') || group.length > 1) {
+    if(group.length > 1) {
         families.push(group);
     } else {
         nonFamily.push(...group);
@@ -1252,10 +1246,9 @@ function getConnectedParticipants(startNric) {
         const p = globalLogistics.participants.find(x => x.nric === current);
         if (!p) continue;
         
-        let pTarget = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
+        let pTarget = p.pocNric;
         globalLogistics.participants.forEach(x => {
-            let xTarget = window.resolvePocNric ? window.resolvePocNric(x, globalLogistics.participants) : (x.pocNric || x.nric);
-            if (xTarget === pTarget && !connected.has(x.nric)) {
+            if (x.pocNric === pTarget && !connected.has(x.nric)) {
                 connected.add(x.nric);
                 queue.push(x.nric);
             }

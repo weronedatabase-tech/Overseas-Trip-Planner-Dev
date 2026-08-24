@@ -270,8 +270,7 @@ function generatePaymentPortalHtml() {
 if (!finConfig.showPaymentSection) return '';
 const targetMembers = loadedFamily;
 const hasCaregiver = targetMembers.some(m => m.role === 'CAREGIVER');
-let targetNric = loadedFamily[0].pocNric || loadedFamily[0].nric;
-if (!hasCaregiver) targetNric = loadedFamily[0].nric;
+let targetNric = loadedFamily[0].pocNric;
 
 const baseFee = finConfig.perPersonFee || 0;
 const size = targetMembers.length;
@@ -361,9 +360,8 @@ async function submitReceipt(e) {
    try {
        const base64 = await toBase64(file);
        
-       let targetNric = loadedFamily[0].pocNric || loadedFamily[0].nric;
-       if (!loadedFamily.some(m => m.role === 'CAREGIVER')) targetNric = loadedFamily[0].nric;
-       const size = loadedFamily.length;
+       let targetNric = loadedFamily[0].pocNric;
+              const size = loadedFamily.length;
        const baseFee = finConfig.perPersonFee || 0;
        const dev = finConfig.feeDeviations?.[targetNric]?.amount || 0;
        const finalExpected = (size * baseFee) + dev;

@@ -180,15 +180,7 @@ async function showParticipantSummaryModal(nric) {
         if (typeof adminRosterData !== 'undefined' && adminRosterData.length > 0) sourceArr = adminRosterData;
         else if (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) sourceArr = loadedFamily;
         
-        let targetPoc = window.resolvePocNric ? window.resolvePocNric(m, sourceArr) : (m.pocNric || m.nric);
-
-        if (targetPoc) {
-            familyArr = sourceArr.filter(f => {
-                if (f.nric === m.nric) return false;
-                let fPoc = window.resolvePocNric ? window.resolvePocNric(f, sourceArr) : (f.pocNric || f.nric);
-                return fPoc === targetPoc;
-            });
-        }
+        familyArr = window.getFamilyMembers ? window.getFamilyMembers(m.nric, sourceArr).filter(f => f.nric !== m.nric) : [];
     }
 
     let groupOpts = `<option value="">Select...</option>`;

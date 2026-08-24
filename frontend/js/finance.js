@@ -1005,7 +1005,7 @@ if(!globalLogistics || !globalLogistics.participants) return;
 
 const groups = {};
 globalLogistics.participants.forEach(p => {
-    let targetPoc = window.resolvePocNric ? window.resolvePocNric(p, globalLogistics.participants) : (p.pocNric || p.nric);
+    let targetPoc = p.pocNric;
 
     if(!groups[targetPoc]) groups[targetPoc] = [];
     groups[targetPoc].push(p);

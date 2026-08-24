@@ -48,7 +48,7 @@ function syncTraineeName() {
                        if (tName) traineesBefore.push(tName);
                    }
                }
-               relatedInput.value = traineesBefore.join(', ');
+               relatedInput.value = traineesBefore.join(' | ');
            }
        }
    }
@@ -294,7 +294,7 @@ const input = document.getElementById('cgPopupTraineeName');
 const dd = document.getElementById('cgPopupTraineeDropdown');
 if(!input || !dd) return;
 
-const parts = input.value.split(',');
+const parts = input.value.split('|');
 const query = parts[parts.length - 1].toLowerCase().trim();
 
 let localTrainees = [];
@@ -348,10 +348,10 @@ dd.classList.remove('hidden-force');
 function selectCgPopupTrainee(name) {
 const input = document.getElementById('cgPopupTraineeName');
 if(input) {
-   let parts = input.value.split(',');
+   let parts = input.value.split('|');
    parts.pop();
    parts.push(name);
-   input.value = parts.join(', ') + ', ';
+   input.value = parts.join(' | ') + ' | ';
    input.dataset.manual = 'true';
    const dd = document.getElementById('cgPopupTraineeDropdown');
    if(dd) dd.classList.add('hidden-force');
@@ -377,7 +377,7 @@ function filterTraineeDropdown(idx) {
 const input = document.getElementById(`reg-f-related-${idx}`);
 const dd = document.getElementById(`trainee-dropdown-${idx}`);
 if(!input || !dd) return;
-const parts = input.value.split(',');
+const parts = input.value.split('|');
 const query = parts[parts.length - 1].toLowerCase().trim();
 
 let localTrainees = [];
@@ -431,10 +431,10 @@ dd.classList.remove('hidden-force');
 function selectTraineeDropdown(idx, name) {
 const input = document.getElementById(`reg-f-related-${idx}`);
 if(input) {
-  let parts = input.value.split(',');
+  let parts = input.value.split('|');
   parts.pop();
   parts.push(name);
-  input.value = parts.join(', ') + ', ';
+  input.value = parts.join(' | ') + ' | ';
   input.dataset.manual = 'true';
   const dd = document.getElementById(`trainee-dropdown-${idx}`);
   if(dd) dd.classList.add('hidden-force');

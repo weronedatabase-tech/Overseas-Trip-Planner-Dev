@@ -60,7 +60,7 @@ return SpreadsheetApp.openById(dbId);
 }
 
 function getCacheKey(type) {
-return type + "_" + getDbId();
+return type + "_v2_" + getDbId();
 }
 
 function putLargeCache(cacheKey, jsonStr) {
@@ -520,7 +520,7 @@ results.push({
   emergencyRelation: String(data[i][18]||'').trim(),
   sleeping: String(data[i][19]||'').trim(), 
   otherPoints: String(data[i][20]||'').trim(), 
-  pocNric: String(data[i][21]||'').trim().toUpperCase(), 
+  pocNric: String(data[i][21]||data[i][11]||'').trim().toUpperCase(), 
   shortName: String(data[i][22]||'').trim().toUpperCase(),
   medical: String(data[i][23]||'').trim(),
   bus: String(data[i][24]||'').trim(),
@@ -556,7 +556,7 @@ participants.push({
   group: String(pData[i][6]).trim(), 
   gender: String(pData[i][7]).trim(),
   nric: String(pData[i][11]).trim().toUpperCase(),
-  pocNric: String(pData[i][21]).trim().toUpperCase(),
+  pocNric: String(pData[i][21]||pData[i][11]||'').trim().toUpperCase(),
   bus: String(pData[i][24]||'').trim(),
   logisticsGroup: String(pData[i][25]||'').trim(),
   sleeping: pData[i][19] ? String(pData[i][19]).trim() : ''

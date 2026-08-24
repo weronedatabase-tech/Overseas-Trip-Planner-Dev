@@ -84,8 +84,14 @@ function renderHeaderLegend() {
  if(mobCont) mobCont.innerHTML = html;
 }
 
-window.resolvePocNric = function(p, allParticipants) {
-    return p.pocNric || p.nric;
+window.getFamilyMembers = function(nric, allParticipants) {
+    const target = allParticipants.find(p => p.nric === nric);
+    if (!target || !target.pocNric) return [];
+    return allParticipants.filter(p => p.pocNric === target.pocNric);
+};
+
+window.isFamily = function(nric, allParticipants) {
+    return window.getFamilyMembers(nric, allParticipants).length > 1;
 };
 
 function applyGlobalSorting(participants) {
@@ -93,7 +99,7 @@ function applyGlobalSorting(participants) {
  const rules = appSettings.sortingRules || ['project', 'family', 'role', 'name'];
  const familyCounts = {};
  participants.forEach(p => { 
-    const poc = window.resolvePocNric(p, participants);
+    const poc = p.pocNric;
     familyCounts[poc] = (familyCounts[poc] || 0) + 1; 
  });
 
@@ -107,8 +113,8 @@ function applyGlobalSorting(participants) {
            if (cmp !== 0) return cmp;
        }
        if (rule === 'family') {
-           const aPoc = window.resolvePocNric(a, participants);
-           const bPoc = window.resolvePocNric(b, participants);
+           const aPoc = a.pocNric;
+           const bPoc = b.pocNric;
            const aFam = familyCounts[aPoc] > 1 ? 1 : 0;
            const bFam = familyCounts[bPoc] > 1 ? 1 : 0;
            if (aFam !== bFam) return bFam - aFam;
@@ -293,17 +299,16 @@ window.sortParticipantsSpecial = function(arr, allParticipants) {
     if (!arr || !allParticipants) return;
     const famMap = {};
     allParticipants.forEach(x => {
-        const poc = window.resolvePocNric(x, allParticipants);
+        const poc = x.pocNric;
         if(!famMap[poc]) famMap[poc] = { count: 0, hasCaregiver: false };
         famMap[poc].count++;
-        if(x.role === 'CAREGIVER') famMap[poc].hasCaregiver = true;
-    });
+            });
 
     const specialSortMap = new Map();
     arr.forEach(p => {
-        const poc = window.resolvePocNric(p, allParticipants);
+        const poc = p.pocNric;
         const info = famMap[poc];
-        const isFamily = info ? (info.count > 1 || info.hasCaregiver) : false;
+        const isFamily = info ? (info.count > 1) : false;
         let catScore = 4;
         if (isFamily) catScore = 1;
         else if (p.role === 'TRAINEE') catScore = 2;
