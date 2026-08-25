@@ -1100,6 +1100,29 @@ const newId = "rec_" + Date.now() + "_" + Math.random().toString(36).substr(2,5)
 const lock = LockService.getScriptLock();
 try {
 lock.waitLock(15000);
+
+if (payload.categoryId === "Fees Payment Screenshot") {
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const matchNric = payload.familyNrics ? payload.familyNrics.includes(row[2]) : row[2] === payload.uploaderNric;
+    if (row[7] === "Fees Payment Screenshot" && matchNric && row[10] !== true) {
+      // Mark old row as deleted
+      sheet.getRange(i + 1, 11).setValue(true);
+      // Attempt to trash old file in Drive
+      const oldUrl = row[8];
+      if (oldUrl) {
+        try {
+          const match = oldUrl.match(/id=([^&]+)/) || oldUrl.match(/d\/([^\/]+)/);
+          if (match && match[1]) {
+            DriveApp.getFileById(match[1]).setTrashed(true);
+          }
+        } catch(e) {}
+      }
+    }
+  }
+}
+
 sheet.appendRow([
 newId, new Date(), payload.uploaderNric, payload.currency, payload.amount, payload.rate, 
 payload.sgdAmount, payload.categoryId, fileUrl, payload.remarks, false, payload.paidByNric || payload.uploaderNric, false

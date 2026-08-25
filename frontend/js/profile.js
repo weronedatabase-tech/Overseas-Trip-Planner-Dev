@@ -313,6 +313,7 @@ return `<form id="uploadReceiptForm" onsubmit="submitReceipt(event)" class="flex
    <div>
        <label class="block text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Screenshot File (Max 4MB)</label>
        <input type="file" id="recFile" required accept="image/*,.pdf" class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 dark:file:bg-gray-700 dark:file:text-gray-200 hover:file:bg-gray-200 dark:hover:file:bg-gray-600">
+       <p class="text-[10px] text-gray-400 mt-1 italic">Note: Re-uploading will automatically overwrite any previously submitted screenshot.</p>
    </div>
    <div>
        <label class="block text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remarks (Optional)</label>
@@ -378,6 +379,7 @@ async function submitReceipt(e) {
            sgdAmount: document.getElementById('recSgd') ? parseFloat(document.getElementById('recSgd').value) : finalExpected,
            // categoryId is already set above
            paidByNric: recNricInput ? recNricInput.value.trim() : currentUser.nric,
+           familyNrics: loadedFamily.map(f => f.nric),
            remarks: remarks,
            fileName: finalFileName,
            mimeType: file.type,
