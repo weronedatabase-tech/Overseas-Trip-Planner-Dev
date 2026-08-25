@@ -14,7 +14,7 @@ document.getElementById('tab-attendance').innerHTML = `
 <div class="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm rounded-t-xl md:rounded-none">
   <div class="flex justify-between items-center">
      <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Live Attendance</h3>
-     <button id="btn-sync-attendance" onclick="manualSyncAttendance()" class="text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+     <button id="btn-sync-attendance" onclick="manualSyncAttendance()" class="text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
         <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
      </button>
   </div>
@@ -43,16 +43,16 @@ document.getElementById('tab-attendance').innerHTML = `
   
   <div id="attLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-10 hidden-force flex flex-col justify-center items-center">
       <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-      <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
+      <span class="text-primary dark:text-green-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
   </div>
   
   <div class="flex-1 min-w-0 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-red-50/30 dark:bg-red-900/10">
-     <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-red-200 dark:border-red-800">Not Checked (<span id="attNotCheckedCount">0</span>)</h4>
+     <h4 class="font-black text-xs py-1.5 shrink-0 text-center uppercase tracking-widest bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-red-200 dark:border-red-800">Not Checked (<span id="attNotCheckedCount">0</span>)</h4>
      <div id="attNotCheckedList" class="flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6 space-y-1.5"></div>
   </div>
   
   <div class="flex-1 min-w-0 flex flex-col bg-green-50/30 dark:bg-green-900/10">
-     <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-green-200 dark:border-green-800">Checked (<span id="attCheckedCount">0</span>)</h4>
+     <h4 class="font-black text-xs py-1.5 shrink-0 text-center uppercase tracking-widest bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-green-200 dark:border-green-800">Checked (<span id="attCheckedCount">0</span>)</h4>
      <div id="attCheckedList" class="flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6 space-y-1.5"></div>
   </div>
   
@@ -205,8 +205,8 @@ participants.forEach(p => {
   }
 });
 
-notCheckedList.innerHTML = notCheckedHtml || '<p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold p-2 text-center mt-2">Empty</p>';
-checkedList.innerHTML = checkedHtml || '<p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold p-2 text-center mt-2">Empty</p>';
+notCheckedList.innerHTML = notCheckedHtml || '<p class="text-xs text-gray-400 dark:text-gray-500 font-bold p-2 text-center mt-2">Empty</p>';
+checkedList.innerHTML = checkedHtml || '<p class="text-xs text-gray-400 dark:text-gray-500 font-bold p-2 text-center mt-2">Empty</p>';
 
 document.getElementById('attNotCheckedCount').textContent = notCheckedCount;
 document.getElementById('attCheckedCount').textContent = checkedCount;
@@ -222,8 +222,8 @@ return `
 <div id="att-card-${p.nric}" class="relative bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all duration-300 flex items-center justify-between gap-1 select-none active:scale-95 cursor-pointer hover:border-primary dark:hover:border-primary" onclick="toggleAttendanceStatus('${p.nric}', ${!isChecked})">
   <div class="flex items-start min-w-0 flex-1">
       <div class="flex flex-col min-w-0 flex-1 gap-1">
-          <span class="font-extrabold text-[11px] md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full break-words whitespace-normal leading-[1.1] text-left inline-block self-start" style="overflow-wrap: break-word;">${dName}</span>
-          <span class="text-[8px] font-black ${roleColor} w-max bg-gray-50 dark:bg-gray-700 px-1 py-0.5 rounded uppercase tracking-wider border border-gray-100 dark:border-gray-600">${roleShort}</span>
+          <span class="font-extrabold text-sm md:text-[12px] px-1.5 py-0.5 rounded shadow-sm border ${dynColor} max-w-full break-words whitespace-normal leading-[1.1] text-left inline-block self-start" style="overflow-wrap: break-word;">${dName}</span>
+          <span class="text-[10px] font-black ${roleColor} w-max bg-gray-50 dark:bg-gray-700 px-1 py-0.5 rounded uppercase tracking-wider border border-gray-100 dark:border-gray-600">${roleShort}</span>
       </div>
   </div>
   <div class="shrink-0 flex items-center justify-center pl-1">
@@ -259,12 +259,12 @@ participants.forEach(p => {
 
   html += `
   <li class="px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-gray-700 last:border-0 transition" onclick="selectFromSearch('${p.nric}')">
-     <span class="font-bold text-[11px] md:text-xs ${dynColor} px-1.5 py-0.5 rounded-md border shadow-sm leading-tight max-w-[70%] break-words whitespace-normal" style="overflow-wrap: anywhere;">${dName}</span>
-     ${isChecked ? '<span class="text-[9px] bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-1 py-0.5 rounded font-black uppercase">Checked</span>' : '<span class="text-[9px] bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 px-1 py-0.5 rounded font-black uppercase">NOT Checked</span>'}
+     <span class="font-bold text-sm md:text-xs ${dynColor} px-1.5 py-0.5 rounded-md border shadow-sm leading-tight max-w-[70%] break-words whitespace-normal" style="overflow-wrap: anywhere;">${dName}</span>
+     ${isChecked ? '<span class="text-[11px] bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-1 py-0.5 rounded font-black uppercase">Checked</span>' : '<span class="text-[11px] bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 px-1 py-0.5 rounded font-black uppercase">NOT Checked</span>'}
   </li>`;
 });
 
-resultsContainer.innerHTML = html || '<li class="px-3 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 text-center">No matches found.</li>';
+resultsContainer.innerHTML = html || '<li class="px-3 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 text-center">No matches found.</li>';
 resultsContainer.classList.remove('hidden-force');
 }
 
@@ -407,7 +407,7 @@ if(!btn) return;
 const textSpan = btn.querySelector('.btn-text'); 
 const spinner = btn.querySelector('.btn-spinner');
 
-btn.className = "text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
+btn.className = "text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
 spinner.className = "btn-spinner ml-1 !w-3 !h-3 hidden-force"; 
 
 if (state === 'loading') { 

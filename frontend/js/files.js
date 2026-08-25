@@ -68,16 +68,16 @@ document.getElementById('tab-files').innerHTML = `
 <div id="driveBulkActions" class="hidden-force bg-green-50 dark:bg-green-900/30 p-2 md:p-3 shrink-0 flex justify-between items-center border-b border-green-200 dark:border-green-800 z-10 transition-all">
  <span id="driveBulkCount" class="text-xs md:text-sm font-black text-green-800 dark:text-green-300">0 selected</span>
  <div class="flex items-center gap-1.5 md:gap-2">
-     <button onclick="bulkCopySelected()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700 rounded shadow-sm hover:bg-green-100 transition focus:outline-none">Copy</button>
-     <button onclick="bulkMoveSelected()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded shadow-sm hover:bg-orange-50 transition focus:outline-none">Move</button>
-     <button onclick="bulkDeleteSelected()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded shadow-sm hover:bg-red-50 transition focus:outline-none">Delete</button>
-     <button onclick="clearDriveSelection()" class="px-2 py-1.5 text-[10px] md:text-xs font-bold bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded shadow-sm hover:bg-gray-100 transition focus:outline-none ml-2">Cancel</button>
+     <button onclick="bulkCopySelected()" class="px-2 py-1.5 text-xs md:text-xs font-bold bg-white dark:bg-gray-800 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700 rounded shadow-sm hover:bg-green-100 transition focus:outline-none">Copy</button>
+     <button onclick="bulkMoveSelected()" class="px-2 py-1.5 text-xs md:text-xs font-bold bg-white dark:bg-gray-800 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded shadow-sm hover:bg-orange-50 transition focus:outline-none">Move</button>
+     <button onclick="bulkDeleteSelected()" class="px-2 py-1.5 text-xs md:text-xs font-bold bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded shadow-sm hover:bg-red-50 transition focus:outline-none">Delete</button>
+     <button onclick="clearDriveSelection()" class="px-2 py-1.5 text-xs md:text-xs font-bold bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded shadow-sm hover:bg-gray-100 transition focus:outline-none ml-2">Cancel</button>
  </div>
 </div>
 
 <div id="driveLoadingOverlay" class="absolute inset-0 top-[50px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 hidden-force flex flex-col justify-center items-center">
   <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-  <span id="driveLoadingText" class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading folder...</span>
+  <span id="driveLoadingText" class="text-primary dark:text-green-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading folder...</span>
 </div>
 
 <div id="driveContentsList" class="flex-grow overflow-y-auto p-2 md:p-3 space-y-1.5 bg-gray-50 dark:bg-gray-950 custom-scrollbar pb-10">
@@ -495,7 +495,7 @@ if (f.mimeType.includes('folder')) {
 
 const shortcutBadge = f.isShortcut ? `<div class="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full shadow-sm p-0.5"><svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg></div>` : '';
 const nameHtml = f.isShortcut 
-  ? `<div class="flex flex-col min-w-0"><span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span><span class="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black">Shortcut</span></div>`
+  ? `<div class="flex flex-col min-w-0"><span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span><span class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black">Shortcut</span></div>`
   : `<span class="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">${f.name}</span>`;
 
 html += `

@@ -71,7 +71,7 @@ document.getElementById('tab-finance').innerHTML = `
         <button onclick="switchFinanceSubTab('fees')" id="subTab-fin-fees" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">4. Fee Tracker</button>
     </div>
     <div class="flex items-center shrink-0 pl-2 border-l border-gray-200 dark:border-gray-800 ml-1">
-        <button id="btn-sync-finance" onclick="manualFinanceSync(this)" class="bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-md hover:bg-green-100 transition flex items-center shadow-sm focus:outline-none shrink-0">
+        <button id="btn-sync-finance" onclick="manualFinanceSync(this)" class="bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 text-xs md:text-xs font-bold px-3 py-1.5 rounded-md hover:bg-green-100 transition flex items-center shadow-sm focus:outline-none shrink-0">
             <span class="btn-text">Saved</span>
             <div class="btn-spinner spinner-white ml-1.5 !w-3 !h-3 hidden-force border-2"></div>
         </button>
@@ -80,7 +80,7 @@ document.getElementById('tab-finance').innerHTML = `
 
 <div id="finLoadingOverlay" class="absolute inset-0 top-[50px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-20 flex flex-col justify-center items-center hidden-force">
     <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-    <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading Planner...</span>
+    <span class="text-primary dark:text-green-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full mt-2">Loading Planner...</span>
 </div>
 
 <div id="fin-tab-finalized" class="flex-1 w-full p-2 md:p-4 overflow-y-auto custom-scrollbar relative"></div>
@@ -190,7 +190,7 @@ if(!btn) return;
 const textSpan = btn.querySelector('.btn-text'); 
 const spinner = btn.querySelector('.btn-spinner');
 
-btn.className = "text-[10px] md:text-xs px-3 py-1.5 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
+btn.className = "text-xs md:text-xs px-3 py-1.5 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
 spinner.className = "btn-spinner ml-1.5 !w-3 !h-3 hidden-force border-2"; 
 
 if (state === 'loading') { 
@@ -456,26 +456,26 @@ cont.innerHTML = `
     
     <div class="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700 bg-gray-50/50 dark:bg-gray-950/50 border-b border-gray-200 dark:border-gray-700">
         <div class="p-4 text-center flex flex-col">
-            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Total Planned</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Planned</span>
             <span class="text-lg font-black text-gray-800 dark:text-gray-200">SGD ${grandPlannedSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
         </div>
         <div class="p-4 text-center flex flex-col">
-            <span class="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-1">Total Actual</span>
+            <span class="text-xs font-bold text-green-500 uppercase tracking-widest mb-1">Total Actual</span>
             <span class="text-lg font-black text-green-700 dark:text-green-400">SGD ${grandActualSgd.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
         </div>
         <div class="p-4 text-center flex flex-col">
-            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Variance</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Variance</span>
             <span class="text-lg font-black ${grandPlannedSgd - grandActualSgd < 0 ? 'text-rose-600 dark:text-rose-500' : 'text-purple-600 dark:text-purple-400'}">${grandPlannedSgd - grandActualSgd > 0 ? '+' : ''}${(grandPlannedSgd - grandActualSgd).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
         </div>
         <div class="p-4 text-center flex flex-col">
-            <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Actual Per Pax</span>
+            <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1">Actual Per Pax</span>
             <span class="text-lg font-black text-emerald-700 dark:text-emerald-400">SGD ${(pax > 0 ? grandActualSgd / pax : 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
         </div>
     </div>
 
     <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse min-w-[600px]">
-            <thead class="bg-gray-100 dark:bg-gray-800 text-[10px] uppercase font-black text-gray-500 dark:text-gray-400 tracking-wider">
+            <thead class="bg-gray-100 dark:bg-gray-800 text-xs uppercase font-black text-gray-500 dark:text-gray-400 tracking-wider">
                 <tr>
                     <th class="py-1.5 px-2">Category</th>
                     <th class="py-1.5 px-2 text-right">Planned (SGD)</th>
@@ -505,28 +505,28 @@ let globalSettingsHtml = `
 <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-wrap justify-between items-center gap-3 mb-4">
     <div class="flex flex-wrap items-center gap-3 flex-1">
         <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-2 py-1">
-            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Pax Mode:</label>
-            <select onchange="updateFinanceConfig('globalPaxMode', this.value)" class="text-[11px] font-bold bg-transparent text-gray-900 dark:text-white focus:outline-none cursor-pointer">
+            <label class="text-xs uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Pax Mode:</label>
+            <select onchange="updateFinanceConfig('globalPaxMode', this.value)" class="text-sm font-bold bg-transparent text-gray-900 dark:text-white focus:outline-none cursor-pointer">
                 <option value="individual" ${financeConfig.globalPaxMode === 'individual' ? 'selected' : ''}>Manual Override (Individual Options)</option>
                 <option value="manual" ${financeConfig.globalPaxMode === 'manual' ? 'selected' : ''}>Manual Override (All Options)</option>
                 <option value="auto" ${financeConfig.globalPaxMode === 'auto' ? 'selected' : ''}>Total Pax based on Sign up</option>
             </select>
         </div>
         <div class="flex items-center gap-1.5 ${financeConfig.globalPaxMode !== 'manual' ? 'hidden-force' : ''}">
-            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Pax:</label>
+            <label class="text-xs uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Global Pax:</label>
             <input type="number" min="0" value="${financeConfig.globalPaxCount}" onchange="updateFinanceConfig('globalPaxCount', this.value)" class="hide-spinners w-16 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-center">
         </div>
         <div class="flex items-center gap-1.5 ${financeConfig.globalPaxMode !== 'auto' ? 'hidden-force' : ''}">
-            <label class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Active Pax:</label>
+            <label class="text-xs uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider shrink-0">Active Pax:</label>
             <span class="text-xs font-black text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded border border-green-200 dark:border-green-800 shadow-sm">${autoPax}</span>
         </div>
     </div>
     <div class="flex items-center gap-2">
-        <button onclick="addFinanceOption()" class="bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 text-[10px] md:text-xs font-bold px-2 py-1.5 rounded-md hover:bg-green-100 transition shadow-sm focus:outline-none shrink-0">+ Add Option</button>
-        <button onclick="openFinanceRatesModal()" class="text-[10px] md:text-xs font-bold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none flex items-center gap-1">
+        <button onclick="addFinanceOption()" class="bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 text-xs md:text-xs font-bold px-2 py-1.5 rounded-md hover:bg-green-100 transition shadow-sm focus:outline-none shrink-0">+ Add Option</button>
+        <button onclick="openFinanceRatesModal()" class="text-xs md:text-xs font-bold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Rates
         </button>
-        <button onclick="toggleFinanceCollapse()" class="text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none">
+        <button onclick="toggleFinanceCollapse()" class="text-xs md:text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 rounded shadow-sm whitespace-nowrap shrink-0 transition focus:outline-none">
             ${isFinanceCollapsed ? 'Expand All' : 'Collapse All'}
         </button>
     </div>
@@ -558,7 +558,7 @@ if (activeOptions.length === 0) {
         const spanClass = opt.widthSpan === 3 ? 'col-span-1 lg:col-span-2 xl:col-span-3' : (opt.widthSpan === 2 ? 'col-span-1 lg:col-span-2 xl:col-span-2' : 'col-span-1');
         
         const isFinal = financeConfig.finalOptionId === opt.id;
-        const finalBadge = isFinal ? `<span class="bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/40 dark:text-green-400 dark:border-green-800 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-widest shrink-0">FINALIZED</span>` : '';
+        const finalBadge = isFinal ? `<span class="bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/40 dark:text-green-400 dark:border-green-800 text-[11px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-widest shrink-0">FINALIZED</span>` : '';
 
         html += `
         <div class="w-full shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-md border ${isFinal ? 'border-2 border-green-400 dark:border-green-600 shadow-[0_0_15px_rgba(74,222,128,0.2)]' : 'border border-gray-200 dark:border-gray-700'} overflow-hidden h-fit transition-all duration-300 ${spanClass}">
@@ -568,7 +568,7 @@ if (activeOptions.length === 0) {
                     ${finalBadge}
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                    <button onclick="updateFinanceConfig('finalOptionId', '${isFinal ? '' : opt.id}')" class="${isFinal ? 'text-gray-500 hover:text-red-500 bg-gray-100 hover:bg-red-50' : 'text-green-600 hover:text-white hover:bg-green-500 bg-green-50'} dark:bg-gray-800 px-2 py-1 rounded text-[10px] font-bold border transition focus:outline-none shadow-sm" title="${isFinal ? 'Remove Final Status' : 'Mark as Finalized Budget'}">
+                    <button onclick="updateFinanceConfig('finalOptionId', '${isFinal ? '' : opt.id}')" class="${isFinal ? 'text-gray-500 hover:text-red-500 bg-gray-100 hover:bg-red-50' : 'text-green-600 hover:text-white hover:bg-green-500 bg-green-50'} dark:bg-gray-800 px-2 py-1 rounded text-xs font-bold border transition focus:outline-none shadow-sm" title="${isFinal ? 'Remove Final Status' : 'Mark as Finalized Budget'}">
                         ${isFinal ? 'Unfinalize' : 'Make Final'}
                     </button>
                     <button onclick="cycleFinanceOptionWidth('${opt.id}')" class="hidden lg:block text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 md:p-1.5 rounded transition bg-gray-100/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:outline-none shadow-sm" title="Toggle Width">
@@ -584,7 +584,7 @@ if (activeOptions.length === 0) {
             
             <div class="${isLocalCollapsed ? 'hidden-force' : 'flex flex-col'}">
                 <div class="px-2 md:px-3 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                    <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Pax Count ${paxInputDisabled ? '(Global)' : ''}</label>
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Pax Count ${paxInputDisabled ? '(Global)' : ''}</label>
                     <input type="number" min="0" value="${pax}" ${paxInputDisabled ? 'disabled' : ''} onchange="updateFinanceOption('${opt.id}', 'pax', this.value)" class="hide-spinners w-20 text-xs font-bold px-2 py-1 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded text-center focus:outline-none focus:ring-1 focus:ring-primary ${paxInputDisabled ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-500' : ''}">
                 </div>
                 
@@ -603,7 +603,7 @@ if (activeOptions.length === 0) {
                                 <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'currency', this.value)" class="w-[65px] shrink-0 bg-white dark:bg-gray-950 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded py-1.5 pl-1.5 pr-0 outline-none focus:border-primary shadow-sm cursor-pointer">${getCurrencyOptions(f.currency)}</select>
                                 <select onchange="updateFinanceField('${opt.id}', '${f.id}', 'costType', this.value)" class="w-[70px] shrink-0 text-xs font-extrabold border rounded py-1.5 px-1 outline-none shadow-sm cursor-pointer transition-colors ${costTypeColorClass}"><option value="total" ${f.costType !== 'per_pax' ? 'selected' : ''}>Total</option><option value="per_pax" ${f.costType === 'per_pax' ? 'selected' : ''}>/Pax</option></select>
                                 <input type="text" value="${displayCostStr}" oninput="formatMoneyInput(this, false); updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" onblur="formatMoneyInput(this, true); updateFinanceField('${opt.id}', '${f.id}', 'cost', this.value)" class="w-[100px] shrink-0 bg-white dark:bg-gray-950 text-sm font-bold border border-gray-300 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-primary shadow-sm text-right" placeholder="0.00">
-                                <div class="flex items-center gap-1 w-[70px] shrink-0 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 outline-none focus-within:border-primary shadow-sm"><span class="text-[10px] font-bold text-gray-400">+</span><input type="number" step="0.1" min="0" value="${f.tax || ''}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'tax', this.value)" class="hide-spinners w-full bg-transparent text-sm font-bold outline-none text-right" placeholder="Tax"><span class="text-[10px] font-bold text-gray-500">%</span></div>
+                                <div class="flex items-center gap-1 w-[70px] shrink-0 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 outline-none focus-within:border-primary shadow-sm"><span class="text-xs font-bold text-gray-400">+</span><input type="number" step="0.1" min="0" value="${f.tax || ''}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'tax', this.value)" class="hide-spinners w-full bg-transparent text-sm font-bold outline-none text-right" placeholder="Tax"><span class="text-xs font-bold text-gray-500">%</span></div>
                                 <input type="text" value="${f.remarks}" onchange="updateFinanceField('${opt.id}', '${f.id}', 'remarks', this.value)" class="flex-1 min-w-[120px] bg-transparent text-xs font-medium text-gray-500 dark:text-gray-400 outline-none px-1 border-b border-transparent focus:border-primary transition" placeholder="Remarks...">
                             </div>
                         </div>`;
@@ -616,7 +616,7 @@ if (activeOptions.length === 0) {
             
             <div class="p-2 md:p-3 bg-green-50/80 dark:bg-green-900/20 shrink-0 flex flex-col gap-1.5 ${isLocalCollapsed ? 'border-t border-gray-200 dark:border-gray-700' : 'border-t border-green-100 dark:border-green-900/50'}">
                 <div class="${isLocalCollapsed ? 'hidden-force' : 'flex'} justify-between items-center pb-2 border-b border-green-200/50 dark:border-green-800/50 mb-1">
-                    <span class="font-bold text-[10px] md:text-[11px] text-green-800 dark:text-green-300 uppercase tracking-widest">Currency for Totals</span>
+                    <span class="font-bold text-xs md:text-sm text-green-800 dark:text-green-300 uppercase tracking-widest">Currency for Totals</span>
                     <select onchange="updateFinanceOption('${opt.id}', 'displayCurrency', this.value)" class="w-[90px] text-xs font-bold px-2 py-1 bg-white dark:bg-gray-950 border border-green-300 dark:border-green-700 rounded focus:outline-none cursor-pointer shadow-sm text-green-900 dark:text-green-100">${getCurrencyOptions(opt.displayCurrency)}</select>
                 </div>
                 <div class="flex justify-between items-center">
@@ -637,7 +637,7 @@ cont.innerHTML = globalSettingsHtml + html;
 
 function openFinanceRatesModal() {
 const list = document.getElementById('financeRatesList');
-let html = '<p class="text-[10px] text-gray-500 dark:text-gray-400 mb-3 leading-tight">Override the live exchange rates used for calculations. Rates represent the value of 1 foreign unit in SGD.</p>';
+let html = '<p class="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-tight">Override the live exchange rates used for calculations. Rates represent the value of 1 foreign unit in SGD.</p>';
 Object.keys(globalFinanceRates).forEach(c => {
     if(c === 'SGD') return;
     const live = globalFinanceRates[c] || 0;
@@ -915,14 +915,14 @@ activeReceipts.forEach(r => {
         <td class="py-1.5 px-2 text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">${dateStr}</td>
         <td class="py-1.5 px-2 text-xs leading-tight">
            <div class="font-bold text-gray-800 dark:text-gray-200">Up: ${uploaderName}</div>
-           <div class="font-black text-green-600 dark:text-green-400 text-[10px] uppercase mt-0.5">Paid: ${payerName}</div>
+           <div class="font-black text-green-600 dark:text-green-400 text-xs uppercase mt-0.5">Paid: ${payerName}</div>
         </td>
         <td class="py-1.5 px-2 text-xs font-bold text-primary max-w-[150px] truncate" title="${catName}">${catName}</td>
         <td class="py-1.5 px-2 text-xs font-bold text-gray-800 dark:text-gray-200 text-right whitespace-nowrap">${r.currency} ${r.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-        <td class="py-1.5 px-2 text-[11px] font-black text-purple-600 dark:text-purple-400 text-right whitespace-nowrap">SGD ${r.sgdAmount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-        <td class="py-1.5 px-2 text-[10px] font-medium text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="${r.remarks}">${r.remarks || '-'}</td>
+        <td class="py-1.5 px-2 text-sm font-black text-purple-600 dark:text-purple-400 text-right whitespace-nowrap">SGD ${r.sgdAmount.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+        <td class="py-1.5 px-2 text-xs font-medium text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="${r.remarks}">${r.remarks || '-'}</td>
         <td class="py-1.5 px-2 text-center">
-            <button onclick="toggleReceiptReimbursed('${r.id}', ${!r.isReimbursed})" class="text-[10px] font-bold px-2 py-1 rounded border transition focus:outline-none uppercase tracking-wider whitespace-nowrap ${isReimClass}">
+            <button onclick="toggleReceiptReimbursed('${r.id}', ${!r.isReimbursed})" class="text-xs font-bold px-2 py-1 rounded border transition focus:outline-none uppercase tracking-wider whitespace-nowrap ${isReimClass}">
                 ${r.isReimbursed ? 'Reimbursed' : 'Pending'}
             </button>
         </td>
@@ -939,7 +939,7 @@ cont.innerHTML = `
 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
     <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse min-w-[800px]">
-            <thead class="bg-gray-100 dark:bg-gray-800 text-[10px] uppercase font-black text-gray-500 dark:text-gray-400 tracking-wider border-b border-gray-200 dark:border-gray-700">
+            <thead class="bg-gray-100 dark:bg-gray-800 text-xs uppercase font-black text-gray-500 dark:text-gray-400 tracking-wider border-b border-gray-200 dark:border-gray-700">
                 <tr>
                     <th class="py-1.5 px-2">Date</th>
                     <th class="py-1.5 px-2">Users</th>
@@ -1053,7 +1053,7 @@ let cardsHtml = '';
 cardsData.forEach(c => {
     let membersHtml = c.members.map(m => {
         const roleColor = m.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
-        return `<span class="inline-block mr-1.5"><span class="${roleColor} font-black text-[9px] mr-0.5 border border-current px-0.5 rounded">${m.role.substring(0,3)}</span><span class="font-bold text-xs text-gray-800 dark:text-gray-200">${m.shortName || m.name}</span></span>`;
+        return `<span class="inline-block mr-1.5"><span class="${roleColor} font-black text-[11px] mr-0.5 border border-current px-0.5 rounded">${m.role.substring(0,3)}</span><span class="font-bold text-xs text-gray-800 dark:text-gray-200">${m.shortName || m.name}</span></span>`;
     }).join('');
 
     const paidClass = c.isPaid ? 'bg-green-50 dark:bg-green-900/10 border-green-300 dark:border-green-800' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700';
@@ -1064,8 +1064,8 @@ cardsData.forEach(c => {
         <div class="flex justify-between items-start gap-3 mb-3">
             <div class="flex flex-col flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">Size: ${c.size}</span>
-                    ${c.isPaid ? `<span class="text-[9px] font-black uppercase tracking-widest text-green-700 bg-green-200 dark:bg-green-900 px-1.5 py-0.5 rounded border border-green-300 dark:border-green-700">Paid</span>` : ''}
+                    <span class="text-[11px] font-black uppercase tracking-widest text-gray-400 bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">Size: ${c.size}</span>
+                    ${c.isPaid ? `<span class="text-[11px] font-black uppercase tracking-widest text-green-700 bg-green-200 dark:bg-green-900 px-1.5 py-0.5 rounded border border-green-300 dark:border-green-700">Paid</span>` : ''}
                 </div>
                 <div class="leading-tight">${membersHtml}</div>
             </div>
@@ -1082,7 +1082,7 @@ cardsData.forEach(c => {
             if (feeReceipts.length > 0 && feeReceipts[0].fileUrl) {
                 return `
                 <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <a href="${feeReceipts[0].fileUrl}" target="_blank" class="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 w-max">
+                    <a href="${feeReceipts[0].fileUrl}" target="_blank" class="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 w-max">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                         View Uploaded Screenshot
                     </a>
@@ -1094,20 +1094,20 @@ cardsData.forEach(c => {
 
         <div class="grid grid-cols-2 gap-2 p-2 bg-gray-50/50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800 mt-auto">
             <div>
-                <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Deviation (+/- SGD)</label>
+                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Deviation (+/- SGD)</label>
                 <div class="relative flex items-center">
                     <span class="absolute left-2 text-xs font-bold text-gray-400">$</span>
                     <input type="text" id="dev-input-${c.poc}" value="${c.dev ? parseFloat(c.dev).toLocaleString('en-US', {minimumFractionDigits:2}) : '0.00'}" oninput="formatMoneyInput(this, false); updateDeviationLocal('${c.poc}', ${c.size}); if(!financeConfig.feeDeviations['${c.poc}']) financeConfig.feeDeviations['${c.poc}'] = {}; financeConfig.feeDeviations['${c.poc}'].amount = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFeeDeviation('${c.poc}', 'amount', this.value)" class="w-full pl-5 pr-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary shadow-sm text-right h-[28px]" ${c.isPaid ? 'disabled opacity-70' : ''}>
                 </div>
             </div>
             <div>
-                <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Expected (SGD)</label>
+                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Expected (SGD)</label>
                 <div id="expected-display-${c.poc}" class="w-full px-2 py-1 text-sm font-black text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800 shadow-sm text-right flex items-center justify-between h-[28px]">
                     <span class="text-xs opacity-50 font-bold mr-1">$</span><span>${c.finalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
                 </div>
             </div>
             <div class="col-span-2">
-                <input type="text" value="${c.rem.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" onchange="updateFeeDeviation('${c.poc}', 'remarks', this.value)" placeholder="Remarks for deviation (e.g. Subsidy applied)" class="w-full px-2 py-1 text-[10px] font-medium border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary shadow-sm h-[28px]" ${c.isPaid ? 'disabled opacity-70' : ''}>
+                <input type="text" value="${c.rem.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" onchange="updateFeeDeviation('${c.poc}', 'remarks', this.value)" placeholder="Remarks for deviation (e.g. Subsidy applied)" class="w-full px-2 py-1 text-xs font-medium border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-950 focus:outline-none focus:border-primary shadow-sm h-[28px]" ${c.isPaid ? 'disabled opacity-70' : ''}>
             </div>
         </div>
     </div>`;
@@ -1118,30 +1118,30 @@ cont.innerHTML = `
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
         <div class="flex flex-wrap items-center gap-2 md:gap-3">
             <div class="flex items-center gap-1.5">
-                <label class="text-[9px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Per-Pax (SGD):</label>
+                <label class="text-[11px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">Per-Pax (SGD):</label>
                 <div class="relative flex items-center">
-                    <span class="absolute left-1.5 text-[10px] font-bold text-gray-400">$</span>
+                    <span class="absolute left-1.5 text-xs font-bold text-gray-400">$</span>
                     <input type="text" value="${baseFee ? parseFloat(baseFee).toLocaleString('en-US', {minimumFractionDigits:2}) : '0.00'}" oninput="formatMoneyInput(this, false); financeConfig.perPersonFee = parseFloat(this.value.replace(/,/g, ''))||0; queueFinanceUpdate();" onblur="formatMoneyInput(this, true); updateFinanceConfig('perPersonFee', parseFloat(this.value.replace(/,/g, ''))||0)" class="w-[72px] text-xs font-black border border-gray-300 dark:border-gray-600 rounded pl-4 pr-1.5 py-1 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-right">
                 </div>
             </div>
             <div class="flex items-center gap-1.5">
-                <label class="text-[9px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">PayNow:</label>
+                <label class="text-[11px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">PayNow:</label>
                 <input type="text" maxlength="8" value="${financeConfig.payNowNumber || ''}" onchange="updateFinanceConfig('payNowNumber', this.value.trim())" class="w-20 text-xs font-black border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary shadow-sm text-center">
             </div>
             <label class="flex items-center gap-1.5 cursor-pointer bg-purple-50 dark:bg-purple-900/20 border ${financeConfig.showPaymentSection ? 'border-purple-500' : 'border-purple-200 dark:border-purple-800'} px-2.5 py-1 rounded-md transition-colors hover:bg-purple-100 dark:hover:bg-purple-900/40">
                 <input type="checkbox" ${financeConfig.showPaymentSection ? 'checked' : ''} onchange="updateFinanceConfig('showPaymentSection', this.checked)" class="w-3.5 h-3.5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                <span class="text-[9px] md:text-[10px] uppercase font-black ${financeConfig.showPaymentSection ? 'text-purple-700 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'} tracking-wider">SHOW PAYMENT QR CODE</span>
+                <span class="text-[11px] md:text-xs uppercase font-black ${financeConfig.showPaymentSection ? 'text-purple-700 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'} tracking-wider">SHOW PAYMENT QR CODE</span>
             </label>
         </div>
         
         <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-950 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 w-full md:w-auto justify-between md:justify-start">
             <div class="text-left">
-                <span class="block text-[8px] uppercase font-bold text-gray-400 tracking-widest leading-none mb-0.5">Collected</span>
+                <span class="block text-[10px] uppercase font-bold text-gray-400 tracking-widest leading-none mb-0.5">Collected</span>
                 <span class="text-xs font-black text-green-600 dark:text-green-400 leading-none">$ ${totalCollected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
             </div>
             <div class="w-px h-5 bg-gray-300 dark:bg-gray-700 hidden md:block"></div>
             <div class="text-right md:text-left">
-                <span class="block text-[8px] uppercase font-bold text-gray-400 tracking-widest leading-none mb-0.5">Expected Total</span>
+                <span class="block text-[10px] uppercase font-bold text-gray-400 tracking-widest leading-none mb-0.5">Expected Total</span>
                 <span class="text-xs font-black text-green-700 dark:text-green-400 leading-none">$ ${totalExpected.toLocaleString('en-US', {minimumFractionDigits:2})}</span>
             </div>
         </div>

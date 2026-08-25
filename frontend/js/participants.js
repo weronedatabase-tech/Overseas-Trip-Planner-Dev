@@ -62,14 +62,14 @@ document.getElementById('tab-participants').innerHTML = `
    <div class="py-1.5 px-2 md:px-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center gap-2 shrink-0">
        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap min-w-0">
            <h3 class="font-black text-gray-900 dark:text-white text-base md:text-lg truncate shrink-0"><span class="hidden md:inline">Participant </span>Roster</h3>
-           <span id="rosterTotalCount" class="text-gray-500 font-black text-[11px] md:text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 shrink-0">(0)</span>
+           <span id="rosterTotalCount" class="text-gray-500 font-black text-sm md:text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 shrink-0">(0)</span>
            <button onclick="showRosterBreakdownModal()" class="flex items-center justify-center bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/60 focus:outline-none transition rounded-lg px-2 py-1 md:px-2.5 md:py-1.5 shadow-sm border border-green-200 dark:border-green-800 shrink-0 ml-1" title="View Roster Breakdown">
                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-               <span class="text-[10px] md:text-xs font-black ml-1.5 uppercase tracking-wider hidden md:inline">Breakdown</span>
+               <span class="text-xs md:text-xs font-black ml-1.5 uppercase tracking-wider hidden md:inline">Breakdown</span>
            </button>
        </div>
        <div class="flex items-center gap-2">
-           <select onchange="if(this.value) window.location.href=this.value" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer shrink-0">
+           <select onchange="if(this.value) window.location.href=this.value" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer shrink-0">
                <option value="" disabled selected>Custom Views</option>
                <option value="medical.html">Medical</option>
                <option value="diet.html">Dietary</option>
@@ -95,7 +95,7 @@ document.getElementById('tab-participants').innerHTML = `
            <div id="sortSelector" class="hidden-force fixed left-4 right-4 top-24 md:absolute md:left-auto md:right-0 md:top-auto md:mt-2 md:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-[60] p-4 max-h-[80vh] overflow-y-auto">
               <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Advanced Sort</h4>
               <div id="sortRulesContainer" class="space-y-2 mb-3"></div>
-              <button onclick="addSortRule()" class="w-full text-[10px] font-bold text-green-600 dark:text-green-400 border border-dashed border-green-300 dark:border-green-700 rounded py-1 mb-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition">+ Add Level</button>
+              <button onclick="addSortRule()" class="w-full text-xs font-bold text-green-600 dark:text-green-400 border border-dashed border-green-300 dark:border-green-700 rounded py-1 mb-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition">+ Add Level</button>
               <button onclick="applySortRules(); toggleSortSelector();" class="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg shadow-sm hover:bg-green-600 transition">Apply Sort</button>
            </div>
        </div>
@@ -116,7 +116,7 @@ document.getElementById('tab-participants').innerHTML = `
    
    <div class="flex-1 min-h-0 overflow-auto custom-scrollbar relative" id="rosterTableContainer">
        <table class="table-fixed-layout text-left border-collapse border-b border-gray-200 dark:border-gray-700">
-           <thead id="rosterTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-20 shadow-sm border-b border-gray-200 dark:border-gray-700">
+           <thead id="rosterTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs uppercase font-black tracking-wider z-20 shadow-sm border-b border-gray-200 dark:border-gray-700">
            </thead>
            <tbody id="rosterTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
            </tbody>
@@ -124,7 +124,7 @@ document.getElementById('tab-participants').innerHTML = `
        
        <div id="rosterLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col justify-center items-center z-30">
            <div class="loader !w-8 !h-8 border-primary mb-2"></div>
-           <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Fetching Directory...</span>
+           <span class="text-primary dark:text-green-400 font-bold text-xs tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Fetching Directory...</span>
        </div>
    </div>
 </div>
@@ -315,10 +315,10 @@ rosterSortRules.forEach((rule, idx) => {
    let opts = sortableFields.map(f => `<option value="${f.id}" ${rule.col === f.id ? 'selected' : ''}>${f.label}</option>`).join('');
    html += `
    <div class="flex items-center gap-1">
-       <select onchange="updateSortRule(${idx}, 'col', this.value)" class="flex-1 text-[10px] font-bold p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none">
+       <select onchange="updateSortRule(${idx}, 'col', this.value)" class="flex-1 text-xs font-bold p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none">
            ${opts}
        </select>
-       <select onchange="updateSortRule(${idx}, 'asc', this.value === 'true')" class="w-16 text-[10px] font-bold p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none">
+       <select onchange="updateSortRule(${idx}, 'asc', this.value === 'true')" class="w-16 text-xs font-bold p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none">
            <option value="true" ${rule.asc ? 'selected' : ''}>ASC</option>
            <option value="false" ${!rule.asc ? 'selected' : ''}>DESC</option>
        </select>
@@ -545,7 +545,7 @@ data.sort((a, b) => {
 const thead = document.getElementById('rosterTableHead');
 let headHtml = `<tr>
    <th class="py-1.5 px-2 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top sticky left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;" data-col-id="fullName">
-       <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('fullName')">Full Name <span class="text-[8px]">↕</span></div>
+       <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('fullName')">Full Name <span class="text-[10px]">↕</span></div>
        <div class="resize-handle" onmousedown="initResize(event, 'fullName')" ontouchstart="initResize(event, 'fullName')"></div>
    </th>`;
 
@@ -557,7 +557,7 @@ rosterCols.forEach(c => {
            data-col-id="${c.id}" draggable="true" 
            ondragstart="onColDragStart(event, '${c.id}')" ondragend="onColDragEnd(event)"
            ondragover="onColDragOver(event)" ondragleave="onColDragLeave(event)" ondrop="onColDrop(event, '${c.id}')">
-           <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('${c.id}')">${c.label} <span class="text-[8px]">↕</span></div>
+           <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('${c.id}')">${c.label} <span class="text-[10px]">↕</span></div>
            <div class="resize-handle" onmousedown="initResize(event, '${c.id}')" ontouchstart="initResize(event, '${c.id}')"></div>
        </th>`;
    }
@@ -602,7 +602,7 @@ data.forEach(p => {
 
    const nameClass = expiryHighlight ? 'text-red-600 dark:text-red-400 font-extrabold' : 'font-bold text-gray-900 dark:text-gray-100';
    const expClass = expiryHighlight 
-       ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-[11px] uppercase tracking-wider inline-block' 
+       ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-sm uppercase tracking-wider inline-block' 
        : 'text-gray-800 dark:text-gray-200 whitespace-nowrap text-xs font-medium';
    
    const roleStr = p.role.substring(0, 3).toUpperCase();
@@ -611,12 +611,12 @@ data.forEach(p => {
     html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
        <td class="py-1.5 px-2 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
-           ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
+           ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">
-               <span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span>
-               <span class="px-1 py-[1px] leading-tight rounded-sm border shadow-sm text-[9px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block" title="${(p.group || 'None').toUpperCase()}">${getProjectAbbreviation(p.group || 'None')}</span>
+               <span class="text-[11px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span>
+               <span class="px-1 py-[1px] leading-tight rounded-sm border shadow-sm text-[11px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block" title="${(p.group || 'None').toUpperCase()}">${getProjectAbbreviation(p.group || 'None')}</span>
            </div>
-           ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-[10px]">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
+           ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-xs">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
        </td>`;
        
    rosterCols.forEach(c => {
@@ -625,9 +625,9 @@ data.forEach(p => {
            const baseClass = `p-3 align-top roster-col-${c.id} text-xs font-medium text-gray-800 dark:text-gray-200 whitespace-normal break-words`;
            
            if (c.id === 'role') {
-               html += `<td class="${baseClass}" ${styleStr}><span class="text-[9px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span></td>`;
+               html += `<td class="${baseClass}" ${styleStr}><span class="text-[11px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span></td>`;
            } else if (c.id === 'group') {
-               html += `<td class="${baseClass}" ${styleStr}><span class="px-2 py-0.5 rounded border shadow-sm text-[10px] font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span></td>`;
+               html += `<td class="${baseClass}" ${styleStr}><span class="px-2 py-0.5 rounded border shadow-sm text-xs font-bold ${getProjectColor(p.group)} whitespace-normal break-words inline-block">${(p.group || 'None').toUpperCase()}</span></td>`;
            } else if (c.id === 'nric') {
                html += `<td class="${baseClass} font-mono font-bold text-gray-700 dark:text-gray-300" ${styleStr}>${(p.nric||'').toUpperCase()}</td>`;
            } else if (c.id === 'passportNo') {
@@ -653,6 +653,8 @@ data.forEach(p => {
                html += `<td class="${baseClass}" ${styleStr}>${(p.pairings || 'NONE').toUpperCase()}</td>`;
            } else if (c.id === 'emergencyName') {
                html += `<td class="${baseClass}" ${styleStr}>${(p.emergencyName || '-').toUpperCase()}</td>`;
+           } else if (c.id === 'contact' || c.id === 'emergencyContact' || c.id === 'phone') {
+               html += `<td class="${baseClass} font-mono font-bold" ${styleStr}>${renderPhoneLink(p[c.id])}</td>`;
            } else {
                html += `<td class="${baseClass}" ${styleStr}>${(p[c.id] || '-').toString().toUpperCase()}</td>`;
            }
@@ -663,5 +665,5 @@ data.forEach(p => {
 });
 
 const colCount = rosterCols.filter(c => c.visible).length + 1;
-tbody.innerHTML = html || `<tr><td colspan="${colCount}" class="p-6 text-center text-[11px] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold">No participants found matching the criteria.</td></tr>`;
+tbody.innerHTML = html || `<tr><td colspan="${colCount}" class="p-6 text-center text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold">No participants found matching the criteria.</td></tr>`;
 }

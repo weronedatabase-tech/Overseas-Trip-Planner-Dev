@@ -19,7 +19,7 @@
 <header class="flex items-center justify-between px-5 py-1 border-b border-gray-200 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 shadow-sm">
 <div class="flex flex-col">
   <h1 class="font-black text-xl text-primary tracking-tight leading-tight">Overseas Trip</h1>
-  <span id="unauthTripName" class="text-[10px] font-bold text-gray-500 uppercase tracking-wider hidden-force"></span>
+  <span id="unauthTripName" class="text-xs font-bold text-gray-500 uppercase tracking-wider hidden-force"></span>
 </div>
 <div class="flex gap-1.5">
   <button onclick="updateApp(this)" class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none">
@@ -49,7 +49,7 @@
    <div class="mb-8 text-left">
      <div class="flex flex-col mb-1.5">
        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Password</label>
-       <span class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">IC Number + Year of Birth (e.g. <strong class="font-mono text-gray-700 dark:text-gray-300">S1234567A1989</strong>)</span>
+       <span class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">IC Number + Year of Birth (e.g. <strong class="font-mono text-gray-700 dark:text-gray-300">S1234567A1989</strong>)</span>
      </div>
      <div class="relative">
        <input type="password" id="loginPass" class="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-xl pr-12 font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 transition outline-none" placeholder="e.g. S1234567A1989" onkeypress="handleEnter(event, () => attemptLogin(document.getElementById('loginSubmitBtn')))">

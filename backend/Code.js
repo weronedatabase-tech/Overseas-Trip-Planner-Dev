@@ -194,6 +194,8 @@ case 'toggleEdits': result = toggleEdits(data.status); break;
 case 'getCommittee': result = getCommitteeList(); break;
 case 'addCommittee': result = modifyCommitteeList(data.nric, true, data.name, data.phone); break;
 case 'removeCommittee': result = modifyCommitteeList(data.nric, false); break;
+case 'addHelpline': result = modifyHelplineContacts(data.id, true, data.name, data.phone); break;
+case 'removeHelpline': result = modifyHelplineContacts(data.id, false); break;
 case 'addProjectGroup': result = modifyProjectGroups(data.groupName, true, data.callerNric, data.colorClass); break;
 case 'removeProjectGroup': result = modifyProjectGroups(data.groupName, false, data.callerNric); break;
 case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, data.newName); break;
@@ -260,6 +262,7 @@ status: 'success',
 registrationOpen: props.getProperty('REGISTRATION_OPEN') === 'true', 
 allowEdits: props.getProperty('ALLOW_EDITS') === 'true',
 committee: props.getProperty('COMMITTEE_LIST') ? JSON.parse(props.getProperty('COMMITTEE_LIST')) : [], 
+helpline: props.getProperty('HELPLINE_CONTACTS') ? JSON.parse(props.getProperty('HELPLINE_CONTACTS')) : [],
 projectGroups: props.getProperty('PROJECT_GROUPS') ? JSON.parse(props.getProperty('PROJECT_GROUPS')) : [], 
 projectColors: props.getProperty('PROJECT_COLORS') ? JSON.parse(props.getProperty('PROJECT_COLORS')) : {}, 
 activeProjects: activeProjects, 
@@ -1275,6 +1278,16 @@ return { status: 'success', title, year, start, end };
 function toggleEdits(status) { PropertiesService.getScriptProperties().setProperty('ALLOW_EDITS', status ? 'true' : 'false'); return { status: 'success' }; }
 
 function getCommitteeList() { return { status: 'success', list: JSON.parse(PropertiesService.getScriptProperties().getProperty('COMMITTEE_LIST') || '[]') }; }
+
+function getHelplineContacts() { return { status: 'success', list: JSON.parse(PropertiesService.getScriptProperties().getProperty('HELPLINE_CONTACTS') || '[]') }; }
+
+function modifyHelplineContacts(id, isAdding, name = "", phone = "") {
+const props = PropertiesService.getScriptProperties(); id = String(id || '').trim();
+let list = JSON.parse(props.getProperty('HELPLINE_CONTACTS') || '[]');
+if (isAdding) { if (!list.find(c => c.id === id)) list.push({ id, name: String(name || '').trim().toUpperCase(), phone: String(phone || '').trim() }); }
+else { list = list.filter(c => c.id !== id); }
+props.setProperty('HELPLINE_CONTACTS', JSON.stringify(list)); return getHelplineContacts();
+}
 
 function modifyCommitteeList(nric, isAdding, name = "", phone = "") {
 const props = PropertiesService.getScriptProperties(); nric = String(nric || '').trim().toUpperCase();
