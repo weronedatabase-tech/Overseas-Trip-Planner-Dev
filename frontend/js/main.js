@@ -300,7 +300,10 @@ async function showParticipantSummaryModal(nric) {
                   }
                   const trainees = allP.filter(p => p.role === 'TRAINEE');
                   const results = trainees.filter(t => (t.fullName || '').toLowerCase().includes(query) || (t.shortName || '').toLowerCase().includes(query));
-                  return results.map(t => ({ label: `${t.fullName} ${t.shortName ? '(' + t.shortName + ')' : ''}`, value: t.fullName }));
+                  return results.map(t => {
+                      const formatted = `${t.fullName}${t.shortName ? ' (' + t.shortName + ')' : ''}`;
+                      return { label: formatted, value: formatted };
+                  });
               });
           }
       }, 50);
@@ -323,12 +326,13 @@ async function submitAdminProfileEdit(btn) {
         const names = relatedVal.split('|').map(x => x.trim()).filter(x => x !== '');
         let allValid = true;
         names.forEach(n => {
-            const match = allP.find(x => x.role === 'TRAINEE' && (x.fullName || '').toLowerCase() === n.toLowerCase());
+            const cleanN = n.replace(/\([^)]*\)/g, '').trim().toLowerCase();
+            const match = allP.find(x => x.role === 'TRAINEE' && (x.fullName || '').toLowerCase() === cleanN);
             if(!match) allValid = false;
         });
 
         if(!allValid) {
-            showToast("Caregiver For field must match exactly with an existing Trainees' Full Names.", true);
+            showToast("Related Trainees' Name(s) field must match exactly with an existing Trainees' Full Names.", true);
             setBtnLoading(btn, false);
             return;
         }

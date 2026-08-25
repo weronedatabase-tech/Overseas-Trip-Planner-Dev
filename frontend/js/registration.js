@@ -190,7 +190,10 @@ document.getElementById('membersContainer').insertAdjacentHTML('beforeend', fina
                      (t.shortName && t.shortName.toLowerCase().includes(query))
                 );
               }
-              return matches.map(t => ({ label: `${t.name} ${t.shortName ? '(' + t.shortName + ')' : ''}`, value: t.name }));
+              return matches.map(t => {
+                  const formatted = `${t.name}${t.shortName ? ' (' + t.shortName + ')' : ''}`;
+                  return { label: formatted, value: formatted };
+              });
           });
       }
   }, 50);
@@ -277,7 +280,10 @@ if (typeof setupTokenInput === 'function') {
                 (t.shortName && t.shortName.toLowerCase().includes(query))
             );
         }
-        return matches.map(t => ({ label: `${t.name} ${t.shortName ? '(' + t.shortName + ')' : ''}`, value: t.name }));
+        return matches.map(t => {
+            const formatted = `${t.name}${t.shortName ? ' (' + t.shortName + ')' : ''}`;
+            return { label: formatted, value: formatted };
+        });
     });
 }
 
