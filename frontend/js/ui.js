@@ -303,7 +303,7 @@ window.applyCaregiverLabels = function(participants) {
     participants.forEach(p => {
         if (p.role === 'CAREGIVER') {
             if (p.relatedTrainee) {
-                let parts = String(p.relatedTrainee).split(',');
+                let parts = String(p.relatedTrainee).split(/[\|,]/).filter(Boolean);
                 let mapped = parts.map(n => {
                     let k = n.trim().toLowerCase();
                     return traineeMap[k] || n.trim();
@@ -415,7 +415,8 @@ window.setupTokenInput = function(inputId, getSuggestionsCallback) {
     
     function renderTokens() {
         chipContainer.innerHTML = '';
-        tokens.forEach((t, i) => {
+        const currentTokens = window._tokenInputs[inputId] ? window._tokenInputs[inputId].tokens : tokens;
+        currentTokens.forEach((t, i) => {
             const chip = document.createElement('span');
             chip.className = "inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 uppercase tracking-widest";
             chip.innerHTML = `
@@ -426,14 +427,15 @@ window.setupTokenInput = function(inputId, getSuggestionsCallback) {
             `;
             chipContainer.appendChild(chip);
         });
-        originalInput.value = tokens.join(' | ');
+        originalInput.value = currentTokens.join(' | ');
         originalInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
     
     if (!window._tokenInputs) window._tokenInputs = {};
     window._tokenInputs[inputId] = {
         tokens,
-        render: renderTokens
+        render: renderTokens,
+        getInputField: () => inputField
     };
     
     window.removeTokenFromInput = function(id, index) {
@@ -470,8 +472,9 @@ window.setupTokenInput = function(inputId, getSuggestionsCallback) {
                 item.textContent = s.label;
                 item.addEventListener('mousedown', (e) => {
                     e.preventDefault(); // prevent blur
-                    if (!tokens.includes(s.value)) {
-                        tokens.push(s.value);
+                    const currentTokens = window._tokenInputs[inputId].tokens;
+                    if (!currentTokens.includes(s.value)) {
+                        currentTokens.push(s.value);
                     }
                     inputField.value = '';
                     dropdown.classList.add('hidden-force');

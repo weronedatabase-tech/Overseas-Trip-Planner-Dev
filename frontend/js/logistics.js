@@ -854,7 +854,7 @@ try {
 // ==========================================
 function buildLogisticsUI() {
 document.getElementById('tab-logistics').innerHTML = `
-<div class="sticky top-0 z-40 flex overflow-x-auto bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 scrollbar-hide shrink-0 rounded-t-xl md:rounded-none px-2 pt-1">
+<div class="sticky top-0 z-40 flex overflow-x-auto bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 scrollbar-hide shrink-0 rounded-t-xl md:rounded-none px-2 pt-1">
     <button onclick="switchLogisticsSubTab('pairings')" id="subTab-pairings" class="px-3 py-2 font-semibold border-b-2 border-primary text-primary whitespace-nowrap text-xs md:text-sm transition focus:outline-none">1. Pairings</button>
     <button onclick="switchLogisticsSubTab('rooms')" id="subTab-rooms" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">2. Rooms</button>
     <button onclick="switchLogisticsSubTab('groups')" id="subTab-groups" class="px-3 py-2 font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs md:text-sm transition focus:outline-none">3. Groups</button>
@@ -866,7 +866,7 @@ document.getElementById('tab-logistics').innerHTML = `
         <div class="loader !w-8 !h-8 border-primary mb-2"></div>
         <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
     </div>
-    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-1 shadow-sm sticky top-0 z-30">
+    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-2 md:p-3 shrink-0 flex flex-col gap-1 shadow-sm sticky top-0 z-30">
         <div class="flex justify-between items-center px-1">
             <div class="flex items-center gap-2">
                 <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Pairings</h3>
@@ -886,8 +886,8 @@ document.getElementById('tab-logistics').innerHTML = `
             </div>
         </div>
     </div>
-    <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 border-x border-b border-gray-200 dark:border-gray-800 rounded-b-xl md:rounded-none">
-        <div id="dnd-source-col" class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800">
+    <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 border-x border-b border-gray-200 dark:border-gray-700 rounded-b-xl md:rounded-none">
+        <div id="dnd-source-col" class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-700">
             <h4 id="dnd-source-title" class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b"></h4>
             <div id="dnd-source-pool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar bg-opacity-50 pb-6"></div>
         </div>
@@ -899,7 +899,7 @@ document.getElementById('tab-logistics').innerHTML = `
 </div>
 
 <div id="log-rooms" class="hidden-force flex-1 flex flex-col min-h-0 w-full relative">
-    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
+    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
         <div class="flex justify-between items-center px-1">
             <div class="flex flex-wrap items-center gap-1 md:gap-1.5">
                 <h3 class="text-xs md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1 shrink-0">Room Assignments</h3>
@@ -935,7 +935,7 @@ document.getElementById('tab-logistics').innerHTML = `
         </div>
     </div>
     <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 rounded-b-xl md:rounded-none">
-        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden border-r border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/50">
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden border-r border-gray-200 dark:border-gray-700 bg-gray-100/50 dark:bg-gray-900/50">
             <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">Unassigned (<span id="unassignedCount">0</span>)</h4>
             <div id="roomUnassignedPool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6"></div>
         </div>
@@ -946,7 +946,7 @@ document.getElementById('tab-logistics').innerHTML = `
 </div>
 
 <div id="log-groups" class="hidden-force flex-1 flex flex-col min-h-0 w-full relative">
-    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
+    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
         <div class="flex justify-between items-center px-1">
             <div class="flex flex-wrap items-center gap-1 md:gap-1.5">
                 <h3 class="text-xs md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1 shrink-0">Groups</h3>
@@ -972,21 +972,21 @@ document.getElementById('tab-logistics').innerHTML = `
         </div>
     </div>
     <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative">
-        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-            <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800/50">Unassigned (<span id="groupUnassignedCount">0</span>)</h4>
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/50">Unassigned (<span id="groupUnassignedCount">0</span>)</h4>
             <div id="groupUnassignedPool" class="dnd-group-dropzone space-y-1.5 flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar pb-6"></div>
         </div>
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
-            <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+            <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
                 <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Assigned Groups</span>
-                <button onclick="openManageGroupsSheet()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-cog mr-1"></i>Manage</button>
+                <button onclick="openManageGroupsSheet()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-cog mr-1"></i>Manage</button>
             </div>
             <div id="groupListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
         </div>
     </div>
 </div>
 <div id="log-buses" class="hidden-force flex-1 flex flex-col min-h-0 w-full relative">
-    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
+    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm sticky top-0 z-30">
         <div class="flex justify-between items-center px-1">
             <div class="flex flex-wrap items-center gap-1 md:gap-1.5">
                 <h3 class="text-xs md:text-base font-black text-gray-900 dark:text-white tracking-tight mr-1 shrink-0">Buses</h3>
@@ -1012,14 +1012,14 @@ document.getElementById('tab-logistics').innerHTML = `
         </div>
     </div>
     <div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative">
-        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-            <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800/50">Unassigned (<span id="busUnassignedCount">0</span>)</h4>
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/50">Unassigned (<span id="busUnassignedCount">0</span>)</h4>
             <div id="busUnassignedPool" class="dnd-bus-dropzone space-y-1.5 flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar pb-6"></div>
         </div>
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
-            <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+            <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
                 <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Assigned Buses</span>
-                <button onclick="openManageBusesSheet()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-[9px] font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-cog mr-1"></i>Manage</button>
+                <button onclick="openManageBusesSheet()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-cog mr-1"></i>Manage</button>
             </div>
             <div id="busListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
         </div>
@@ -1088,7 +1088,7 @@ let unHtml = '';
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
                 <div class="flex items-center gap-2">
                     <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Group ${gName}</span>
-                    <button onclick="removeGroupList('${gName}')" class="text-red-500 hover:text-red-600 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    <button onclick="removeGroupList('${gName}')" class="text-red-500 hover:text-red-600 focus:outline-none"><i class="fa-solid fa-trash text-sm"></i></button>
                 </div>
                 <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${groupMap[gName].length} Pax</span>
             </div>
@@ -1168,7 +1168,7 @@ let unHtml = '';
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-1.5 mb-1.5">
                 <div class="flex items-center gap-2">
                     <span class="font-black text-[11px] md:text-sm text-gray-900 dark:text-white leading-tight">Bus ${bName}</span>
-                    <button onclick="removeBusList('${bName}')" class="text-red-500 hover:text-red-600 focus:outline-none"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    <button onclick="removeBusList('${bName}')" class="text-red-500 hover:text-red-600 focus:outline-none"><i class="fa-solid fa-trash text-sm"></i></button>
                 </div>
                 <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-inner">${busMap[bName].length} Pax</span>
             </div>
@@ -1529,7 +1529,7 @@ const traineeTitleClass = "bg-green-100 dark:bg-green-900/50 text-green-800 dark
 
 const sourceCol = document.getElementById('dnd-source-col');
 const targetCol = document.getElementById('dnd-target-col');
-sourceCol.className = `flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-800 ${sourceColClass}`;
+sourceCol.className = `flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors border-r border-gray-200 dark:border-gray-700 ${sourceColClass}`;
 targetCol.className = `flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors ${targetColClass}`;
 
 const sourceTitle = document.getElementById('dnd-source-title');
@@ -1895,7 +1895,7 @@ function renderGroupBusOptions() {
         html += `
         <div class="sheet-list-item p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between transition hover:bg-gray-50 dark:hover:bg-gray-750" data-name="${item.toLowerCase()}">
             <div class="cursor-pointer flex-1 font-bold text-gray-900 dark:text-white text-sm" onclick="selectGroupBusOption('${item}')">${activeAssignType === 'group' ? 'Group ' : 'Bus '}${item}</div>
-            <button onclick="removeGroupBusFromPopup('${item}')" class="text-red-500 hover:text-red-600 p-2 -mr-2"><i class="fa-solid fa-trash text-xs"></i></button>
+            <button onclick="removeGroupBusFromPopup('${item}')" class="text-red-500 hover:text-red-600 p-2 -mr-2"><i class="fa-solid fa-trash text-sm"></i></button>
         </div>`;
     });
     

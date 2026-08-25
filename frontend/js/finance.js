@@ -483,7 +483,7 @@ cont.innerHTML = `
                     <th class="py-1.5 px-2 text-right">Variance</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                 ${rowsHtml}
             </tbody>
         </table>
@@ -952,7 +952,7 @@ cont.innerHTML = `
                     <th class="py-1.5 px-2 text-center">Action</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                 ${rowsHtml}
             </tbody>
         </table>
@@ -1035,8 +1035,9 @@ function processFeeCard(poc, members) {
     const searchLower = finSearchQuery.toLowerCase().trim();
     if (searchLower) {
         match = members.some(m => {
-            const dName = (m.shortName || m.name).toLowerCase();
-            return dName.includes(searchLower) || m.nric.toLowerCase().includes(searchLower);
+            const dName = String(m.shortName || '').toLowerCase();
+            const fullName = String(m.fullName || m.name || '').toLowerCase();
+            return dName.includes(searchLower) || fullName.includes(searchLower) || m.nric.toLowerCase().includes(searchLower);
         });
     }
 

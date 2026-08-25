@@ -115,10 +115,10 @@ document.getElementById('tab-participants').innerHTML = `
    </div>
    
    <div class="flex-1 min-h-0 overflow-auto custom-scrollbar relative" id="rosterTableContainer">
-       <table class="table-fixed-layout text-left border-collapse border-b border-gray-200 dark:border-gray-800">
+       <table class="table-fixed-layout text-left border-collapse border-b border-gray-200 dark:border-gray-700">
            <thead id="rosterTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-20 shadow-sm border-b border-gray-200 dark:border-gray-700">
            </thead>
-           <tbody id="rosterTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+           <tbody id="rosterTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
            </tbody>
        </table>
        
@@ -609,7 +609,7 @@ data.forEach(p => {
    const roleColor = p.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
     
     html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
-       <td class="py-1.5 px-2 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
+       <td class="py-1.5 px-2 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
            ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">

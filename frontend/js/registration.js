@@ -97,7 +97,7 @@ const caregiverHtml = `
  <div class="trainee-div hidden-force bg-green-50/50 dark:bg-gray-800 p-4 rounded-xl mb-4 border border-green-100 dark:border-gray-700">
    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
      <div class="relative">
-         <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainees' Name <span class="text-red-500">*</span></label>
+         <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainees' Name(s) <span class="text-red-500">*</span></label>
          <input required disabled type="text" id="reg-f-related-${idx}" class="reg-f-related w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off" placeholder="Comma-separated for multiple">
      </div>
      <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee(s) <span class="text-red-500">*</span></label><input required disabled type="text" class="reg-f-relation w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Sibling"></div>
@@ -248,7 +248,44 @@ popupName.value = defaultName;
 popupName.dataset.manual = inlineName ? document.getElementById(`reg-f-related-${idx}`).dataset.manual : 'false';
 popupRel.value = inlineRel || '';
 
-document.getElementById('cgPopupTraineeDropdown').classList.add('hidden-force');
+if (typeof setupTokenInput === 'function') {
+    setupTokenInput('cgPopupTraineeName', function(query) {
+        let localTrainees = [];
+        const allBlocks = Array.from(document.getElementsByClassName('member-block'));
+        for (let b of allBlocks) {
+            const role = b.querySelector('.reg-f-role').value;
+            if (role === 'TRAINEE') {
+                const tName = b.querySelector('.reg-f-name').value.trim();
+                const tShort = b.querySelector('.reg-f-shortname').value.trim();
+                if (tName) {
+                    localTrainees.push({name: tName, shortName: tShort});
+                }
+            }
+        }
+        let allTrainees = [...publicTrainees, ...localTrainees];
+        const seen = new Set();
+        allTrainees = allTrainees.filter(t => {
+            const k = t.name.toLowerCase();
+            if(seen.has(k)) return false;
+            seen.add(k);
+            return true;
+        });
+        let matches = allTrainees;
+        if (query) {
+            matches = allTrainees.filter(t => 
+                t.name.toLowerCase().includes(query) || 
+                (t.shortName && t.shortName.toLowerCase().includes(query))
+            );
+        }
+        return matches.map(t => ({ label: `${t.name} ${t.shortName ? '(' + t.shortName + ')' : ''}`, value: t.name }));
+    });
+}
+
+if (window._tokenInputs && window._tokenInputs['cgPopupTraineeName']) {
+    window._tokenInputs['cgPopupTraineeName'].tokens = defaultName.split(/[\|,]/).map(s => s.trim()).filter(Boolean);
+    window._tokenInputs['cgPopupTraineeName'].render();
+}
+
 document.getElementById('caregiverPopupModal').classList.remove('hidden-force');
 }
 
@@ -270,6 +307,12 @@ closeCaregiverPopup();
 }
 
 function confirmCaregiverPopup() {
+const cgInput = window._tokenInputs && window._tokenInputs['cgPopupTraineeName'] ? window._tokenInputs['cgPopupTraineeName'].getInputField() : null;
+if (cgInput && cgInput.value.trim().length > 0) {
+   alert("Incorrect Names");
+   return;
+}
+
 const nameVal = document.getElementById('cgPopupTraineeName').value.trim();
 const relVal = document.getElementById('cgPopupRelation').value.trim();
 
@@ -286,6 +329,10 @@ if (currentCaregiverIdx !== null) {
    if (inlineName) {
        inlineName.value = nameVal;
        inlineName.dataset.manual = 'true';
+       if (window._tokenInputs && window._tokenInputs[`reg-f-related-${currentCaregiverIdx}`]) {
+           window._tokenInputs[`reg-f-related-${currentCaregiverIdx}`].tokens = nameVal.split(/[\|,]/).map(s => s.trim()).filter(Boolean);
+           window._tokenInputs[`reg-f-related-${currentCaregiverIdx}`].render();
+       }
    }
    if (inlineRel) inlineRel.value = relVal;
 }
@@ -311,87 +358,6 @@ for (let b of allBlocks) {
    }
 }
 return inPublic || inForm;
-}
-
-function validateCgPopupTrainee() {
-setTimeout(() => {
-   const input = document.getElementById('cgPopupTraineeName');
-   if(input && document.activeElement === input) return;
-   const modal = document.getElementById('caregiverPopupModal');
-   if(modal && modal.classList.contains('hidden-force')) return;
-   const dd = document.getElementById('cgPopupTraineeDropdown');
-   if(dd) dd.classList.add('hidden-force');
-}, 250);
-}
-
-function filterCgPopupDropdown() {
-const input = document.getElementById('cgPopupTraineeName');
-const dd = document.getElementById('cgPopupTraineeDropdown');
-if(!input || !dd) return;
-
-const parts = input.value.split('|');
-const query = parts[parts.length - 1].toLowerCase().trim();
-
-let localTrainees = [];
-const allBlocks = Array.from(document.getElementsByClassName('member-block'));
-for (let b of allBlocks) {
-   const role = b.querySelector('.reg-f-role').value;
-   if (role === 'TRAINEE') {
-       const tName = b.querySelector('.reg-f-name').value.trim();
-       const tShort = b.querySelector('.reg-f-shortname').value.trim();
-       if (tName) {
-           localTrainees.push({name: tName, shortName: tShort});
-       }
-   }
-}
-
-let allTrainees = [...publicTrainees, ...localTrainees];
-const seen = new Set();
-allTrainees = allTrainees.filter(t => {
-   const k = t.name.toLowerCase();
-   if(seen.has(k)) return false;
-   seen.add(k);
-   return true;
-});
-
-let matches = allTrainees;
-
-if (query) {
-   matches = allTrainees.filter(t => 
-       t.name.toLowerCase().includes(query) || 
-       (t.shortName && t.shortName.toLowerCase().includes(query))
-   );
-}
-
-let html = '';
-matches.forEach(t => {
-   html += `<li class="px-3 py-2 text-sm font-bold text-gray-800 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition border-b border-gray-100 dark:border-gray-700 last:border-0" onmousedown="selectCgPopupTrainee('${t.name.replace(/'/g, "\\'")}')">${t.name} ${t.shortName ? `(${t.shortName})` : ''}</li>`;
-});
-
-if(html === '') {
-   if (query === '') {
-       html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No trainees available. Please add a Trainee first.</li>`;
-   } else {
-       html = `<li class="px-3 py-2 text-sm text-gray-500 italic text-center pointer-events-none">No matches found</li>`;
-   }
-}
-
-dd.innerHTML = html;
-dd.classList.remove('hidden-force');
-}
-
-function selectCgPopupTrainee(name) {
-const input = document.getElementById('cgPopupTraineeName');
-if(input) {
-   let parts = input.value.split('|');
-   parts.pop();
-   parts.push(name);
-   input.value = parts.join(' | ') + ' | ';
-   input.dataset.manual = 'true';
-   const dd = document.getElementById('cgPopupTraineeDropdown');
-   if(dd) dd.classList.add('hidden-force');
-   setTimeout(() => input.focus(), 10);
-}
 }
 
 

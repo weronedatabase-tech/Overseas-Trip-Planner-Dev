@@ -11,7 +11,7 @@ function buildAttendanceUI() {
 document.getElementById('tab-attendance').innerHTML = `
 <div class="admin-only flex flex-col h-full min-h-0 w-full relative">
 
-<div class="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm rounded-t-xl md:rounded-none">
+<div class="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-2 md:p-3 shrink-0 flex flex-col gap-2 shadow-sm rounded-t-xl md:rounded-none">
   <div class="flex justify-between items-center">
      <h3 class="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight">Live Attendance</h3>
      <button id="btn-sync-attendance" onclick="manualSyncAttendance()" class="text-[10px] md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
@@ -39,14 +39,14 @@ document.getElementById('tab-attendance').innerHTML = `
   </div>
 </div>
 
-<div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 rounded-b-xl md:rounded-none border-x border-b border-gray-200 dark:border-gray-800">
+<div class="flex flex-row flex-1 min-h-0 w-full overflow-hidden relative bg-gray-50 dark:bg-gray-950 rounded-b-xl md:rounded-none border-x border-b border-gray-200 dark:border-gray-700">
   
   <div id="attLoadingOverlay" class="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm z-10 hidden-force flex flex-col justify-center items-center">
       <div class="loader !w-8 !h-8 border-primary mb-2"></div>
       <span class="text-primary dark:text-green-400 font-bold text-[10px] tracking-wide shadow-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full">Loading...</span>
   </div>
   
-  <div class="flex-1 min-w-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-red-50/30 dark:bg-red-900/10">
+  <div class="flex-1 min-w-0 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-red-50/30 dark:bg-red-900/10">
      <h4 class="font-black text-[10px] py-1.5 shrink-0 text-center uppercase tracking-widest bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-red-200 dark:border-red-800">Not Checked (<span id="attNotCheckedCount">0</span>)</h4>
      <div id="attNotCheckedList" class="flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6 space-y-1.5"></div>
   </div>

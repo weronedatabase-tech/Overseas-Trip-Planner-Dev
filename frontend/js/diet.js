@@ -43,10 +43,10 @@ document.getElementById('tab-diet').innerHTML = `
    </div>
    
    <div class="flex-1 min-h-0 overflow-auto custom-scrollbar relative" id="dietTableContainer">
-       <table class="w-full table-fixed text-left border-collapse border-b border-gray-200 dark:border-gray-800">
+       <table class="w-full table-fixed text-left border-collapse border-b border-gray-200 dark:border-gray-700">
            <thead id="dietTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase font-black tracking-wider z-10 shadow-sm border-b border-gray-200 dark:border-gray-700">
            </thead>
-           <tbody id="dietTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+           <tbody id="dietTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
            </tbody>
        </table>
        
@@ -213,7 +213,7 @@ data.forEach(p => {
    const nameClass = 'font-bold text-gray-900 dark:text-gray-100';
    
    html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
-       <td class="py-1.5 px-2 align-top sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm w-[35%]">
+       <td class="py-1.5 px-2 align-top sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-sm w-[35%]">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
            ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">
@@ -222,7 +222,7 @@ data.forEach(p => {
            </div>
            ${p.caregiverFor ? `<div class="mt-1 font-bold text-purple-600 dark:text-purple-400 text-[10px]">[${p.caregiverFor.toUpperCase()}]</div>` : ''}
        </td>
-       <td class="py-1.5 px-2 align-top w-[65%] text-xs leading-relaxed whitespace-normal break-words border-l border-gray-100 dark:border-gray-800/50">
+       <td class="py-1.5 px-2 align-top w-[65%] text-xs leading-relaxed whitespace-normal break-words border-l border-gray-100 dark:border-gray-700/50">
            <div class="flex flex-col gap-3">`;
 
    const hasDiet = p.diet && p.diet.trim() && p.diet.trim().toLowerCase() !== 'nil' && p.diet.trim().toLowerCase() !== 'none';
