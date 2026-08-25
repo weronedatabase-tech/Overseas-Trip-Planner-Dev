@@ -108,9 +108,9 @@ const caregiverHtml = `
 const identityHtml = `
  <h4 class="font-bold text-lg mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-primary dark:text-green-400">Identification</h4>
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-   <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Full NRIC / FIN <span class="text-red-500">*</span></label><div class="dup-warn hidden-force text-xs text-red-500 font-bold mb-1"></div><input required type="text" onblur="checkDuplicateField(this, 'nric')" class="reg-f-nric w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg uppercase bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
+   <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Full NRIC / FIN <span class="text-red-500">*</span></label><div class="dup-warn hidden-force text-xs text-red-500 font-bold mb-1"></div><input required type="text" onblur="checkDuplicateField(this, 'nric')" oninput="handleFieldInput(this, 'nric')" class="reg-f-nric w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg uppercase bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Nationality <span class="text-red-500">*</span></label><input required type="text" class="reg-f-nat w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
-   <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Passport No. <span class="text-red-500">*</span></label><div class="dup-warn hidden-force text-xs text-red-500 font-bold mb-1"></div><input required type="text" onblur="checkDuplicateField(this, 'passport')" class="reg-f-pass w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg uppercase bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
+   <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Passport No. <span class="text-red-500">*</span></label><div class="dup-warn hidden-force text-xs text-red-500 font-bold mb-1"></div><input required type="text" onblur="checkDuplicateField(this, 'passport')" oninput="handleFieldInput(this, 'passport')" class="reg-f-pass w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg uppercase bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
    <div><label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Passport Expiry <span class="text-red-500">*</span></label><input required type="text" id="exp_${idx}" readonly placeholder="DD Mmm YYYY" onclick="openDatePicker('exp_${idx}', 'exp')" class="reg-f-exp w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-medium text-center cursor-pointer bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"></div>
  </div>
 `;
@@ -503,7 +503,21 @@ try {
 }
 async function checkDuplicateField(inputEl, fieldType) {
     const val = inputEl.value.trim().toUpperCase();
-    if (!val) return;
+    if (!val) {
+        inputEl.classList.remove('border-red-500', 'ring-red-500');
+        inputEl.removeAttribute('data-invalid');
+        inputEl.previousElementSibling.classList.add('hidden-force');
+        return;
+    }
+    
+    if (fieldType === 'nric' && typeof isValidNRIC === 'function' && !isValidNRIC(val)) {
+        const warnEl = inputEl.previousElementSibling;
+        warnEl.innerHTML = "Invalid NRIC/FIN.";
+        warnEl.classList.remove('hidden-force');
+        inputEl.classList.add('border-red-500', 'ring-red-500');
+        inputEl.setAttribute('data-invalid', 'true');
+        return;
+    }
     
     const warnEl = inputEl.previousElementSibling;
     
@@ -515,7 +529,7 @@ async function checkDuplicateField(inputEl, fieldType) {
         if (inp.value.trim().toUpperCase() === val) count++;
     });
     if (count > 1) {
-        warnEl.innerHTML = `Duplicate ${fieldType.toUpperCase()} in this form.`;
+        warnEl.innerHTML = fieldType === "nric" ? "This NRIC/FIN is already entered in another participant block within this unsubmitted form." : "This Passport No. is already entered in another participant block within this unsubmitted form.";
         warnEl.classList.remove('hidden-force');
         inputEl.classList.add('border-red-500', 'ring-red-500');
         inputEl.setAttribute('data-invalid', 'true');
@@ -542,3 +556,28 @@ async function checkDuplicateField(inputEl, fieldType) {
         console.error("Duplicate check failed:", e);
     }
 }
+
+window.handleFieldInput = function(inputEl, fieldType) {
+    const val = inputEl.value.trim().toUpperCase();
+    const warnEl = inputEl.previousElementSibling;
+    
+    // Auto-clear invalid format errors if it becomes valid
+    if (fieldType === 'nric' && typeof isValidNRIC === 'function') {
+        if (isValidNRIC(val)) {
+            if (warnEl.innerHTML === "Invalid NRIC/FIN.") {
+                warnEl.classList.add('hidden-force');
+                inputEl.classList.remove('border-red-500', 'ring-red-500');
+                inputEl.removeAttribute('data-invalid');
+                // Re-check duplicate now that it's valid
+                checkDuplicateField(inputEl, 'nric');
+            }
+        }
+    }
+    
+    // Auto-clear local duplicate errors if the user modifies the text, wait for blur to re-check
+    if (warnEl && warnEl.innerHTML.includes("unsubmitted form")) {
+        warnEl.classList.add('hidden-force');
+        inputEl.classList.remove('border-red-500', 'ring-red-500');
+        inputEl.removeAttribute('data-invalid');
+    }
+};

@@ -260,7 +260,7 @@ data.forEach(p => {
        const expD = new Date(p.passportExpiry);
        if (!isNaN(expD.getTime()) && expD < minExpiry) isExpired = true;
    }
-   const expiryDisplay = p.passportExpiry ? new Date(p.passportExpiry).toLocaleDateString('en-GB') : '-';
+   const expiryDisplay = p.passportExpiry ? (typeof formatDDMmmYYYY === 'function' ? formatDDMmmYYYY(p.passportExpiry) : new Date(p.passportExpiry).toLocaleDateString('en-GB')) : '-';
    
    html += `<div class="mt-2 p-2 rounded border ${isExpired ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'}">
        <span class="font-bold ${isExpired ? 'text-red-500' : 'text-gray-500'} uppercase text-xs block mb-0.5">Expiry Date</span>

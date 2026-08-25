@@ -115,7 +115,7 @@ document.getElementById('tab-participants').innerHTML = `
    </div>
    
    <div class="flex-1 min-h-0 overflow-auto custom-scrollbar relative" id="rosterTableContainer">
-       <table class="table-fixed-layout text-left border-collapse border-b border-gray-200 dark:border-gray-700">
+       <table class="w-full table-auto text-left border-collapse border-b border-gray-200 dark:border-gray-700">
            <thead id="rosterTableHead" class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs uppercase font-black tracking-wider z-20 shadow-sm border-b border-gray-200 dark:border-gray-700">
            </thead>
            <tbody id="rosterTableBody" class="text-sm divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
@@ -359,62 +359,12 @@ renderRosterTable();
 // ==========================================
 // RESIZING & REORDERING
 // ==========================================
-let resizingCol = null;
-let startX = 0;
-let startWidth = 0;
 
-function initResize(e, colId) {
-e.stopPropagation();
-resizingCol = colId;
-if (e.touches) {
-   startX = e.touches[0].clientX;
-} else {
-   startX = e.clientX;
-}
-const colDef = colId === 'fullName' ? {width: Math.min(250, window.innerWidth / 3)} : rosterCols.find(c => c.id === colId);
-startWidth = colDef.width || 150;
-document.addEventListener('mousemove', onMouseMove);
-document.addEventListener('mouseup', onMouseUp);
-document.addEventListener('touchmove', onMouseMove, {passive: false});
-document.addEventListener('touchend', onMouseUp);
-}
 
-function onMouseMove(e) {
-if (!resizingCol) return;
-let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-const diff = clientX - startX;
-let newWidth = Math.max(50, startWidth + diff);
-
-if (resizingCol === 'fullName') {
-   const cells = document.querySelectorAll('.roster-col-fullName');
-   cells.forEach(c => { c.style.width = newWidth + 'px'; c.style.minWidth = newWidth + 'px'; c.style.maxWidth = newWidth + 'px'; });
-} else {
-   const cDef = rosterCols.find(c => c.id === resizingCol);
-   if (cDef) {
-       cDef.width = newWidth;
-       const cells = document.querySelectorAll(`.roster-col-${resizingCol}`);
-       cells.forEach(c => { c.style.width = newWidth + 'px'; c.style.minWidth = newWidth + 'px'; c.style.maxWidth = newWidth + 'px'; });
-   }
-}
-}
-
-function onMouseUp() {
-if (resizingCol && resizingCol !== 'fullName') {
-   localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
-}
-resizingCol = null;
-document.removeEventListener('mousemove', onMouseMove);
-document.removeEventListener('mouseup', onMouseUp);
-document.removeEventListener('touchmove', onMouseMove);
-document.removeEventListener('touchend', onMouseUp);
-}
 
 let draggedColId = null;
 window.onColDragStart = function(e, colId) {
-if (resizingCol) {
-    e.preventDefault();
-    return;
-}
+
 draggedColId = colId;
 e.dataTransfer.effectAllowed = 'move';
 e.dataTransfer.setData('text/plain', colId);
@@ -544,21 +494,21 @@ data.sort((a, b) => {
 
 const thead = document.getElementById('rosterTableHead');
 let headHtml = `<tr>
-   <th class="py-1.5 px-2 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top sticky left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;" data-col-id="fullName">
+   <th class="py-1.5 px-2 relative bg-gray-100 dark:bg-gray-800 roster-col-fullName align-top sticky left-0 z-20 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]" style="min-width: 150px; max-width: 300px;" data-col-id="fullName">
        <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('fullName')">Full Name <span class="text-[10px]">↕</span></div>
-       <div class="resize-handle" onmousedown="initResize(event, 'fullName')" ontouchstart="initResize(event, 'fullName')"></div>
+       
    </th>`;
 
 rosterCols.forEach(c => {
    if (c.visible) {
        headHtml += `
        <th class="py-1.5 px-2 relative bg-gray-100 dark:bg-gray-800 roster-col-${c.id} align-top" 
-           style="width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px;" 
+           style="white-space: nowrap; padding-left: 12px; padding-right: 12px;" 
            data-col-id="${c.id}" draggable="true" 
            ondragstart="onColDragStart(event, '${c.id}')" ondragend="onColDragEnd(event)"
            ondragover="onColDragOver(event)" ondragleave="onColDragLeave(event)" ondrop="onColDrop(event, '${c.id}')">
            <div class="flex items-center gap-1 cursor-pointer hover:text-primary transition" onclick="quickSort('${c.id}')">${c.label} <span class="text-[10px]">↕</span></div>
-           <div class="resize-handle" onmousedown="initResize(event, '${c.id}')" ontouchstart="initResize(event, '${c.id}')"></div>
+           
        </th>`;
    }
 });
@@ -582,7 +532,7 @@ data.forEach(p => {
    if (p.passportExpiry) {
        const expD = new Date(p.passportExpiry);
        if (!isNaN(expD.getTime())) {
-           formattedExpiry = `${expD.getFullYear()}-${String(expD.getMonth()+1).padStart(2,'0')}-${String(expD.getDate()).padStart(2,'0')}`;
+           formattedExpiry = typeof formatDDMmmYYYY === 'function' ? formatDDMmmYYYY(p.passportExpiry) : p.passportExpiry;
            if (minExpiry && expD < minExpiry) {
                expiryHighlight = true;
            }
@@ -593,7 +543,7 @@ data.forEach(p => {
    if (p.dob) {
        const dD = new Date(p.dob);
        if (!isNaN(dD.getTime())) {
-           formattedDob = `${dD.getFullYear()}-${String(dD.getMonth()+1).padStart(2,'0')}-${String(dD.getDate()).padStart(2,'0')}`;
+           formattedDob = typeof formatDDMmmYYYY === 'function' ? formatDDMmmYYYY(p.dob) : p.dob;
        }
    }
 
@@ -602,14 +552,14 @@ data.forEach(p => {
 
    const nameClass = expiryHighlight ? 'text-red-600 dark:text-red-400 font-extrabold' : 'font-bold text-gray-900 dark:text-gray-100';
    const expClass = expiryHighlight 
-       ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded font-black border border-red-200 dark:border-red-800 shadow-sm whitespace-nowrap text-sm uppercase tracking-wider inline-block' 
+       ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1 py-0.5 rounded font-bold border border-red-200 dark:border-red-800 shadow-sm text-[11px] md:text-xs inline-block whitespace-nowrap' 
        : 'text-gray-800 dark:text-gray-200 whitespace-nowrap text-xs font-medium';
    
    const roleStr = p.role.substring(0, 3).toUpperCase();
    const roleColor = p.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (p.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
     
     html += `<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" data-nric="${p.nric}">
-       <td class="py-1.5 px-2 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="width: min(250px, 33vw); min-width: min(250px, 33vw); max-width: 33vw;">
+       <td class="py-1.5 px-2 align-top roster-col-fullName sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50" style="min-width: 150px; max-width: 300px;">
            <div class="${nameClass} text-xs md:text-sm leading-tight whitespace-normal break-words">${fullNameUpper}</div>
            ${shortNameUpper && shortNameUpper !== fullNameUpper ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium whitespace-normal break-words">${shortNameUpper}</div>` : ''}
            <div class="flex items-center gap-1 mt-1 flex-wrap">
@@ -621,8 +571,8 @@ data.forEach(p => {
        
    rosterCols.forEach(c => {
        if (c.visible) {
-           const styleStr = `style="width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px;"`;
-           const baseClass = `p-3 align-top roster-col-${c.id} text-xs font-medium text-gray-800 dark:text-gray-200 whitespace-normal break-words`;
+           const styleStr = ``;
+           const baseClass = `px-3 py-2 align-top roster-col-${c.id} text-xs font-medium text-gray-800 dark:text-gray-200 ${['address', 'medical', 'diet', 'otherPoints', 'pairings'].includes(c.id) ? 'whitespace-normal break-words min-w-[150px] max-w-[300px]' : 'whitespace-nowrap'}`;
            
            if (c.id === 'role') {
                html += `<td class="${baseClass}" ${styleStr}><span class="text-[11px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span></td>`;

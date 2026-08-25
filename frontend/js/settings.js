@@ -109,7 +109,7 @@ function buildSettingsUI() {
   <h3 class="text-sm font-black text-gray-900 dark:text-white mb-1 tracking-tight">Committee Members</h3>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3 mt-2">
   <input type="text" id="newCommName" placeholder="Full Name" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">
-  <input type="text" id="newCommNric" placeholder="NRIC/FIN" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md uppercase text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">
+  <input type="text" id="newCommNric" placeholder="NRIC/FIN" oninput="if(typeof isValidNRIC === 'function' && isValidNRIC(this.value)){ /* toast auto disappears anyway */ }" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md uppercase text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">
   <div class="flex space-x-2">
     <input type="tel" id="newCommPhone" placeholder="Phone" pattern="[0-9]{8}" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm">
     <button onclick="addCommittee(this)" class="bg-primary text-white px-3 py-2 text-xs rounded-md font-bold flex items-center shadow-sm shrink-0"><span class="btn-text">Add</span><div class="btn-spinner spinner-white hidden-force ml-1.5 !w-3 !h-3 border-2"></div></button>
@@ -478,6 +478,7 @@ async function addCommittee(btn) {
   const nric = document.getElementById('newCommNric').value.trim(); 
   const phone = document.getElementById('newCommPhone').value.trim(); 
   if(!nric || !name || !phone) return showToast("Name, NRIC, Phone required", true); 
+  if (typeof isValidNRIC === 'function' && !isValidNRIC(nric)) return showToast("Invalid NRIC/FIN.", true); 
   setBtnLoading(btn, true); 
   try { 
     const res = await apiCall('addCommittee', { nric, name, phone }); 

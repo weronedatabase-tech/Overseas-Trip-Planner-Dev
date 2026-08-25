@@ -892,7 +892,7 @@ if (financeConfig.finalOptionId) {
 
 let rowsHtml = '';
 activeReceipts.forEach(r => {
-    const dateStr = new Date(r.ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const dateStr = typeof formatDDMmmYYYY === 'function' ? formatDDMmmYYYY(r.ts) : new Date(r.ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const catName = optMap[r.categoryId] || 'Unknown Category';
     
     let uploaderName = r.uploaderNric;
