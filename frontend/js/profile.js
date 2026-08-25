@@ -327,16 +327,16 @@ return `<form id="uploadReceiptForm" onsubmit="submitReceipt(event)" class="flex
 </form>`;
 }
 
-async function submitReceipt(e) {
+async function submitReceipt(e, suffix = "") {
    e.preventDefault();
    const btn = e.target.querySelector('button[type="submit"]');
-   const err = document.getElementById('recError');
-   const succ = document.getElementById('recSuccess');
+   const err = document.getElementById('recError' + suffix);
+   const succ = document.getElementById('recSuccess' + suffix);
    err.classList.add('hidden-force');
    succ.classList.add('hidden-force');
 
-   const remarks = document.getElementById('recRemarks').value.trim();
-   const fileInput = document.getElementById('recFile');
+   const remarks = document.getElementById('recRemarks' + suffix).value.trim();
+   const fileInput = document.getElementById('recFile' + suffix);
    
    if(!fileInput.files.length) { err.textContent = "Please select a file."; return err.classList.remove('hidden-force'); }
    const file = fileInput.files[0];
@@ -394,7 +394,7 @@ async function submitReceipt(e) {
        renderMyReceiptsContainer();
    }
    showToast("Receipt uploaded successfully!");
-   document.getElementById('uploadReceiptForm').reset();
+   const frm = document.getElementById('uploadReceiptForm' + suffix); if(frm) frm.reset();
 } catch(e) {
    showToast(e.message, true);
 } finally {
@@ -430,6 +430,13 @@ return `
            </div>`
            : `<span class="text-xs font-bold text-red-500">Link unavailable</span>`
        }
+       <button onclick="document.getElementById('reuploadFormContainer').classList.toggle('hidden-force')" class="mt-6 text-xs text-primary font-bold hover:underline flex items-center gap-1">
+           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+           Incorrect file? Re-upload screenshot
+       </button>
+       <div id="reuploadFormContainer" class="hidden-force mt-4 w-full max-w-lg mx-auto bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-left">
+           ${generateReceiptFormHtml('_re')}
+       </div>
    </div>
 `;
 }
