@@ -336,7 +336,7 @@ btns.forEach(btn => {
 function triggerPairingSync() {
 setSyncButtonState('saving');
 if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
-pairingSyncTimeout = setTimeout(() => { executePairingSync(); }, 800); 
+pairingSyncTimeout = setTimeout(() => { executePairingSync(); }, 2500); 
 }
 
 async function executePairingSync() {
@@ -744,7 +744,7 @@ if(room) {
     pendingRoomUpdates.set(roomId, room);
     setRoomSyncButtonState('saving');
     if(roomSyncTimeout) clearTimeout(roomSyncTimeout);
-    roomSyncTimeout = setTimeout(() => { executeRoomSync(); }, 1500);
+    roomSyncTimeout = setTimeout(() => { executeRoomSync(); }, 2500);
 }
 }
 
@@ -1071,7 +1071,8 @@ function renderGroups() {
         let match = false;
         if (query) {
             const dName = (p.displayName || p.name).toLowerCase();
-            match = dName.includes(query) || p.nric.toLowerCase().includes(query) || pGroup.toLowerCase().includes(query);
+            const fullName = (p.name || '').toLowerCase();
+            match = dName.includes(query) || fullName.includes(query) || p.nric.toLowerCase().includes(query) || pGroup.toLowerCase().includes(query);
         } else {
             match = true;
         }
@@ -1151,7 +1152,8 @@ function renderBuses() {
         let match = false;
         if (query) {
             const dName = (p.displayName || p.name).toLowerCase();
-            match = dName.includes(query) || p.nric.toLowerCase().includes(query) || pBus.toLowerCase().includes(query);
+            const fullName = (p.name || '').toLowerCase();
+            match = dName.includes(query) || fullName.includes(query) || p.nric.toLowerCase().includes(query) || pBus.toLowerCase().includes(query);
         } else {
             match = true;
         }
@@ -1424,13 +1426,13 @@ async function manualSyncBuses() {
 let groupSyncTimeout = null;
 function triggerGroupSync() {
     if (groupSyncTimeout) clearTimeout(groupSyncTimeout);
-    groupSyncTimeout = setTimeout(executeGroupSync, 800);
+    groupSyncTimeout = setTimeout(executeGroupSync, 2500);
 }
 
 let busSyncTimeout = null;
 function triggerBusSync() {
     if (busSyncTimeout) clearTimeout(busSyncTimeout);
-    busSyncTimeout = setTimeout(executeBusSync, 800);
+    busSyncTimeout = setTimeout(executeBusSync, 2500);
 }
 
 async function executeGroupSync() {
@@ -1584,7 +1586,8 @@ const query = document.getElementById('pairingSearchInput') ? document.getElemen
 if (query) {
     const matchFn = (p) => {
         const dName = (p.displayName || p.name).toLowerCase();
-        return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+        const fullName = (p.name || '').toLowerCase();
+        return dName.includes(query) || fullName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
     };
     sourceArr = sourceArr.filter(matchFn);
     targetArr = targetArr.filter(matchFn);
@@ -1635,7 +1638,8 @@ let filteredUnassigned = unassignedArr;
 if (query) {
     filteredUnassigned = unassignedArr.filter(p => {
         const dName = (p.displayName || p.name).toLowerCase();
-        return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+        const fullName = (p.name || '').toLowerCase();
+        return dName.includes(query) || fullName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
     });
 }
 
@@ -1671,7 +1675,8 @@ if (query) {
             const p = globalLogistics.participants.find(x => x.nric === nric);
             if (!p) return false;
             const dName = (p.displayName || p.name).toLowerCase();
-            return dName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+            const fullName = (p.name || '').toLowerCase();
+            return dName.includes(query) || fullName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
         });
     });
 }
@@ -1689,7 +1694,8 @@ roomsToRender.forEach(room => {
             const dynColor = getProjectColor(p.group);
             let isMatch = false;
             if (query) {
-                isMatch = dName.toLowerCase().includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
+                const fullName = (p.name || '').toLowerCase();
+                isMatch = dName.toLowerCase().includes(query) || fullName.includes(query) || p.nric.toLowerCase().includes(query) || p.group.toLowerCase().includes(query);
             }
             const matchClass = isMatch ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800 scale-105 z-10' : '';
             
@@ -1790,8 +1796,9 @@ targets.forEach(t => {
     const roleLabel = t.role === 'VOLUNTEER' ? 'Volunteer' : 'Trainee';
     const roleColor = t.role === 'VOLUNTEER' ? 'text-orange-700 bg-orange-100 dark:bg-orange-900/50 border-orange-200 dark:border-orange-800' : 'text-green-700 bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800';
     const dName = t.displayName || t.name;
+    const fullName = (t.name || '').toLowerCase();
 
-    html += `<div onclick="confirmPairing('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">
+    html += `<div onclick="confirmPairing('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}" data-fullname="${fullName}">
     <div class="flex justify-between items-start w-full gap-2">
         <span class="font-extrabold text-sm md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]">${dName}</span>
         <span class="text-[11px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${roleLabel}</span>
@@ -1822,8 +1829,9 @@ unassignedArr.forEach(t => {
     const tDynColor = getProjectColor(t.group);
     const roleColor = t.role === 'TRAINEE' ? 'text-green-700 bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800' : (t.role === 'CAREGIVER' ? 'text-purple-700 bg-purple-100 dark:bg-purple-900/50 border-purple-200 dark:border-purple-800' : 'text-orange-700 bg-orange-100 dark:bg-orange-900/50 border-orange-200 dark:border-orange-800');
     const dName = t.displayName || t.name;
+    const fullName = (t.name || '').toLowerCase();
 
-    html += `<div onclick="confirmRoomAdd('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}">
+    html += `<div onclick="confirmRoomAdd('${t.nric}')" class="sheet-list-item flex flex-col bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer hover:border-primary transition mb-1.5" data-name="${dName.toLowerCase()}" data-fullname="${fullName}">
     <div class="flex justify-between items-start w-full gap-2">
         <span class="font-extrabold text-sm md:text-xs px-1.5 py-0.5 rounded shadow-sm border ${tDynColor} break-words whitespace-normal min-w-0 flex-1 text-left leading-[1.1]">${dName}</span>
         <span class="text-[11px] font-black ${roleColor} border px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap uppercase tracking-wider">${t.role.substring(0,3)}</span>
@@ -1834,12 +1842,15 @@ document.getElementById('sheetListContainer').innerHTML = html || `<p class="tex
 }
 
 function filterBottomSheet() {
-const query = document.getElementById('sheetSearchInput').value.toLowerCase();
-const items = document.querySelectorAll('.sheet-list-item');
-items.forEach(item => {
-    if (item.dataset.name.includes(query)) item.classList.remove('hidden-force');
-    else item.classList.add('hidden-force');
-});
+    const query = document.getElementById('sheetSearchInput').value.toLowerCase();
+    const items = document.querySelectorAll('.sheet-list-item');
+    items.forEach(item => {
+        if (item.dataset.name.includes(query) || (item.dataset.fullname && item.dataset.fullname.includes(query))) {
+            item.classList.remove('hidden-force');
+        } else {
+            item.classList.add('hidden-force');
+        }
+    });
 }
 
 

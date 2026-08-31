@@ -848,10 +848,9 @@ if(occChanged) {
 
 if(dataChanged) sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
-// Atomic Write-Through Cache
-fetchRoomsOnly(true);
-fetchLogistics(true);
-
+// Clear cache instead of forcing a full sync fetch
+removeLargeCache(getCacheKey('ROOMS'));
+removeLargeCache(getCacheKey('LOGISTICS'));
 return fetchRoomsOnly();
 } catch (e) { return { status: 'error', message: e.message }; }
 finally { lock.releaseLock(); }
@@ -1472,33 +1471,27 @@ else if (column === 'bus') colIndex = 24;
 else if (column === 'logisticsGroup') colIndex = 25;
 let dataChanged = false;
 
-// Ensure all rows are at least colIndex + 1 in length
 const targetLength = Math.max(data[0].length, colIndex + 1);
-for (let i = 0; i < data.length; i++) {
-    while (data[i].length < targetLength) {
-        data[i].push("");
-    }
+if (sheet.getMaxColumns() < targetLength) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), targetLength - sheet.getMaxColumns());
 }
 
 updates.forEach(u => {
   if (existingMap[u.nric] !== undefined) {
     const rowIndex = existingMap[u.nric];
     if (data[rowIndex][colIndex] !== u.value) {
-        data[rowIndex][colIndex] = u.value || '';
+        // Target only the specific cell to update
+        sheet.getRange(rowIndex + 1, colIndex + 1).setValue(u.value || '');
         dataChanged = true;
     }
   }
 });
 
 if (dataChanged) {
-  if (sheet.getMaxColumns() < targetLength) {
-      sheet.insertColumnsAfter(sheet.getMaxColumns(), targetLength - sheet.getMaxColumns());
-  }
-  sheet.getRange(1, 1, data.length, targetLength).setValues(data);
   SpreadsheetApp.flush();
   removeLargeCache(getCacheKey('ROSTER'));
   removeLargeCache(getCacheKey('LOGISTICS'));
-  precomputeAppCache();
+  // Removed precomputeAppCache() for faster async resolution
 }
 return { status: 'success' };
 

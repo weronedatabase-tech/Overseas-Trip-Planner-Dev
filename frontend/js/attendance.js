@@ -302,7 +302,8 @@ const participants = globalLogistics.participants.filter(p => {
         if (!assignment.includes('::') && p.group !== assignment) return false;
     }
     const dName = p.displayName || p.name || '';
-    return dName.toLowerCase().includes(query);
+    const fullName = p.name || '';
+    return dName.toLowerCase().includes(query) || fullName.toLowerCase().includes(query);
 });
 
 let html = '';
