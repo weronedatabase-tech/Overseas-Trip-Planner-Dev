@@ -113,16 +113,6 @@ if(savedAttJuncture && appSettings.junctures && appSettings.junctures.includes(s
   juncSel.value = savedAttJuncture;
 }
 
-const asgnSel = document.getElementById('attAssignmentSelect');
-asgnSel.innerHTML = `<option value="ALL">All Participants</option>`;
-if(appSettings.activeProjects && appSettings.activeProjects.length > 0) {
-  appSettings.activeProjects.forEach(g => asgnSel.innerHTML += `<option value="${g}">${g}</option>`);
-}
-
-if(savedAttAssignment && (savedAttAssignment === 'ALL' || (appSettings.activeProjects && appSettings.activeProjects.includes(savedAttAssignment)))) {
-  asgnSel.value = savedAttAssignment;
-}
-
 // Pre-fetch global logistics if null
 if(!globalLogistics) {
     try {
@@ -131,6 +121,60 @@ if(!globalLogistics) {
         if (typeof processDisplayNames === "function") processDisplayNames(globalLogistics.participants);
         if (typeof applyGlobalSorting === "function") globalLogistics.participants = applyGlobalSorting(globalLogistics.participants);
     } catch(e) {}
+}
+
+const asgnSel = document.getElementById('attAssignmentSelect');
+asgnSel.innerHTML = `<option value="ALL">All Participants</option>`;
+
+// Populate Projects
+if(appSettings.activeProjects && appSettings.activeProjects.length > 0) {
+    const projGroup = document.createElement('optgroup');
+    projGroup.label = 'Projects';
+    appSettings.activeProjects.forEach(g => {
+        projGroup.innerHTML += `<option value="PROJ::${g}">${g}</option>`;
+    });
+    asgnSel.appendChild(projGroup);
+}
+
+// Populate Logistics Groups and Buses
+if (globalLogistics && globalLogistics.participants) {
+    const groups = new Set();
+    const buses = new Set();
+    globalLogistics.participants.forEach(p => {
+        if (p.logisticsGroup && p.logisticsGroup.trim()) groups.add(p.logisticsGroup.trim());
+        if (p.bus && p.bus.trim()) buses.add(p.bus.trim());
+    });
+    
+    if (groups.size > 0) {
+        const grpGroup = document.createElement('optgroup');
+        grpGroup.label = 'Groups';
+        Array.from(groups).sort().forEach(g => {
+            grpGroup.innerHTML += `<option value="GRP::${g}">${g}</option>`;
+        });
+        asgnSel.appendChild(grpGroup);
+    }
+    
+    if (buses.size > 0) {
+        const busGroup = document.createElement('optgroup');
+        busGroup.label = 'Buses';
+        Array.from(buses).sort().forEach(b => {
+            busGroup.innerHTML += `<option value="BUS::${b}">${b}</option>`;
+        });
+        asgnSel.appendChild(busGroup);
+    }
+}
+
+if(savedAttAssignment) {
+    // Need to handle legacy savedAttAssignment (without prefix)
+    let finalValue = savedAttAssignment;
+    if (savedAttAssignment !== 'ALL' && !savedAttAssignment.includes('::')) {
+        finalValue = 'PROJ::' + savedAttAssignment;
+    }
+    
+    // Check if the option exists
+    if (asgnSel.querySelector(`option[value="${finalValue}"]`)) {
+        asgnSel.value = finalValue;
+    }
 }
 
 await changeAttendanceContext();
@@ -189,7 +233,13 @@ let checkedHtml = '';
 let notCheckedCount = 0;
 let checkedCount = 0;
 
-const participants = globalLogistics.participants.filter(p => assignment === 'ALL' || p.group === assignment);
+const participants = globalLogistics.participants.filter(p => {
+    if (assignment === 'ALL') return true;
+    if (assignment.startsWith('PROJ::')) return p.group === assignment.split('::')[1];
+    if (assignment.startsWith('GRP::')) return p.logisticsGroup === assignment.split('::')[1];
+    if (assignment.startsWith('BUS::')) return p.bus === assignment.split('::')[1];
+    return p.group === assignment;
+});
 
 participants.forEach(p => {
   const stateObj = attendanceState[p.nric];
@@ -245,9 +295,14 @@ if(!query) {
 
 const assignment = document.getElementById('attAssignmentSelect').value;
 const participants = globalLogistics.participants.filter(p => {
-  if(assignment !== 'ALL' && p.group !== assignment) return false;
-  const dName = p.displayName || p.name || '';
-  return dName.toLowerCase().includes(query);
+    if (assignment !== 'ALL') {
+        if (assignment.startsWith('PROJ::') && p.group !== assignment.split('::')[1]) return false;
+        if (assignment.startsWith('GRP::') && p.logisticsGroup !== assignment.split('::')[1]) return false;
+        if (assignment.startsWith('BUS::') && p.bus !== assignment.split('::')[1]) return false;
+        if (!assignment.includes('::') && p.group !== assignment) return false;
+    }
+    const dName = p.displayName || p.name || '';
+    return dName.toLowerCase().includes(query);
 });
 
 let html = '';
