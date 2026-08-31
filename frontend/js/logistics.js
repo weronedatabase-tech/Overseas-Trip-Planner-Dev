@@ -221,6 +221,21 @@ function endDrag(e, clientX, clientY) {
                 const targetRoomId = roomDropZone.dataset.roomId;
                 if (sourceNric && targetRoomId) handleRoomDrop(sourceNric, targetRoomId);
             }
+        } else if (dndState.type === 'grouping') {
+            const groupDropZone = elAtPoint ? elAtPoint.closest('.dnd-group-dropzone') : null;
+            if (groupDropZone && dndState.el) {
+                const sourceNric = dndState.el.dataset.nric;
+                // If it's the unassigned pool, dropZone.dataset.group will be undefined or empty
+                const targetGroup = groupDropZone.id === 'groupUnassignedPool' ? '' : groupDropZone.dataset.group;
+                if (sourceNric && typeof targetGroup !== 'undefined') handleGroupDrop(sourceNric, targetGroup);
+            }
+        } else if (dndState.type === 'busing') {
+            const busDropZone = elAtPoint ? elAtPoint.closest('.dnd-bus-dropzone') : null;
+            if (busDropZone && dndState.el) {
+                const sourceNric = dndState.el.dataset.nric;
+                const targetBus = busDropZone.id === 'busUnassignedPool' ? '' : busDropZone.dataset.bus;
+                if (sourceNric && typeof targetBus !== 'undefined') handleBusDrop(sourceNric, targetBus);
+            }
         }
     }
     dndState.el = null;
@@ -912,9 +927,7 @@ document.getElementById('tab-logistics').innerHTML = `
                     <span class="whitespace-nowrap">Rooms</span>
                 </button>
                 <button onclick="autoAssignRooms()" class="bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 text-[11px] md:text-xs font-bold px-1.5 py-1 md:px-2 md:py-1.5 rounded shadow-sm hover:bg-green-100 transition focus:outline-none whitespace-nowrap">Auto-Room</button>
-                <button onclick="addRoom()" class="bg-gray-100 dark:bg-gray-800 p-1 md:p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none border border-gray-200 dark:border-gray-700 shadow-sm shrink-0" title="Add Room(s)">
-                    <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                </button>
+                
             </div>
             <button id="btn-sync-rooms" onclick="manualSyncRooms(this)" class="text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
                 <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
@@ -939,7 +952,11 @@ document.getElementById('tab-logistics').innerHTML = `
             <h4 class="font-black text-xs py-1.5 shrink-0 text-center uppercase tracking-widest bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">Unassigned (<span id="unassignedCount">0</span>)</h4>
             <div id="roomUnassignedPool" class="space-y-1.5 flex-grow overflow-y-auto p-1.5 custom-scrollbar pb-6"></div>
         </div>
-        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden transition-colors bg-white dark:bg-gray-950">
+            <div class="flex items-center justify-between px-2 py-1.5 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Assigned Rooms</span>
+                <button onclick="openManageRoomsSheet()" class="px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition focus:outline-none"><i class="fa-solid fa-cog mr-1"></i>Manage</button>
+            </div>
             <div id="roomListContainer" class="flex-grow overflow-y-auto p-1.5 md:p-2 custom-scrollbar flex flex-col gap-2 md:gap-3 pb-6"></div>
         </div>
     </div>
@@ -959,8 +976,8 @@ document.getElementById('tab-logistics').innerHTML = `
                     <span class="whitespace-nowrap">Clear</span>
                 </button>
             </div>
-            <button onclick="manualSyncGroups(this)" class="btn-sync-groups text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
-                <span class="btn-text">Saved</span><i class="fa-solid fa-circle-notch fa-spin btn-spinner hidden ml-1"></i>
+            <button onclick="manualSyncGroups()" class="btn-sync-groups text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+                <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
             </button>
         </div>
         <div class="relative w-full flex items-center gap-2">
@@ -999,8 +1016,8 @@ document.getElementById('tab-logistics').innerHTML = `
                     <span class="whitespace-nowrap">Clear</span>
                 </button>
             </div>
-            <button onclick="manualSyncBuses(this)" class="btn-sync-buses text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
-                <span class="btn-text">Saved</span><i class="fa-solid fa-circle-notch fa-spin btn-spinner hidden ml-1"></i>
+            <button onclick="manualSyncBuses()" class="btn-sync-buses text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 focus:outline-none shrink-0">
+                <span class="btn-text">Saved</span><div class="btn-spinner ml-1 !w-3 !h-3 hidden-force"></div>
             </button>
         </div>
         <div class="relative w-full flex items-center gap-2">
@@ -1352,10 +1369,56 @@ function resetBusAssignments() {
 }
 
 async function manualSyncGroups() {
-    if (pendingGroupUpdates.size > 0) await executeGroupSync();
+    if (pendingGroupUpdates.size > 0) {
+        await executeGroupSync();
+    }
+    setGroupSyncButtonState('loading');
+    try {
+        const res = await apiCall('fetchLogistics');
+        if (res.participants) {
+            let hasChanges = false;
+            res.participants.forEach(sPart => {
+                if (!pendingGroupUpdates.has(sPart.nric)) {
+                    let lPart = globalLogistics.participants.find(p => p.nric === sPart.nric);
+                    if (lPart && lPart.logisticsGroup !== sPart.logisticsGroup) {
+                        lPart.logisticsGroup = sPart.logisticsGroup;
+                        hasChanges = true;
+                    }
+                }
+            });
+            if (hasChanges) renderGroups();
+        }
+        setGroupSyncButtonState('saved');
+        showToast("Groups refreshed from server!");
+    } catch (err) {
+        setGroupSyncButtonState('error');
+    }
 }
 async function manualSyncBuses() {
-    if (pendingBusUpdates.size > 0) await executeBusSync();
+    if (pendingBusUpdates.size > 0) {
+        await executeBusSync();
+    }
+    setBusSyncButtonState('loading');
+    try {
+        const res = await apiCall('fetchLogistics');
+        if (res.participants) {
+            let hasChanges = false;
+            res.participants.forEach(sPart => {
+                if (!pendingBusUpdates.has(sPart.nric)) {
+                    let lPart = globalLogistics.participants.find(p => p.nric === sPart.nric);
+                    if (lPart && lPart.bus !== sPart.bus) {
+                        lPart.bus = sPart.bus;
+                        hasChanges = true;
+                    }
+                }
+            });
+            if (hasChanges) renderBuses();
+        }
+        setBusSyncButtonState('saved');
+        showToast("Buses refreshed from server!");
+    } catch (err) {
+        setBusSyncButtonState('error');
+    }
 }
 
 let groupSyncTimeout = null;
@@ -1373,10 +1436,14 @@ function triggerBusSync() {
 async function executeGroupSync() {
     if (isGroupSyncing || pendingGroupUpdates.size === 0) return;
     isGroupSyncing = true;
+    setGroupSyncButtonState('saving');
     const batch = Array.from(pendingGroupUpdates.values());
     pendingGroupUpdates.clear();
     try {
         await apiCall('syncAssignments', { updates: batch, column: 'logisticsGroup' });
+        setGroupSyncButtonState('saved');
+    } catch (err) {
+        setGroupSyncButtonState('error');
     } finally {
         isGroupSyncing = false;
         if (pendingGroupUpdates.size > 0) triggerGroupSync();
@@ -1386,10 +1453,14 @@ async function executeGroupSync() {
 async function executeBusSync() {
     if (isBusSyncing || pendingBusUpdates.size === 0) return;
     isBusSyncing = true;
+    setBusSyncButtonState('saving');
     const batch = Array.from(pendingBusUpdates.values());
     pendingBusUpdates.clear();
     try {
         await apiCall('syncAssignments', { updates: batch, column: 'bus' });
+        setBusSyncButtonState('saved');
+    } catch (err) {
+        setBusSyncButtonState('error');
     } finally {
         isBusSyncing = false;
         if (pendingBusUpdates.size > 0) triggerBusSync();
@@ -1878,7 +1949,13 @@ function openBusAssignSheet(nric) {
 
 function renderGroupBusOptions() {
     const query = document.getElementById('sheetSearchInput').value.toLowerCase().trim();
-    const list = activeAssignType === 'group' ? activeGroupsList : activeBusesList;
+    let list = [];
+    if (activeAssignType === 'group') list = activeGroupsList;
+    else if (activeAssignType === 'bus') list = activeBusesList;
+    else if (activeAssignType === 'room') {
+        const activeRooms = (globalLogistics.rooms || []).filter(r => !r.isDeleted);
+        list = activeRooms.map(r => ({ id: r.id, name: r.name, ts: r.ts })).sort((a,b) => a.name.localeCompare(b.name));
+    }
     
     let html = `<div class="flex flex-col gap-2">`;
     
@@ -1891,11 +1968,15 @@ function renderGroupBusOptions() {
     }
     
     list.forEach(item => {
-        if (query && !item.toLowerCase().includes(query)) return;
+        let nameStr = activeAssignType === 'room' ? item.name : item;
+        let idVal = activeAssignType === 'room' ? item.id : item;
+        
+        if (query && !nameStr.toLowerCase().includes(query)) return;
+        
         html += `
-        <div class="sheet-list-item p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between transition hover:bg-gray-50 dark:hover:bg-gray-750" data-name="${item.toLowerCase()}">
-            <div class="cursor-pointer flex-1 font-bold text-gray-900 dark:text-white text-sm" onclick="selectGroupBusOption('${item}')">${activeAssignType === 'group' ? 'Group ' : 'Bus '}${item}</div>
-            <button onclick="removeGroupBusFromPopup('${item}')" class="text-red-500 hover:text-red-600 p-2 -mr-2"><i class="fa-solid fa-trash text-sm"></i></button>
+        <div class="sheet-list-item p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between transition hover:bg-gray-50 dark:hover:bg-gray-750" data-name="${nameStr.toLowerCase()}">
+            <div class="cursor-pointer flex-1 font-bold text-gray-900 dark:text-white text-sm" onclick="selectGroupBusOption('${idVal}')">${activeAssignType === 'group' ? 'Group ' : (activeAssignType === 'bus' ? 'Bus ' : 'Room ')}${nameStr}</div>
+            <button onclick="${activeAssignType === 'room' ? `deleteRoom('${idVal}')` : `removeGroupBusFromPopup('${idVal}')`}" class="text-red-500 hover:text-red-600 p-2 -mr-2"><i class="fa-solid fa-trash text-sm"></i></button>
         </div>`;
     });
     
@@ -1914,13 +1995,31 @@ function selectGroupBusOption(value) {
     if (!activeAssignNric) return;
     if (activeAssignType === 'group') {
         handleGroupDrop(activeAssignNric, value);
-    } else {
+    } else if (activeAssignType === 'bus') {
         handleBusDrop(activeAssignNric, value);
+    } else if (activeAssignType === 'room') {
+        if (value === "") { // Handle unassign
+            globalLogistics.rooms.forEach(r => {
+                if(!r.isDeleted && r.occupants.includes(activeAssignNric)) {
+                    r.occupants = r.occupants.filter(n => n !== activeAssignNric);
+                    r.ts = Date.now();
+                    queueRoomUpdate(r.id);
+                }
+            });
+            renderRooms();
+        } else {
+            handleRoomDrop(activeAssignNric, value);
+        }
     }
     closeSelectionSheet();
 }
 
 function addGroupBusFromPopup() {
+    if (activeAssignType === 'room') {
+        addRoom();
+        renderGroupBusOptions();
+        return;
+    }
     const typeName = activeAssignType === 'group' ? 'Group' : 'Bus';
     const name = prompt(`Enter new ${typeName} name:`);
     if (!name || !name.trim()) return;
@@ -2005,3 +2104,65 @@ function removeBusList(bName) {
     removeGroupBusFromPopup(bName);
 }
 
+
+function openManageRoomsSheet() {
+    activeAssignNric = null; // No assignment
+    activeAssignType = 'room';
+    document.getElementById('sheetTitle').innerHTML = `Manage <span class="text-primary">Rooms</span>`;
+    const searchInput = document.getElementById('sheetSearchInput');
+    if(searchInput) searchInput.value = '';
+    renderGroupBusOptions();
+    document.getElementById('selectionBottomSheet').classList.remove('hidden-force');
+}
+
+function setGroupSyncButtonState(state) {
+    const btn = document.querySelector('.btn-sync-groups');
+    if(!btn) return;
+    const textSpan = btn.querySelector('.btn-text'); 
+    const spinner = btn.querySelector('.btn-spinner');
+    btn.className = "btn-sync-groups text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
+    spinner.className = "btn-spinner ml-1 !w-3 !h-3 hidden-force"; 
+    if (state === 'loading') { 
+        btn.classList.add('bg-gray-100', 'text-gray-500', 'border-gray-200', 'dark:bg-gray-800', 'dark:text-gray-400', 'dark:border-gray-700'); 
+        textSpan.textContent = "Loading..."; 
+        spinner.classList.remove('hidden-force', 'hidden'); 
+        spinner.classList.add('spinner-primary'); 
+    } else if(state === 'saving') { 
+        btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); 
+        textSpan.textContent = "Saving..."; 
+        spinner.classList.remove('hidden-force', 'hidden'); 
+        spinner.classList.add('spinner-yellow'); 
+    } else if (state === 'saved') { 
+        btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); 
+        textSpan.textContent = "Saved"; 
+    } else if (state === 'error') { 
+        btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); 
+        textSpan.textContent = "Error"; 
+    }
+}
+
+function setBusSyncButtonState(state) {
+    const btn = document.querySelector('.btn-sync-buses');
+    if(!btn) return;
+    const textSpan = btn.querySelector('.btn-text'); 
+    const spinner = btn.querySelector('.btn-spinner');
+    btn.className = "btn-sync-buses text-xs md:text-xs px-2 py-1 rounded-md font-bold transition flex items-center justify-center border shadow-sm focus:outline-none shrink-0"; 
+    spinner.className = "btn-spinner ml-1 !w-3 !h-3 hidden-force"; 
+    if (state === 'loading') { 
+        btn.classList.add('bg-gray-100', 'text-gray-500', 'border-gray-200', 'dark:bg-gray-800', 'dark:text-gray-400', 'dark:border-gray-700'); 
+        textSpan.textContent = "Loading..."; 
+        spinner.classList.remove('hidden-force', 'hidden'); 
+        spinner.classList.add('spinner-primary'); 
+    } else if(state === 'saving') { 
+        btn.classList.add('bg-yellow-50', 'text-yellow-700', 'border-yellow-200', 'dark:bg-yellow-900/30', 'dark:text-yellow-300', 'dark:border-yellow-800'); 
+        textSpan.textContent = "Saving..."; 
+        spinner.classList.remove('hidden-force', 'hidden'); 
+        spinner.classList.add('spinner-yellow'); 
+    } else if (state === 'saved') { 
+        btn.classList.add('bg-green-50', 'text-green-700', 'border-green-200', 'dark:bg-green-900/30', 'dark:text-green-300', 'dark:border-green-800'); 
+        textSpan.textContent = "Saved"; 
+    } else if (state === 'error') { 
+        btn.classList.add('bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-800'); 
+        textSpan.textContent = "Error"; 
+    }
+}
