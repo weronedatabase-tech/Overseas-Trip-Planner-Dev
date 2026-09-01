@@ -261,7 +261,13 @@ let traineeNric = sourceRole === 'TRAINEE' ? sourceNric : targetNric;
 // Group Constraint Check
 let vPerson = globalLogistics.participants.find(p => p.nric === volNric);
 let tPerson = globalLogistics.participants.find(p => p.nric === traineeNric);
-if (vPerson && tPerson && vPerson.group && tPerson.group && vPerson.group !== tPerson.group) {
+let vGroup = (vPerson && vPerson.group) ? String(vPerson.group).trim().toLowerCase() : "";
+let tGroup = (tPerson && tPerson.group) ? String(tPerson.group).trim().toLowerCase() : "";
+let unassignedVals = ["", "-", "na", "n/a", "none", "unassigned"];
+let isVUnassigned = unassignedVals.includes(vGroup);
+let isTUnassigned = unassignedVals.includes(tGroup);
+
+if (vPerson && tPerson && !isVUnassigned && !isTUnassigned && vGroup !== tGroup) {
     showToast("Cannot pair: Trainee and Volunteer must be in the same group, or one must be unassigned.", true);
     return;
 }
@@ -1863,7 +1869,13 @@ const volNric = currentPairingSourceRole === 'TRAINEE' ? targetNric : currentPai
 // Group Constraint Check
 let vPerson = globalLogistics.participants.find(p => p.nric === volNric);
 let tPerson = globalLogistics.participants.find(p => p.nric === traineeNric);
-if (vPerson && tPerson && vPerson.group && tPerson.group && vPerson.group !== tPerson.group) {
+let vGroup = (vPerson && vPerson.group) ? String(vPerson.group).trim().toLowerCase() : "";
+let tGroup = (tPerson && tPerson.group) ? String(tPerson.group).trim().toLowerCase() : "";
+let unassignedVals = ["", "-", "na", "n/a", "none", "unassigned"];
+let isVUnassigned = unassignedVals.includes(vGroup);
+let isTUnassigned = unassignedVals.includes(tGroup);
+
+if (vPerson && tPerson && !isVUnassigned && !isTUnassigned && vGroup !== tGroup) {
     showToast("Cannot pair: Trainee and Volunteer must be in the same group, or one must be unassigned.", true);
     closeSelectionSheet();
     return;
