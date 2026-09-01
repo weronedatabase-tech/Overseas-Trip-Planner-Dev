@@ -139,7 +139,7 @@ updates.forEach(u => {
 
 if (dataChanged) {
   sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
-}\n  SpreadsheetApp.flush();
+  SpreadsheetApp.flush();
   removeLargeCache(getCacheKey('ROSTER'));
   removeLargeCache(getCacheKey('LOGISTICS'));
   // Removed precomputeAppCache() for faster async resolution
