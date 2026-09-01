@@ -336,7 +336,7 @@ btns.forEach(btn => {
 function triggerPairingSync() {
 setSyncButtonState('saving');
 if (pairingSyncTimeout) clearTimeout(pairingSyncTimeout);
-pairingSyncTimeout = setTimeout(() => { executePairingSync(); }, 600); 
+pairingSyncTimeout = setTimeout(() => { executePairingSync(); }, 2500); 
 }
 
 async function executePairingSync() {
@@ -744,7 +744,7 @@ if(room) {
     pendingRoomUpdates.set(roomId, room);
     setRoomSyncButtonState('saving');
     if(roomSyncTimeout) clearTimeout(roomSyncTimeout);
-    roomSyncTimeout = setTimeout(() => { executeRoomSync(); }, 600);
+    roomSyncTimeout = setTimeout(() => { executeRoomSync(); }, 2500);
 }
 }
 
@@ -1425,16 +1425,14 @@ async function manualSyncBuses() {
 
 let groupSyncTimeout = null;
 function triggerGroupSync() {
-    setGroupSyncButtonState('saving');
     if (groupSyncTimeout) clearTimeout(groupSyncTimeout);
-    groupSyncTimeout = setTimeout(executeGroupSync, 600);
+    groupSyncTimeout = setTimeout(executeGroupSync, 2500);
 }
 
 let busSyncTimeout = null;
 function triggerBusSync() {
-    setBusSyncButtonState('saving');
     if (busSyncTimeout) clearTimeout(busSyncTimeout);
-    busSyncTimeout = setTimeout(executeBusSync, 600);
+    busSyncTimeout = setTimeout(executeBusSync, 2500);
 }
 
 async function executeGroupSync() {
