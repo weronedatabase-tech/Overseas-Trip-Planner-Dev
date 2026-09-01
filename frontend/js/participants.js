@@ -69,12 +69,12 @@ document.getElementById('tab-participants').innerHTML = `
            </button>
        </div>
        <div class="flex items-center gap-2">
-           <select onchange="if(this.value) window.location.href=this.value" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs md:text-xs font-bold px-2.5 py-1.5 rounded-md hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer shrink-0">
-               <option value="" disabled selected>Custom Views</option>
-               <option value="medical.html">Medical</option>
-               <option value="diet.html">Dietary</option>
-               <option value="expired.html">Expired Passports</option>
-               <option value="other.html">Other Notes</option>
+           <select onchange="if(this.value) window.location.href=this.value" class="bg-primary text-white border border-transparent text-xs md:text-sm font-black px-3 py-1.5 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 dark:focus:ring-offset-gray-900 shadow-md cursor-pointer shrink-0 transition">
+               <option value="" disabled selected class="bg-white dark:bg-gray-800 text-gray-400">Custom Views</option>
+               <option value="medical.html" class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Medical</option>
+               <option value="diet.html" class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Dietary</option>
+               <option value="expired.html" class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Expired Passports</option>
+               <option value="other.html" class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Other Notes</option>
            </select>
            <button onclick="loadParticipantsData()" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none shadow-sm" title="Refresh Roster">
                <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
