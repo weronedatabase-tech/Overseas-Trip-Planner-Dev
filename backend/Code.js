@@ -201,6 +201,7 @@ case 'removeProjectGroup': result = modifyProjectGroups(data.groupName, false, d
 case 'modifyJunctures': result = modifyJunctures(data.actionType, data.oldName, data.newName); break;
 case 'saveSortingRules': result = saveSortingRules(data.rules, data.callerNric); break;
 case 'saveTripSettings': result = saveTripSettings(data.title, data.year, data.start, data.end); break;
+case 'clearCache': result = clearGlobalCache(); break;
 case 'fetchAdminRoster': result = fetchAdminRoster(); break;
 case 'adminUpdateParticipant': result = updateProfile(data.member, true); break;
 case 'deleteParticipant': result = deleteParticipant(data.nric); break;
@@ -1560,4 +1561,11 @@ function forceMigratePocNric() {
   removeLargeCache(getCacheKey('ROSTER'));
   removeLargeCache(getCacheKey('LOGISTICS'));
   return changes;
+}
+
+
+function clearGlobalCache() {
+  const cacheKeys = ['ROSTER', 'LOGISTICS', 'ROOMS', 'FINANCE', 'RECEIPTS', 'MINUTES'];
+  cacheKeys.forEach(k => removeLargeCache(getCacheKey(k)));
+  return { status: 'success' };
 }

@@ -132,7 +132,7 @@ async function showParticipantSummaryModal(nric) {
     modal.id = 'globalParticipantModal';
     modal.className = 'fixed inset-0 bg-black/60 z-[110] flex justify-center items-center p-4 backdrop-blur-sm hidden-force overflow-y-auto';
     modal.innerHTML = `
-      <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200 dark:border-gray-700 animate-slide-up flex flex-col overflow-hidden my-auto">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-3xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-slide-up flex flex-col overflow-hidden my-auto">
         <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 shrink-0 bg-gray-50 dark:bg-gray-900/50">
           <h3 class="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
             <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -216,6 +216,44 @@ async function showParticipantSummaryModal(nric) {
 
 
     const mRoleColor = m.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
+    
+    let logRoom = 'None';
+    let logGroup = m.logisticsGroup || 'None';
+    let logBus = m.bus || 'None';
+    let logPairing = 'None';
+
+    try {
+        const logistics = (typeof globalLogistics !== 'undefined' && globalLogistics) ? globalLogistics : await apiCall('fetchLogistics').catch(e => null);
+        if (logistics && logistics.participants) {
+            const lp = logistics.participants.find(p => p.nric.toUpperCase() === m.nric.toUpperCase());
+            if (lp) {
+                logGroup = lp.logisticsGroup || 'None';
+                logBus = lp.bus || 'None';
+                if (logistics.rooms) {
+                    const r = logistics.rooms.find(r => r.occupants && r.occupants.includes(lp.nric));
+                    if (r) logRoom = r.name;
+                }
+                if (logistics.pairings) {
+                    if (lp.role === 'TRAINEE') {
+                        const pair = logistics.pairings.find(p => p.traineeNric === lp.nric && p.status === 'ACTIVE');
+                        if (pair) {
+                            const vp = logistics.participants.find(x => x.nric === pair.volNric);
+                            if (vp) logPairing = vp.shortName || vp.fullName || pair.volNric;
+                        }
+                    } else {
+                        const pairs = logistics.pairings.filter(p => p.volNric === lp.nric && p.status === 'ACTIVE');
+                        if (pairs.length > 0) {
+                            logPairing = pairs.map(pair => {
+                                const tp = logistics.participants.find(x => x.nric === pair.traineeNric);
+                                return tp ? (tp.shortName || tp.fullName) : pair.traineeNric;
+                            }).join(', ');
+                        }
+                    }
+                }
+            }
+        }
+    } catch(e) {}
+
     window._currentModalParticipant = m;
 
     cont.innerHTML = `
@@ -235,8 +273,11 @@ async function showParticipantSummaryModal(nric) {
           <div><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">NRIC / FIN</p><p class="font-semibold uppercase">${m.nric}</p></div>
           <div><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Date of Birth</p><p class="font-semibold">${formatDDMmmYYYY(m.dob)}</p></div>
           <div><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Gender & Nat.</p><p class="font-semibold">${m.gender} | ${m.nationality}</p></div>
-          <div><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Contact & Email</p><div class="font-semibold flex items-center gap-1">${renderPhoneLink(m.contact)} | ${m.email || 'N/A'}</div></div>
+          <div><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Contact & Email</p><div class="font-semibold flex flex-col gap-0.5"><span>${renderPhoneLink(m.contact)}</span><span class="text-gray-600 dark:text-gray-400 font-medium truncate w-full" title="${m.email || 'N/A'}">${m.email || 'N/A'}</span></div></div>
           <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-1">Project</p><span class="font-bold text-xs px-1.5 py-0.5 rounded border inline-block shadow-sm ${dynColor}">${m.group || 'None'}</span></div>
+          <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Pairing</p><p class="font-semibold truncate w-full" title="${logPairing}">${logPairing}</p></div>
+          <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Room</p><p class="font-semibold truncate w-full" title="${logRoom}">${logRoom}</p></div>
+          <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Logistics (Grp & Bus)</p><p class="font-semibold truncate w-full" title="${logGroup} &bull; ${logBus}">${logGroup} &bull; ${logBus}</p></div>
           <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Home Address</p><p class="font-semibold">${m.address}</p></div>
           <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Passport No.</p><p class="font-semibold uppercase">${m.passportNo}</p></div>
           <div class="border-t border-gray-100 dark:border-gray-800 pt-2"><p class="font-bold text-gray-400 dark:text-gray-500 text-[11px] uppercase tracking-wider mb-0.5">Passport Expiry</p><p class="font-semibold">${m.passportExpiry ? formatDDMmmYYYY(m.passportExpiry) : '-'}</p></div>

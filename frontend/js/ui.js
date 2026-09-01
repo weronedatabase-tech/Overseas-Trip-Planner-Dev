@@ -215,8 +215,9 @@ function processDisplayNames(participants) {
 
 async function updateApp(btn) {
  setBtnLoading(btn, true);
- showToast("Updating app data and clearing caches...");
+ showToast("Clearing global database cache & updating app...");
  try {
+   await apiCall('clearCache');
    if ('caches' in window) {
      const cacheNames = await caches.keys();
      await Promise.all(cacheNames.map(name => caches.delete(name)));
@@ -230,7 +231,7 @@ async function updateApp(btn) {
    const url = new URL(window.location.href);
    url.searchParams.set('v', new Date().getTime());
    window.location.replace(url.toString());
- }, 1000);
+ }, 500);
 }
 
 function handleEnter(e, func) { if(e.key === 'Enter') func(); }

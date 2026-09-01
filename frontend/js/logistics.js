@@ -1,5 +1,13 @@
 let pairingSyncTimeout = null;
 let altSwapMode = false;
+let hidePairedVols = false;
+let hidePairedTrainees = false;
+window.toggleHidePaired = function(type, el) {
+  if (type === 'VOLUNTEER') hidePairedVols = el.checked;
+  if (type === 'TRAINEE') hidePairedTrainees = el.checked;
+  renderPairings();
+};
+
 let currentPairingSourceRole = 'TRAINEE';
 let pendingPairingsMap = new Map();
 let isPairingSyncing = false;
@@ -1588,6 +1596,17 @@ const isSourceVol = !altSwapMode;
 let sourceArr = isSourceVol ? vols : trainees;
 let targetArr = isSourceVol ? trainees : vols;
 
+if (hidePairedVols) {
+    const pairedVolNrics = new Set(activePairings.map(p => p.volNric));
+    if (isSourceVol) sourceArr = sourceArr.filter(p => !pairedVolNrics.has(p.nric));
+    else targetArr = targetArr.filter(p => !pairedVolNrics.has(p.nric));
+}
+if (hidePairedTrainees) {
+    const pairedTraineeNrics = new Set(activePairings.map(p => p.traineeNric));
+    if (!isSourceVol) sourceArr = sourceArr.filter(p => !pairedTraineeNrics.has(p.nric));
+    else targetArr = targetArr.filter(p => !pairedTraineeNrics.has(p.nric));
+}
+
 const query = document.getElementById('pairingSearchInput') ? document.getElementById('pairingSearchInput').value.toLowerCase().trim() : '';
 if (query) {
     const matchFn = (p) => {
@@ -1599,12 +1618,12 @@ if (query) {
     targetArr = targetArr.filter(matchFn);
 }
 
-const volColClass = "bg-green-50/30 dark:bg-green-900/10";
+const volColClass = "bg-orange-50/30 dark:bg-orange-900/10";
 const traineeColClass = "bg-green-50/30 dark:bg-green-900/10";
 const sourceColClass = isSourceVol ? volColClass : traineeColClass;
 const targetColClass = isSourceVol ? traineeColClass : volColClass;
 
-const volTitleClass = "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-b border-green-200 dark:border-green-800";
+const volTitleClass = "bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-300 border-b border-orange-200 dark:border-orange-800";
 const traineeTitleClass = "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-b border-green-200 dark:border-green-800";
 
 const sourceCol = document.getElementById('dnd-source-col');
@@ -1614,8 +1633,11 @@ targetCol.className = `flex-1 min-w-0 flex flex-col h-full overflow-hidden trans
 
 const sourceTitle = document.getElementById('dnd-source-title');
 const targetTitle = document.getElementById('dnd-target-title');
-sourceTitle.innerText = isSourceVol ? "Volunteers" : "Trainees";
-targetTitle.innerText = isSourceVol ? "Trainees" : "Volunteers";
+const volLabel = `<div class="flex items-center justify-between px-2 w-full"><span class="w-16"></span><span class="flex-1 text-center">Volunteers</span><label class="flex items-center gap-1 cursor-pointer w-16 justify-end" onclick="event.stopPropagation()"><input type="checkbox" ${hidePairedVols ? 'checked' : ''} onchange="toggleHidePaired('VOLUNTEER', this)" class="w-3 h-3 text-orange-600 focus:ring-orange-500 rounded-sm cursor-pointer border-orange-300 dark:border-orange-700 bg-white dark:bg-gray-800"><span class="text-[9px] font-bold tracking-normal normal-case opacity-80 mt-[1px]">Unpaired</span></label></div>`;
+const traineeLabel = `<div class="flex items-center justify-between px-2 w-full"><span class="w-16"></span><span class="flex-1 text-center">Trainees</span><label class="flex items-center gap-1 cursor-pointer w-16 justify-end" onclick="event.stopPropagation()"><input type="checkbox" ${hidePairedTrainees ? 'checked' : ''} onchange="toggleHidePaired('TRAINEE', this)" class="w-3 h-3 text-green-600 focus:ring-green-500 rounded-sm cursor-pointer border-green-300 dark:border-green-700 bg-white dark:bg-gray-800"><span class="text-[9px] font-bold tracking-normal normal-case opacity-80 mt-[1px]">Unpaired</span></label></div>`;
+
+sourceTitle.innerHTML = isSourceVol ? volLabel : traineeLabel;
+targetTitle.innerHTML = isSourceVol ? traineeLabel : volLabel;
 sourceTitle.className = `font-black text-xs py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b ${isSourceVol ? volTitleClass : traineeTitleClass}`;
 targetTitle.className = `font-black text-xs py-1.5 shrink-0 text-center uppercase tracking-widest shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b ${!isSourceVol ? volTitleClass : traineeTitleClass}`;
 
