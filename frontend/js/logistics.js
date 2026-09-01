@@ -261,8 +261,8 @@ let traineeNric = sourceRole === 'TRAINEE' ? sourceNric : targetNric;
 // Group Constraint Check
 let vPerson = globalLogistics.participants.find(p => p.nric === volNric);
 let tPerson = globalLogistics.participants.find(p => p.nric === traineeNric);
-let vGroup = (vPerson && vPerson.group) ? String(vPerson.group).trim().toLowerCase() : "";
-let tGroup = (tPerson && tPerson.group) ? String(tPerson.group).trim().toLowerCase() : "";
+let vGroup = (vPerson && vPerson.logisticsGroup) ? String(vPerson.logisticsGroup).trim().toLowerCase() : "";
+let tGroup = (tPerson && tPerson.logisticsGroup) ? String(tPerson.logisticsGroup).trim().toLowerCase() : "";
 let unassignedVals = ["", "-", "na", "n/a", "none", "unassigned"];
 let isVUnassigned = unassignedVals.includes(vGroup);
 let isTUnassigned = unassignedVals.includes(tGroup);
@@ -1869,8 +1869,8 @@ const volNric = currentPairingSourceRole === 'TRAINEE' ? targetNric : currentPai
 // Group Constraint Check
 let vPerson = globalLogistics.participants.find(p => p.nric === volNric);
 let tPerson = globalLogistics.participants.find(p => p.nric === traineeNric);
-let vGroup = (vPerson && vPerson.group) ? String(vPerson.group).trim().toLowerCase() : "";
-let tGroup = (tPerson && tPerson.group) ? String(tPerson.group).trim().toLowerCase() : "";
+let vGroup = (vPerson && vPerson.logisticsGroup) ? String(vPerson.logisticsGroup).trim().toLowerCase() : "";
+let tGroup = (tPerson && tPerson.logisticsGroup) ? String(tPerson.logisticsGroup).trim().toLowerCase() : "";
 let unassignedVals = ["", "-", "na", "n/a", "none", "unassigned"];
 let isVUnassigned = unassignedVals.includes(vGroup);
 let isTUnassigned = unassignedVals.includes(tGroup);
