@@ -569,3 +569,160 @@ window.isValidNRIC = function(str) {
 
     return suffix === expectedSuffix;
 };
+
+const TOP_NATIONALITIES = ["Singaporean", "Malaysian", "Indonesian", "Filipino", "Burmese", "Indian"];
+const ALL_NATIONALITIES = [
+  "Afghan", "Albanian", "Algerian", "American", "Andorran", "Angolan", "Antiguans", "Argentinean", "Armenian", "Australian", "Austrian", "Azerbaijani",
+  "Bahamian", "Bahraini", "Bangladeshi", "Barbadian", "Barbudans", "Batswana", "Belarusian", "Belgian", "Belizean", "Beninese", "Bhutanese", "Bolivian", "Bosnian", "Brazilian", "British", "Bruneian", "Bulgarian", "Burkinabe", "Burmese", "Burundian",
+  "Cambodian", "Cameroonian", "Canadian", "Cape Verdean", "Central African", "Chadian", "Chilean", "Chinese", "Colombian", "Comoran", "Congolese", "Costa Rican", "Croatian", "Cuban", "Cypriot", "Czech",
+  "Danish", "Djibouti", "Dominican", "Dutch",
+  "East Timorese", "Ecuadorean", "Egyptian", "Emirian", "Equatorial Guinean", "Eritrean", "Estonian", "Ethiopian",
+  "Fijian", "Filipino", "Finnish", "French",
+  "Gabonese", "Gambian", "Georgian", "German", "Ghanaian", "Greek", "Grenadian", "Guatemalan", "Guinea-Bissauan", "Guinean", "Guyanese",
+  "Haitian", "Herzegovinian", "Honduran", "Hungarian",
+  "I-Kiribati", "Icelander", "Indian", "Indonesian", "Iranian", "Iraqi", "Irish", "Israeli", "Italian", "Ivorian",
+  "Jamaican", "Japanese", "Jordanian",
+  "Kazakhstani", "Kenyan", "Kittian and Nevisian", "Kuwaiti", "Kyrgyz",
+  "Laotian", "Latvian", "Lebanese", "Liberian", "Libyan", "Liechtensteiner", "Lithuanian", "Luxembourger",
+  "Macedonian", "Malagasy", "Malawian", "Malaysian", "Maldivan", "Malian", "Maltese", "Marshallese", "Mauritanian", "Mauritian", "Mexican", "Micronesian", "Moldovan", "Monacan", "Mongolian", "Moroccan", "Mosotho", "Motswana", "Mozambican",
+  "Namibian", "Nauruan", "Nepalese", "New Zealander", "Nicaraguan", "Nigerian", "Nigerien", "North Korean", "Northern Irish", "Norwegian",
+  "Omani",
+  "Pakistani", "Palauan", "Palestinian", "Panamanian", "Papua New Guinean", "Paraguayan", "Peruvian", "Polish", "Portuguese",
+  "Qatari",
+  "Romanian", "Russian", "Rwandan",
+  "Saint Lucian", "Salvadoran", "Samoan", "San Marinese", "Sao Tomean", "Saudi", "Scottish", "Senegalese", "Serbian", "Seychellois", "Sierra Leonean", "Singaporean", "Slovakian", "Slovenian", "Solomon Islander", "Somali", "South African", "South Korean", "Spanish", "Sri Lankan", "Sudanese", "Surinamer", "Swazi", "Swedish", "Swiss", "Syrian",
+  "Taiwanese", "Tajik", "Tanzanian", "Thai", "Togolese", "Tongan", "Trinidadian or Tobagonian", "Tunisian", "Turkish", "Tuvaluan",
+  "Ugandan", "Ukrainian", "Uruguayan", "Uzbekistani",
+  "Venezuelan", "Vietnamese",
+  "Welsh",
+  "Yemenite",
+  "Zambian", "Zimbabwean"
+];
+const OTHER_NATIONALITIES = ALL_NATIONALITIES.filter(n => !TOP_NATIONALITIES.includes(n)).sort((a, b) => a.localeCompare(b));
+window.NATIONALITIES_LIST = [...TOP_NATIONALITIES, ...OTHER_NATIONALITIES];
+
+window.setupNationalityDropdown = function(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input || input.dataset.natInit) return;
+    input.dataset.natInit = "true";
+
+    // Hide original input
+    input.classList.add('hidden-force');
+    
+    // Create UI container
+    const wrapper = document.createElement('div');
+    wrapper.className = 'relative w-full';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    const displayBtn = document.createElement('button');
+    displayBtn.type = 'button';
+    displayBtn.className = 'w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary flex justify-between items-center text-left min-h-[42px]';
+    
+    const displaySpan = document.createElement('span');
+    displaySpan.className = 'truncate text-sm ' + (input.value ? 'font-semibold' : 'text-gray-400');
+    displaySpan.textContent = input.value || 'Select Nationality';
+    
+    const chevron = document.createElement('div');
+    chevron.innerHTML = '<svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+    
+    displayBtn.appendChild(displaySpan);
+    displayBtn.appendChild(chevron);
+    wrapper.appendChild(displayBtn);
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl hidden-force flex flex-col max-h-64 overflow-hidden';
+    
+    const searchHeader = document.createElement('div');
+    searchHeader.className = 'p-2 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50';
+    
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Search...';
+    searchInput.className = 'flex-1 p-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-primary';
+    
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.title = "Clear Field";
+    clearBtn.className = 'p-1.5 text-gray-400 hover:text-red-500 transition focus:outline-none';
+    clearBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+    
+    searchHeader.appendChild(searchInput);
+    searchHeader.appendChild(clearBtn);
+    dropdown.appendChild(searchHeader);
+
+    const listCont = document.createElement('div');
+    listCont.className = 'overflow-y-auto custom-scrollbar flex-1';
+    dropdown.appendChild(listCont);
+    wrapper.appendChild(dropdown);
+
+    const renderList = (query) => {
+        const q = (query || '').toLowerCase();
+        let html = '';
+        const filtered = window.NATIONALITIES_LIST.filter(n => n.toLowerCase().includes(q));
+        
+        if (filtered.length === 0) {
+            html = '<div class="p-3 text-xs text-center text-gray-500">No results found</div>';
+        } else {
+            html = filtered.map(n => {
+                const isTop = TOP_NATIONALITIES.includes(n);
+                const styling = isTop ? 'font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900/30' : 'font-medium text-gray-700 dark:text-gray-300';
+                return `<div class="p-2.5 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${styling} nat-opt" data-val="${n}">${n}</div>`;
+            }).join('');
+        }
+        listCont.innerHTML = html;
+        
+        Array.from(listCont.getElementsByClassName('nat-opt')).forEach(opt => {
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const val = opt.dataset.val;
+                input.value = val;
+                input.dispatchEvent(new Event('input', {bubbles:true}));
+                input.dispatchEvent(new Event('change', {bubbles:true}));
+                displaySpan.textContent = val;
+                displaySpan.className = 'truncate text-sm font-semibold';
+                dropdown.classList.add('hidden-force');
+            });
+        });
+    };
+
+    displayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = dropdown.classList.contains('hidden-force');
+        document.querySelectorAll('.nat-dropdown-open').forEach(d => {
+            if(d !== dropdown) d.classList.add('hidden-force');
+        });
+        if (isHidden) {
+            dropdown.classList.remove('hidden-force');
+            dropdown.classList.add('nat-dropdown-open');
+            searchInput.value = '';
+            renderList('');
+            setTimeout(() => searchInput.focus(), 50);
+        } else {
+            dropdown.classList.add('hidden-force');
+            dropdown.classList.remove('nat-dropdown-open');
+        }
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        renderList(e.target.value);
+    });
+
+    clearBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        input.value = '';
+        input.dispatchEvent(new Event('input', {bubbles:true}));
+        input.dispatchEvent(new Event('change', {bubbles:true}));
+        displaySpan.textContent = 'Select Nationality';
+        displaySpan.className = 'truncate text-sm text-gray-400';
+        dropdown.classList.add('hidden-force');
+        dropdown.classList.remove('nat-dropdown-open');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            dropdown.classList.add('hidden-force');
+            dropdown.classList.remove('nat-dropdown-open');
+        }
+    });
+};

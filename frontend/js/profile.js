@@ -442,9 +442,10 @@ return `
 `;
 }
 
-function enableEditMode(i) { 
-document.getElementById(`profCard_${i}`).classList.add('hidden-force'); 
-document.getElementById(`profEdit_${i}`).classList.remove('hidden-force'); 
+function enableEditMode(i) {
+  document.getElementById(`profCard_${i}`).classList.add('hidden-force');
+  document.getElementById(`profEdit_${i}`).classList.remove('hidden-force');
+  if (typeof setupNationalityDropdown === 'function') setupNationalityDropdown(`edNat_${i}`);
 }
 
 function cancelEditMode(i) { 
