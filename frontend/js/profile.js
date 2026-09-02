@@ -259,10 +259,9 @@ const dev = finConfig.feeDeviations?.[targetNric]?.amount || 0;
 const finalExpected = (size * baseFee) + dev;
 const isPaid = finConfig.feesReceived?.[targetNric] === true;
 
-if (!window._currentOrderRef) {
-    window._currentOrderRef = targetNric.substring(0, 4) + "-" + Date.now().toString().slice(-4);
-}
-const orderNo = window._currentOrderRef;
+const _hash = targetNric.split('').reduce((a,b)=>(((a<<5)-a)+b.charCodeAt(0))|0,0);
+const orderNo = targetNric.substring(0, 4).toUpperCase() + "-" + Math.abs(_hash).toString(10).slice(-4).padStart(4, '0');
+window._currentOrderRef = orderNo; // Update global state just in case it's used elsewhere
 
 let membersListHtml = targetMembers.map(m => {
    const roleColor = m.role === 'TRAINEE' ? 'text-green-600 dark:text-green-400' : (m.role === 'CAREGIVER' ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400');
@@ -366,7 +365,9 @@ async function submitReceipt(e, suffix = "") {
        }
 
        const ext = file.name.split('.').pop() || 'png';
-       const orderRefToUse = window._currentOrderRef || `${finalUploaderNric.substring(0,4)}-${Date.now().toString().slice(-4)}`;
+       const _targetForHash = (typeof loadedFamily !== 'undefined' && loadedFamily.length > 0) ? loadedFamily[0].pocNric : finalUploaderNric;
+       const _upHash = _targetForHash.split('').reduce((a,b)=>(((a<<5)-a)+b.charCodeAt(0))|0,0);
+       const orderRefToUse = window._currentOrderRef || (_targetForHash.substring(0, 4).toUpperCase() + '-' + Math.abs(_upHash).toString(10).slice(-4).padStart(4, '0'));
        const finalFileName = `${shortName}_${orderRefToUse}.${ext}`;
 
        const payload = {
