@@ -53,44 +53,12 @@
 </div>
 
 <!-- DATE PICKER MODAL -->
-<div id="datePickerSheet" class="fixed inset-0 bg-black/60 z-[90] hidden-force flex flex-col justify-end">
-<div class="bg-white dark:bg-gray-900 rounded-t-3xl w-full max-w-md mx-auto overflow-hidden shadow-2xl animate-slide-up border-t border-gray-200 dark:border-gray-800">
-<div class="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-800"><span class="font-bold text-lg text-gray-800 dark:text-gray-100">Select Date</span><button type="button" onclick="closePicker()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold px-2 focus:outline-none">&times;</button></div>
-<div class="relative flex h-[200px] text-lg font-bold bg-white dark:bg-gray-950"><div class="picker-highlight"></div><div class="flex-1 picker-col" id="colDay"></div><div class="flex-1 picker-col" id="colMonth"></div><div class="flex-1 picker-col" id="colYear"></div></div>
-<div class="p-5 border-t border-gray-200 dark:border-gray-800"><button type="button" onclick="confirmPicker()" class="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-lg shadow-md focus:outline-none hover:bg-green-600 transition">Done</button></div>
-</div>
-</div>
-
-<!-- CAREGIVER SETUP POPUP MODAL -->
-<div id="caregiverPopupModal" class="fixed inset-0 bg-black/60 z-[100] hidden-force flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
- <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 dark:border-gray-700 animate-slide-up relative">
-   <h3 class="text-lg font-black text-gray-900 dark:text-white mb-1">Caregiver Details</h3>
-   <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-5">Please specify the Trainee(s) you are caring for.</p>
-   
-   <div class="space-y-4">
-       <div class="relative">
-           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Related Trainees' Name(s) <span class="text-red-500">*</span></label>
-           <input type="text" id="cgPopupTraineeName" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" autocomplete="off" placeholder="Search trainee...">
-       </div>
-       <div>
-           <label class="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">Relationship to Trainee(s) <span class="text-red-500">*</span></label>
-           <input type="text" id="cgPopupRelation" class="w-full p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Father, Mother, Sibling">
-       </div>
-   </div>
-
-   <div class="mt-6 flex space-x-3">
-       <button type="button" onclick="cancelCaregiverPopup()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition focus:outline-none">Cancel</button>
-       <button type="button" onclick="confirmCaregiverPopup()" class="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold shadow-sm hover:bg-green-600 transition focus:outline-none">Confirm</button>
-   </div>
- </div>
-</div>
-
 <script src="backend/config.js"></script>
 <script src="frontend/js/api.js"></script>
 <script src="frontend/js/state.js"></script>
 <script src="frontend/js/ui.js"></script>
 <script src="frontend/js/main.js"></script>
-<script src="frontend/js/rolodex.js"></script>
+
 <script src="frontend/js/registration.js"></script>
 <script>
 window.initPage = async () => {
