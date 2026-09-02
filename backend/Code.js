@@ -600,7 +600,7 @@ results.push({
   // In-memory self-healing of pocNric based on 'relatedTrainee' column (index 4)
   results.forEach(r => {
       if (r.role === 'CAREGIVER' && r.relatedTrainee) {
-          const desiredNames = r.relatedTrainee.split(/[\|,]/).map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
+          const desiredNames = r.relatedTrainee.split('|').map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
           
           results.forEach(j => {
               if (j !== r) {
@@ -1543,7 +1543,7 @@ function forceMigratePocNric() {
           const relatedStr = String(data[i][4] || '').trim(); // column E has the names
           
           if (relatedStr) {
-              const desiredNames = relatedStr.split(/[\|,]/).map(n => n.trim().toLowerCase()).filter(n => n);
+              const desiredNames = relatedStr.split('|').map(n => n.trim().toLowerCase()).filter(n => n);
               
               for (let j = 1; j < data.length; j++) {
                   if (String(data[j][2]).trim().toUpperCase() === 'TRAINEE') {

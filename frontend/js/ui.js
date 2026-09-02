@@ -91,7 +91,7 @@ window.getFamilyMembers = function(nric, allParticipants) {
     
     let myRelatedNames = [];
     if (target.relatedTrainee) {
-        myRelatedNames = String(target.relatedTrainee).split(/[\|,]/).map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
+        myRelatedNames = String(target.relatedTrainee).split('|').map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
     }
     let myName = (target.fullName || '').replace(/\s+/g, '').toLowerCase();
     let myShortName = (target.shortName || '').replace(/\s+/g, '').toLowerCase();
@@ -109,7 +109,7 @@ window.getFamilyMembers = function(nric, allParticipants) {
         
         // Are they a Caregiver for me?
         if (p.role === 'CAREGIVER' && p.relatedTrainee) {
-            let theirRelated = String(p.relatedTrainee).split(/[\|,]/).map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
+            let theirRelated = String(p.relatedTrainee).split('|').map(n => n.replace(/\s+/g, '').toLowerCase()).filter(n => n);
             if (theirRelated.some(d => d.includes(myName) || myName.includes(d) || (myShortName && d.includes(myShortName)))) {
                 return true;
             }
@@ -304,7 +304,7 @@ window.applyCaregiverLabels = function(participants) {
     participants.forEach(p => {
         if (p.role === 'CAREGIVER') {
             if (p.relatedTrainee) {
-                let parts = String(p.relatedTrainee).split(/[\|,]/).filter(Boolean);
+                let parts = String(p.relatedTrainee).split('|').filter(Boolean);
                 let mapped = parts.map(n => {
                     let raw = n.trim();
                     let k = raw.toLowerCase();
@@ -453,7 +453,7 @@ window.setupTokenInput = function(inputId, getSuggestionsCallback) {
     wrapper.appendChild(chipContainer);
     wrapper.appendChild(inputField);
 
-    let tokens = (originalInput.value || '').split(/[\|,]/).map(s => s.trim()).filter(Boolean);
+    let tokens = (originalInput.value || '').split('|').map(s => s.trim()).filter(Boolean);
     
     function renderTokens() {
         chipContainer.innerHTML = '';
