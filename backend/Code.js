@@ -1088,6 +1088,12 @@ else {
   catch(e) { targetFolder = tripFolder.getFoldersByName(folderName).next(); }
 }
 
+if (payload.categoryId === "Fees Payment Screenshot") {
+  try {
+    targetFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (e) {}
+}
+
 let fileUrl = "";
 if (payload.fileData) {
 const blob = Utilities.newBlob(Utilities.base64Decode(payload.fileData), payload.mimeType, payload.fileName);
