@@ -38,6 +38,12 @@ if (!rosterCols.find(c => c.id === 'medical')) {
 }
 
 
+
+if (!rosterCols.find(c => c.id === 'sleeping')) {
+    const otherIdx = rosterCols.findIndex(c => c.id === 'otherPoints');
+    rosterCols.splice(otherIdx > -1 ? otherIdx : rosterCols.length, 0, { id: 'sleeping', label: 'Sleeping Arrangements', width: 220, visible: true });
+    localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
+}
 // Force hide role and group in existing localStorage rosterCols if they are still visible
 const savedCols = JSON.parse(localStorage.getItem('rosterCols'));
 if (savedCols) {
@@ -104,6 +110,12 @@ document.getElementById('tab-participants').innerHTML = `
                Columns <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
            </button>
            <div id="columnSelector" class="hidden-force absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-30 p-2 flex flex-col gap-1 max-h-96 overflow-y-auto custom-scrollbar">
+              <div class="mb-1 px-1 border-b border-gray-100 dark:border-gray-700 pb-1">
+                  <label class="flex items-center gap-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer transition">
+                      <input type="checkbox" id="toggleAllColsCheckbox" ${rosterCols.every(c => c.visible) ? 'checked' : ''} onchange="toggleAllRosterColumns(this.checked)" class="w-4 h-4 text-indigo-600 rounded border-gray-300">
+                      <span class="text-[11px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Toggle All</span>
+                  </label>
+              </div>
               ${rosterCols.map(c => `
                 <label class="flex items-center gap-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer transition">
                   <input type="checkbox" value="${c.id}" ${c.visible ? 'checked' : ''} onchange="toggleRosterColumn('${c.id}', this.checked)" class="w-4 h-4 text-primary rounded border-gray-300">
@@ -152,11 +164,19 @@ function toggleRosterColumn(colId, isVisible) {
 const c = rosterCols.find(x => x.id === colId);
 if(c) c.visible = isVisible;
 localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
+const allChecked = rosterCols.every(x => x.visible);
+const toggleAllCb = document.getElementById('toggleAllColsCheckbox');
+if (toggleAllCb) toggleAllCb.checked = allChecked;
 renderRosterTable();
-
-   
-
 }
+
+window.toggleAllRosterColumns = function(isChecked) {
+    rosterCols.forEach(c => c.visible = isChecked);
+    localStorage.setItem('rosterCols', JSON.stringify(rosterCols));
+    document.querySelectorAll('#columnSelector input[type="checkbox"]:not(#toggleAllColsCheckbox)').forEach(cb => cb.checked = isChecked);
+    renderRosterTable();
+};
+
 
 window.showRosterBreakdownModal = function() {
     let breakdown = {};
@@ -572,7 +592,7 @@ data.forEach(p => {
    rosterCols.forEach(c => {
        if (c.visible) {
            const styleStr = ``;
-           const baseClass = `px-3 py-2 align-top roster-col-${c.id} text-xs font-medium text-gray-800 dark:text-gray-200 ${['address', 'medical', 'diet', 'otherPoints', 'pairings'].includes(c.id) ? 'whitespace-normal break-words min-w-[150px] max-w-[300px]' : 'whitespace-nowrap'}`;
+           const baseClass = `px-3 py-2 align-top roster-col-${c.id} text-xs font-medium text-gray-800 dark:text-gray-200 ${['address', 'medical', 'diet', 'otherPoints', 'pairings', 'sleeping'].includes(c.id) ? 'whitespace-normal break-words min-w-[150px] max-w-[300px]' : 'whitespace-nowrap'}`;
            
            if (c.id === 'role') {
                html += `<td class="${baseClass}" ${styleStr}><span class="text-[11px] font-black ${roleColor} bg-gray-50 dark:bg-gray-800 px-1 py-[1px] leading-tight rounded-sm border border-gray-200 dark:border-gray-700 uppercase tracking-wide">${roleStr}</span></td>`;
@@ -592,6 +612,9 @@ data.forEach(p => {
            } else if (c.id === 'medical') {
                const hasMedical = p.medical && p.medical.trim() && p.medical.trim().toLowerCase() !== 'nil' && p.medical.trim().toLowerCase() !== 'none';
                html += `<td class="${baseClass}" ${styleStr}>${hasMedical ? `<span class="text-rose-700 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap leading-tight">${p.medical}</span>` : `<span class="text-gray-400 italic">NONE</span>`}</td>`;
+           } else if (c.id === 'sleeping') {
+               const hasSleeping = p.sleeping && p.sleeping.trim() && p.sleeping.trim().toLowerCase() !== 'nil' && p.sleeping.trim().toLowerCase() !== 'none';
+               html += `<td class="${baseClass}" ${styleStr}>${hasSleeping ? `<span class="text-indigo-700 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded inline-block whitespace-pre-wrap leading-tight">${p.sleeping}</span>` : `<span class="text-gray-400 italic">NONE</span>`}</td>`;
            } else if (c.id === 'otherPoints') {
                const hasNotes = p.otherPoints && p.otherPoints.trim() && p.otherPoints.trim().toLowerCase() !== 'nil' && p.otherPoints.trim().toLowerCase() !== 'none';
                html += `<td class="${baseClass}" ${styleStr}>${hasNotes ? `<span class="text-orange-700 dark:text-orange-400 font-medium whitespace-pre-wrap leading-tight">${p.otherPoints}</span>` : `<span class="text-gray-400 italic">NONE</span>`}</td>`;
